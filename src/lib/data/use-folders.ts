@@ -91,6 +91,19 @@ export function useFolders(workspaceId: string | undefined) {
     [reload],
   );
 
+  const setFolderColor = useCallback(
+    async (id: string, color: string | null) => {
+      const { error } = await supabase.from("folders").update({ color }).eq("id", id);
+      if (error) {
+        console.error(error);
+        notifyError(`Couldn't update the folder color: ${error.message}`);
+        return;
+      }
+      await reload();
+    },
+    [reload],
+  );
+
   const moveFolder = useCallback(
     async (id: string, parentId: string | null, sortOrder: number) => {
       const { error } = await supabase
@@ -124,5 +137,5 @@ export function useFolders(workspaceId: string | undefined) {
     [reload],
   );
 
-  return { folders, loading, createFolder, renameFolder, toggleFavorite, moveFolder, deleteFolder, reload };
+  return { folders, loading, createFolder, renameFolder, toggleFavorite, setFolderColor, moveFolder, deleteFolder, reload };
 }

@@ -20,6 +20,7 @@ export interface Folder {
   name: string;
   sort_order: number;
   is_favorite: boolean;
+  color: string | null;
   created_at: string;
   updated_at: string;
 }

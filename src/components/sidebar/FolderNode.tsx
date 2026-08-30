@@ -1,14 +1,32 @@
 import { useMemo, useState } from "react";
 import { useDraggable } from "@dnd-kit/core";
-import { ChevronRight, Folder, FolderOpen, MoreHorizontal, Star, Plus, Pencil, Trash2 } from "lucide-react";
+import { ChevronRight, Folder, FolderOpen, MoreHorizontal, Star, Plus, Pencil, Trash2, Ban } from "lucide-react";
 import { useWorkspaceContext } from "@/lib/workspace-context";
 import type { Folder as FolderType } from "@/lib/types";
 import { cn } from "@/lib/cn";
 import { DropZone } from "@/components/sidebar/DropZone";
 import { NoteRow } from "@/components/sidebar/NoteRow";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+  DropdownMenuSub,
+  DropdownMenuSubTrigger,
+  DropdownMenuSubContent,
+} from "@/components/ui/dropdown-menu";
 import { NewNoteMenu } from "@/components/NewNoteMenu";
 import { useIsPro } from "@/lib/use-plan";
+
+const FOLDER_COLORS = [
+  { name: "None", value: null },
+  { name: "Red", value: "#c0362c" },
+  { name: "Orange", value: "#b3711c" },
+  { name: "Green", value: "#2f7a4f" },
+  { name: "Blue", value: "#2954a5" },
+  { name: "Purple", value: "#7a4fae" },
+];
 
 export function FolderNode({ folder, depth }: { folder: FolderType; depth: number }) {
   const { folders, notes, route } = useWorkspaceContext();
@@ -48,7 +66,7 @@ export function FolderNode({ folder, depth }: { folder: FolderType; depth: numbe
           <button type="button" onClick={() => setOpen((v) => !v)} className="p-1.5">
             <ChevronRight size={13} className={cn("transition-transform", open && "rotate-90")} />
           </button>
-          <span className="mr-2 flex shrink-0 items-center">
+          <span className="mr-2 flex shrink-0 items-center" style={{ color: folder.color ?? undefined }}>
             {open ? <FolderOpen size={14} /> : <Folder size={14} />}
           </span>
           {renaming ? (
@@ -86,6 +104,32 @@ export function FolderNode({ folder, depth }: { folder: FolderType; depth: numbe
                 <DropdownMenuItem onSelect={() => folders.toggleFavorite(folder.id, !folder.is_favorite)}>
                   <Star size={13} /> {folder.is_favorite ? "Remove from favorites" : "Add to favorites"}
                 </DropdownMenuItem>
+                <DropdownMenuSub>
+                  <DropdownMenuSubTrigger className="flex cursor-pointer select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm text-ink outline-none data-[highlighted]:bg-surface-2">
+                    <span
+                      className="h-3 w-3 rounded-full border border-line"
+                      style={{ background: folder.color ?? "transparent" }}
+                    />
+                    Color
+                  </DropdownMenuSubTrigger>
+                  <DropdownMenuSubContent className="flex items-center gap-1.5 p-2">
+                    {FOLDER_COLORS.map((c) => (
+                      <button
+                        key={c.name}
+                        type="button"
+                        title={c.name}
+                        onClick={() => folders.setFolderColor(folder.id, c.value)}
+                        className={cn(
+                          "flex h-6 w-6 items-center justify-center rounded-full border border-line",
+                          folder.color === c.value && "ring-2 ring-accent ring-offset-1",
+                        )}
+                        style={{ background: c.value ?? "transparent" }}
+                      >
+                        {!c.value && <Ban size={12} className="text-faint" />}
+                      </button>
+                    ))}
+                  </DropdownMenuSubContent>
+                </DropdownMenuSub>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem className="text-danger" onSelect={() => folders.deleteFolder(folder.id)}>
                   <Trash2 size={13} /> Delete folder
