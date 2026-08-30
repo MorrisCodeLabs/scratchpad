@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { Check, Sparkles, Crown } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { useWorkspaceContext } from "@/lib/workspace-context";
 import { useIsPro, useIsOwnerAccount } from "@/lib/use-plan";
 import { setWorkspacePlan } from "@/lib/plan-actions";
@@ -51,14 +53,7 @@ export function BillingSettings() {
     <div>
       <div className="mb-4 flex items-center gap-2">
         <p className="text-sm text-muted">Current plan:</p>
-        <span
-          className={cn(
-            "rounded-full px-2 py-0.5 text-xs font-semibold uppercase tracking-wide",
-            isPro ? "bg-accent-soft text-accent-ink" : "bg-surface-2 text-muted",
-          )}
-        >
-          {isPro ? "Pro" : "Free"}
-        </span>
+        <Badge variant={isPro ? "default" : "secondary"}>{isPro ? "Pro" : "Free"}</Badge>
       </div>
 
       <div className="grid grid-cols-2 gap-4">
@@ -105,19 +100,23 @@ function PlanCard({
   icon?: typeof Sparkles;
 }) {
   return (
-    <div className={cn("rounded-lg border p-4", active ? "border-accent bg-accent-soft/40" : "border-line bg-surface")}>
-      <div className="mb-2 flex items-center gap-1.5">
-        {Icon && <Icon size={14} className="text-accent" />}
-        <p className="text-sm font-semibold text-ink">{title}</p>
-      </div>
-      <ul className="flex flex-col gap-1.5">
-        {features.map((f) => (
-          <li key={f} className="flex items-start gap-1.5 text-xs text-muted">
-            <Check size={12} className="mt-0.5 shrink-0 text-good" />
-            {f}
-          </li>
-        ))}
-      </ul>
-    </div>
+    <Card className={cn(active ? "border-accent bg-accent-soft/40" : undefined)}>
+      <CardHeader className="pb-2">
+        <CardTitle className={cn("flex items-center gap-1.5", !Icon && "text-sm")}>
+          {Icon && <Icon size={14} className="text-accent" />}
+          {title}
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <ul className="flex flex-col gap-1.5">
+          {features.map((f) => (
+            <li key={f} className="flex items-start gap-1.5 text-xs text-muted">
+              <Check size={12} className="mt-0.5 shrink-0 text-good" />
+              {f}
+            </li>
+          ))}
+        </ul>
+      </CardContent>
+    </Card>
   );
 }

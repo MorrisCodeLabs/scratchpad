@@ -5,6 +5,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { useWorkspaceContext } from "@/lib/workspace-context";
 import { useSession } from "@/lib/data/use-session";
 import { useTheme, type ThemePreference } from "@/lib/use-theme";
@@ -48,7 +51,15 @@ export function SettingsView() {
           <WorkspaceSettings />
         </TabsContent>
         <TabsContent value="billing">
-          <BillingSettings />
+          <Card>
+            <CardHeader>
+              <CardTitle>Billing</CardTitle>
+              <CardDescription>Compare plans and manage your workspace's subscription.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <BillingSettings />
+            </CardContent>
+          </Card>
         </TabsContent>
       </Tabs>
     </div>
@@ -59,15 +70,17 @@ function SettingsRow({
   label,
   description,
   children,
+  htmlFor,
 }: {
   label: React.ReactNode;
   description?: string;
   children: React.ReactNode;
+  htmlFor?: string;
 }) {
   return (
-    <div className="flex items-center justify-between gap-4 py-3.5">
+    <div className="flex items-center justify-between gap-4 py-4">
       <div>
-        <p className="text-[13px] font-medium text-ink">{label}</p>
+        <Label htmlFor={htmlFor}>{label}</Label>
         {description && <p className="mt-0.5 text-xs leading-relaxed text-faint">{description}</p>}
       </div>
       {children}
@@ -78,16 +91,22 @@ function SettingsRow({
 function AccountSettings() {
   const { session } = useSession();
   return (
-    <div className="divide-y divide-line">
-      <SettingsRow label="Email" description="Used to sign in to Scratchpad.">
-        <Input value={session?.user.email ?? ""} readOnly className="w-56 bg-surface-2 text-muted" />
-      </SettingsRow>
-      <SettingsRow label="Sign out" description="End your session on this device.">
-        <Button variant="outline" size="sm" onClick={() => supabase.auth.signOut()}>
-          Sign out
-        </Button>
-      </SettingsRow>
-    </div>
+    <Card>
+      <CardHeader>
+        <CardTitle>Account</CardTitle>
+        <CardDescription>Your sign-in identity for this workspace.</CardDescription>
+      </CardHeader>
+      <CardContent className="divide-y divide-line">
+        <SettingsRow htmlFor="account-email" label="Email" description="Used to sign in to Scratchpad.">
+          <Input id="account-email" value={session?.user.email ?? ""} readOnly className="w-56 bg-surface-2 text-muted" />
+        </SettingsRow>
+        <SettingsRow label="Sign out" description="End your session on this device.">
+          <Button variant="outline" size="sm" onClick={() => supabase.auth.signOut()}>
+            Sign out
+          </Button>
+        </SettingsRow>
+      </CardContent>
+    </Card>
   );
 }
 
@@ -113,51 +132,58 @@ function AppearanceSettings() {
   };
 
   return (
-    <div className="divide-y divide-line">
-      <SettingsRow label="Theme" description="Controls light/dark appearance across Scratchpad.">
-        <div className="flex gap-1 rounded-lg border border-line p-0.5">
-          {options.map((opt) => (
-            <button
-              key={opt.value}
-              onClick={() => setPreference(opt.value)}
-              className={cn(
-                "rounded-md px-2.5 py-1 text-xs font-medium transition-colors",
-                preference === opt.value ? "bg-accent text-white" : "text-muted hover:bg-surface-2",
-              )}
-            >
-              {opt.label}
-            </button>
-          ))}
-        </div>
-      </SettingsRow>
-      {isPro && (
-        <SettingsRow
-          label="Brand color"
-          description="Replaces Scratchpad's accent color across the whole workspace — buttons, active states, highlights."
-        >
-          <div className="flex items-center gap-1.5">
-            {BRAND_PRESETS.map((preset) => (
+    <Card>
+      <CardHeader>
+        <CardTitle>Appearance</CardTitle>
+        <CardDescription>Theme and branding for how Scratchpad looks.</CardDescription>
+      </CardHeader>
+      <CardContent className="divide-y divide-line">
+        <SettingsRow label="Theme" description="Controls light/dark appearance across Scratchpad.">
+          <div className="flex gap-1 rounded-lg border border-line p-0.5">
+            {options.map((opt) => (
               <button
-                key={preset.value}
+                key={opt.value}
                 type="button"
-                title={preset.name}
-                onClick={() => setAccent(preset.value)}
+                onClick={() => setPreference(opt.value)}
                 className={cn(
-                  "h-6 w-6 rounded-full border-2 transition-transform hover:scale-110",
-                  currentAccent === preset.value ? "border-ink" : "border-transparent",
+                  "rounded-md px-2.5 py-1 text-xs font-medium transition-colors",
+                  preference === opt.value ? "bg-accent text-white" : "text-muted hover:bg-surface-2",
                 )}
-                style={{ background: preset.value }}
-              />
-            ))}
-            {currentAccent && (
-              <button type="button" onClick={() => setAccent(null)} className="ml-1 text-xs text-faint transition-colors hover:text-ink">
-                Reset
+              >
+                {opt.label}
               </button>
-            )}
+            ))}
           </div>
         </SettingsRow>
-      )}
-    </div>
+        {isPro && (
+          <SettingsRow
+            label="Brand color"
+            description="Replaces Scratchpad's accent color across the whole workspace — buttons, active states, highlights."
+          >
+            <div className="flex items-center gap-1.5">
+              {BRAND_PRESETS.map((preset) => (
+                <button
+                  key={preset.value}
+                  type="button"
+                  title={preset.name}
+                  onClick={() => setAccent(preset.value)}
+                  className={cn(
+                    "h-6 w-6 rounded-full border-2 transition-transform hover:scale-110",
+                    currentAccent === preset.value ? "border-ink" : "border-transparent",
+                  )}
+                  style={{ background: preset.value }}
+                />
+              ))}
+              {currentAccent && (
+                <button type="button" onClick={() => setAccent(null)} className="ml-1 text-xs text-faint transition-colors hover:text-ink">
+                  Reset
+                </button>
+              )}
+            </div>
+          </SettingsRow>
+        )}
+      </CardContent>
+    </Card>
   );
 }
 
@@ -167,27 +193,34 @@ function EditorSettings() {
   const { open: openShortcuts } = useShortcutsDialog();
 
   return (
-    <div className="divide-y divide-line">
-      <SettingsRow label="Autosave" description="Save notes automatically a moment after you stop typing.">
-        <Switch checked={autosave} onCheckedChange={setAutosave} />
-      </SettingsRow>
-      <SettingsRow label="Default font" description="Applied to new notes' body text.">
-        <select
-          value={defaultFont}
-          onChange={(e) => setDefaultFont(e.target.value)}
-          className="h-9 rounded-lg border border-line bg-surface px-2.5 text-[13px] text-ink"
-        >
-          <option>System UI</option>
-          <option>Serif</option>
-          <option>Monospace</option>
-        </select>
-      </SettingsRow>
-      <SettingsRow label="Keyboard shortcuts" description="See every shortcut Scratchpad supports.">
-        <Button variant="outline" size="sm" onClick={openShortcuts}>
-          <Keyboard size={14} /> View shortcuts
-        </Button>
-      </SettingsRow>
-    </div>
+    <Card>
+      <CardHeader>
+        <CardTitle>Editor</CardTitle>
+        <CardDescription>Defaults for how the note editor behaves.</CardDescription>
+      </CardHeader>
+      <CardContent className="divide-y divide-line">
+        <SettingsRow htmlFor="autosave" label="Autosave" description="Save notes automatically a moment after you stop typing.">
+          <Switch id="autosave" checked={autosave} onCheckedChange={setAutosave} />
+        </SettingsRow>
+        <SettingsRow label="Default font" description="Applied to new notes' body text.">
+          <Select value={defaultFont} onValueChange={setDefaultFont}>
+            <SelectTrigger className="w-40">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="System UI">System UI</SelectItem>
+              <SelectItem value="Serif">Serif</SelectItem>
+              <SelectItem value="Monospace">Monospace</SelectItem>
+            </SelectContent>
+          </Select>
+        </SettingsRow>
+        <SettingsRow label="Keyboard shortcuts" description="See every shortcut Scratchpad supports.">
+          <Button variant="outline" size="sm" onClick={openShortcuts}>
+            <Keyboard size={14} /> View shortcuts
+          </Button>
+        </SettingsRow>
+      </CardContent>
+    </Card>
   );
 }
 
@@ -204,50 +237,54 @@ function WorkspaceSettings() {
     await refreshWorkspace();
   };
 
-  const setRetention = async (days: number) => {
-    await supabase.from("workspaces").update({ trash_retention_days: days }).eq("id", workspace.id);
+  const setRetention = async (days: string) => {
+    await supabase.from("workspaces").update({ trash_retention_days: Number(days) }).eq("id", workspace.id);
     await refreshWorkspace();
   };
 
   return (
-    <div className="divide-y divide-line">
-      <SettingsRow label="Workspace name">
-        <Input value={name} onChange={(e) => setName(e.target.value)} className="w-56" />
-      </SettingsRow>
-      <SettingsRow label="Icon" description="An emoji shown next to the workspace name.">
-        <Input value={icon} onChange={(e) => setIcon(e.target.value)} className="w-20 text-center" maxLength={4} />
-      </SettingsRow>
-      {isPro ? (
-        <SettingsRow
-          label="Trash auto-empty"
-          description="Notes are permanently deleted this many days after being trashed."
-        >
-          <select
-            value={workspace.trash_retention_days}
-            onChange={(e) => setRetention(Number(e.target.value))}
-            className="h-9 rounded-lg border border-line bg-surface px-2.5 text-[13px] text-ink"
+    <Card>
+      <CardHeader>
+        <CardTitle>Workspace</CardTitle>
+        <CardDescription>Naming, icon, and trash retention for this workspace.</CardDescription>
+      </CardHeader>
+      <CardContent className="divide-y divide-line">
+        <SettingsRow htmlFor="workspace-name" label="Workspace name">
+          <Input id="workspace-name" value={name} onChange={(e) => setName(e.target.value)} className="w-56" />
+        </SettingsRow>
+        <SettingsRow htmlFor="workspace-icon" label="Icon" description="An emoji shown next to the workspace name.">
+          <Input id="workspace-icon" value={icon} onChange={(e) => setIcon(e.target.value)} className="w-20 text-center" maxLength={4} />
+        </SettingsRow>
+        {isPro ? (
+          <SettingsRow label="Trash auto-empty" description="Notes are permanently deleted this many days after being trashed.">
+            <Select value={String(workspace.trash_retention_days)} onValueChange={setRetention}>
+              <SelectTrigger className="w-32">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {RETENTION_OPTIONS.map((d) => (
+                  <SelectItem key={d} value={String(d)}>
+                    {d} days
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </SettingsRow>
+        ) : (
+          <SettingsRow
+            label="Trash auto-empty"
+            description={`Trashed notes are permanently deleted after ${workspace.trash_retention_days} days.`}
           >
-            {RETENTION_OPTIONS.map((d) => (
-              <option key={d} value={d}>
-                {d} days
-              </option>
-            ))}
-          </select>
-        </SettingsRow>
-      ) : (
-        <SettingsRow
-          label="Trash auto-empty"
-          description={`Trashed notes are permanently deleted after ${workspace.trash_retention_days} days.`}
-        >
-          <span />
-        </SettingsRow>
-      )}
-      <div className="flex justify-end py-3">
+            <span />
+          </SettingsRow>
+        )}
+      </CardContent>
+      <CardFooter className="justify-between">
+        <p className="text-xs text-faint">Owner: {userId}</p>
         <Button size="sm" onClick={save}>
           Save changes
         </Button>
-      </div>
-      <p className="pt-3 text-xs text-faint">Owner: {userId}</p>
-    </div>
+      </CardFooter>
+    </Card>
   );
 }
