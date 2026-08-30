@@ -15,6 +15,7 @@ import {
   Sun,
   Moon,
   LogOut,
+  History,
 } from "lucide-react";
 import { useWorkspaceContext } from "@/lib/workspace-context";
 import type { Route } from "@/lib/use-router";
@@ -293,6 +294,9 @@ function AccountMenu({
         )}
         <DropdownMenuItem onSelect={() => navigate({ name: "settings" })}>
           <Settings size={14} /> Settings
+        </DropdownMenuItem>
+        <DropdownMenuItem onSelect={() => navigate({ name: "changelog" })}>
+          <History size={14} /> Changelog
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem className="text-danger" onSelect={() => supabase.auth.signOut()}>

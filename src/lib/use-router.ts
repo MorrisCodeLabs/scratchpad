@@ -8,7 +8,8 @@ export type Route =
   | { name: "note"; id: string }
   | { name: "calendar" }
   | { name: "trash" }
-  | { name: "settings"; section?: string };
+  | { name: "settings"; section?: string }
+  | { name: "changelog" };
 
 function parse(pathname: string): Route {
   const parts = pathname.split("/").filter(Boolean);
@@ -16,6 +17,7 @@ function parse(pathname: string): Route {
   if (parts[0] === "calendar") return { name: "calendar" };
   if (parts[0] === "trash") return { name: "trash" };
   if (parts[0] === "settings") return { name: "settings", section: parts[1] };
+  if (parts[0] === "changelog") return { name: "changelog" };
   return { name: "all-notes" };
 }
 
@@ -29,6 +31,8 @@ function toPath(route: Route): string {
       return "/trash";
     case "settings":
       return route.section ? `/settings/${route.section}` : "/settings";
+    case "changelog":
+      return "/changelog";
     default:
       return "/";
   }

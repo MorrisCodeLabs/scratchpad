@@ -7,6 +7,7 @@ import { NoteView } from "@/components/views/NoteView";
 import { CalendarView } from "@/components/views/CalendarView";
 import { TrashView } from "@/components/views/TrashView";
 import { SettingsView } from "@/components/views/SettingsView";
+import { ChangelogView } from "@/components/views/ChangelogView";
 import { Toaster } from "@/components/Toaster";
 import { ShortcutsDialog } from "@/components/ShortcutsDialog";
 import { WelcomeDialog } from "@/components/WelcomeDialog";
@@ -75,6 +76,7 @@ export function AppShell() {
           {route.name === "calendar" && <CalendarView />}
           {route.name === "trash" && <TrashView />}
           {route.name === "settings" && <SettingsView />}
+          {route.name === "changelog" && <ChangelogView />}
         </ErrorBoundary>
       </main>
       <CommandMenu />
