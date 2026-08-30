@@ -1,5 +1,5 @@
 import * as React from "react";
-import { createContext, useContext, useMemo, useState } from "react";
+import { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
 import type { Workspace } from "@/lib/types";
 import { useFolders } from "@/lib/data/use-folders";
 import { useNotes } from "@/lib/data/use-notes";
@@ -15,6 +15,8 @@ interface WorkspaceContextValue {
   commandMenuOpen: boolean;
   setCommandMenuOpen: (open: boolean) => void;
   refreshWorkspace: () => Promise<void>;
+  focusMode: boolean;
+  setFocusMode: (on: boolean) => void;
 }
 
 const WorkspaceContext = createContext<WorkspaceContextValue | null>(null);
@@ -34,10 +36,43 @@ export function WorkspaceProvider({
   const notes = useNotes(workspace.id);
   const { route, navigate } = useRouter();
   const [commandMenuOpen, setCommandMenuOpen] = useState(false);
+  const [focusMode, setFocusMode] = useState(false);
+
+  // Expiration (Pro): sweep for notes past their expires_at and archive them
+  // client-side. Not a server cron — it only fires while someone has the app
+  // open — which is a fair trade-off for a demo feature with no background
+  // job infra, and it self-corrects the moment anyone next loads the list.
+  const archivedRef = useRef(new Set<string>());
+  useEffect(() => {
+    const now = Date.now();
+    for (const note of notes.notes) {
+      if (
+        note.expires_at &&
+        new Date(note.expires_at).getTime() < now &&
+        note.status !== "archived" &&
+        !archivedRef.current.has(note.id)
+      ) {
+        archivedRef.current.add(note.id);
+        notes.updateNote(note.id, { status: "archived" });
+      }
+    }
+  }, [notes.notes]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const value = useMemo(
-    () => ({ workspace, userId, folders, notes, route, navigate, commandMenuOpen, setCommandMenuOpen, refreshWorkspace }),
-    [workspace, userId, folders, notes, route, navigate, commandMenuOpen, refreshWorkspace],
+    () => ({
+      workspace,
+      userId,
+      folders,
+      notes,
+      route,
+      navigate,
+      commandMenuOpen,
+      setCommandMenuOpen,
+      refreshWorkspace,
+      focusMode,
+      setFocusMode,
+    }),
+    [workspace, userId, folders, notes, route, navigate, commandMenuOpen, refreshWorkspace, focusMode],
   );
 
   return <WorkspaceContext.Provider value={value}>{children}</WorkspaceContext.Provider>;

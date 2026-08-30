@@ -38,6 +38,10 @@ export interface Note {
   word_goal: number | null;
   is_locked: boolean;
   reminder_at: string | null;
+  color: string | null;
+  description: string | null;
+  tags: string[];
+  expires_at: string | null;
   created_by: string;
   created_at: string;
   updated_at: string;
@@ -54,5 +58,16 @@ export interface NoteVersion {
   title: string;
   content: Record<string, unknown>;
   word_count: number;
+  created_at: string;
+}
+
+// Distinct from the built-in static templates in lib/note-templates.ts —
+// this is a workspace-saved custom template (Pro), persisted in the DB.
+export interface CustomNoteTemplate {
+  id: string;
+  workspace_id: string;
+  name: string;
+  content: Record<string, unknown>;
+  created_by: string;
   created_at: string;
 }

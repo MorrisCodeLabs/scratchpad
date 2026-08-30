@@ -1,15 +1,18 @@
 import { useMemo, useState } from "react";
 import { DndContext, type DragEndEvent, PointerSensor, useSensor, useSensors } from "@dnd-kit/core";
-import { Pin, Star, Calendar, Trash2, Settings, Plus, Search, FolderPlus, ChevronDown, type LucideIcon } from "lucide-react";
+import { Pin, Star, Calendar, Trash2, Settings, Plus, Search, FolderPlus, ChevronDown, BarChart3, type LucideIcon } from "lucide-react";
 import { useWorkspaceContext } from "@/lib/workspace-context";
 import { FolderNode } from "@/components/sidebar/FolderNode";
 import { NoteRow } from "@/components/sidebar/NoteRow";
 import { DropZone } from "@/components/sidebar/DropZone";
 import { WorkspaceMenu } from "@/components/sidebar/WorkspaceMenu";
 import { NewNoteMenu } from "@/components/NewNoteMenu";
+import { ProBadge } from "@/components/pro/ProBadge";
+import { useIsPro } from "@/lib/use-plan";
 
 export function Sidebar() {
   const { folders, notes, route, navigate, setCommandMenuOpen } = useWorkspaceContext();
+  const isPro = useIsPro();
   const [favoritesOpen, setFavoritesOpen] = useState(true);
   const [foldersOpen, setFoldersOpen] = useState(true);
 
@@ -142,6 +145,13 @@ export function Sidebar() {
             onClick={() => navigate({ name: "calendar" })}
           />
           <SidebarLink
+            icon={BarChart3}
+            label="Insights"
+            active={route.name === "insights"}
+            onClick={() => navigate({ name: "insights" })}
+            badge={!isPro}
+          />
+          <SidebarLink
             icon={Trash2}
             label="Trash"
             active={route.name === "trash"}
@@ -164,11 +174,13 @@ function SidebarLink({
   label,
   active,
   onClick,
+  badge,
 }: {
   icon: LucideIcon;
   label: string;
   active?: boolean;
   onClick: () => void;
+  badge?: boolean;
 }) {
   return (
     <button
@@ -180,6 +192,7 @@ function SidebarLink({
     >
       <Icon size={15} />
       {label}
+      {badge && <ProBadge className="ml-auto" />}
     </button>
   );
 }

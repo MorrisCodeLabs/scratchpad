@@ -6,6 +6,7 @@ import { NoteView } from "@/components/views/NoteView";
 import { CalendarView } from "@/components/views/CalendarView";
 import { TrashView } from "@/components/views/TrashView";
 import { SettingsView } from "@/components/views/SettingsView";
+import { InsightsView } from "@/components/views/InsightsView";
 import { Toaster } from "@/components/Toaster";
 import { ShortcutsDialog } from "@/components/ShortcutsDialog";
 import { useWorkspaceContext } from "@/lib/workspace-context";
@@ -14,7 +15,7 @@ import { useShortcutsDialog } from "@/lib/use-shortcuts-dialog";
 import { applyBrandAccent } from "@/lib/brand-color";
 
 export function AppShell() {
-  const { route, workspace } = useWorkspaceContext();
+  const { route, workspace, focusMode } = useWorkspaceContext();
   const { open: openShortcuts } = useShortcutsDialog();
   useTheme(); // applies the persisted theme preference to <html> on mount
 
@@ -42,13 +43,14 @@ export function AppShell() {
 
   return (
     <div className="flex h-screen w-screen overflow-hidden bg-bg text-ink">
-      <Sidebar />
+      {!focusMode && <Sidebar />}
       <main className="min-w-0 flex-1">
         {route.name === "all-notes" && <AllNotesView />}
         {route.name === "note" && <NoteView noteId={route.id} />}
         {route.name === "calendar" && <CalendarView />}
         {route.name === "trash" && <TrashView />}
         {route.name === "settings" && <SettingsView />}
+        {route.name === "insights" && <InsightsView />}
       </main>
       <CommandMenu />
       <Toaster />

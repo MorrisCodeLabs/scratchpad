@@ -39,21 +39,34 @@ import { StatusPicker } from "@/components/editor/StatusPicker";
 import { WordGoalControl, WordGoalBar } from "@/components/editor/WordGoalControl";
 import { VersionHistoryDialog } from "@/components/editor/VersionHistoryDialog";
 import { ReminderControl } from "@/components/editor/ReminderControl";
+import { ExpirationControl } from "@/components/editor/ExpirationControl";
+import { NoteDetailsPanel } from "@/components/editor/NoteDetailsPanel";
+import { NoteOutline } from "@/components/editor/NoteOutline";
+import { SaveTemplateDialog } from "@/components/editor/SaveTemplateDialog";
 import { useIsPro } from "@/lib/use-plan";
 import { createNoteVersion } from "@/lib/data/use-note-versions";
+import { useCustomTemplates } from "@/lib/data/use-custom-templates";
 import { tiptapToMarkdown } from "@/lib/markdown-export";
 import { downloadTextFile, printNoteAsPdf } from "@/lib/download";
-import { Lock } from "lucide-react";
+import { Lock, Maximize2, Minimize2 } from "lucide-react";
+import { UpgradeDialog } from "@/components/pro/UpgradeDialog";
 import type { NoteVersion } from "@/lib/types";
 
 export function NoteEditor({ note }: { note: Note }) {
-  const { notes, workspace } = useWorkspaceContext();
+  const { notes, workspace, focusMode, setFocusMode } = useWorkspaceContext();
   const isPro = useIsPro();
+  const { saveTemplate } = useCustomTemplates(workspace.id);
   const [title, setTitle] = useState(note.title);
   const [wordGoal, setWordGoal] = useState<number | null>(note.word_goal);
   const [isLocked, setIsLocked] = useState(note.is_locked);
   const [reminderAt, setReminderAt] = useState<string | null>(note.reminder_at);
+  const [expiresAt, setExpiresAt] = useState<string | null>(note.expires_at);
+  const [color, setColor] = useState<string | null>(note.color);
+  const [description, setDescription] = useState<string | null>(note.description);
+  const [tags, setTags] = useState<string[]>(note.tags);
   const [versionHistoryOpen, setVersionHistoryOpen] = useState(false);
+  const [saveTemplateOpen, setSaveTemplateOpen] = useState(false);
+  const [focusUpgradeOpen, setFocusUpgradeOpen] = useState(false);
   const lastSnapshotAt = useRef(0);
 
   const editor = useEditor({
@@ -102,6 +115,10 @@ export function NoteEditor({ note }: { note: Note }) {
     setWordGoal(note.word_goal);
     setIsLocked(note.is_locked);
     setReminderAt(note.reminder_at);
+    setExpiresAt(note.expires_at);
+    setColor(note.color);
+    setDescription(note.description);
+    setTags(note.tags);
     lastSnapshotAt.current = 0;
     editor?.commands.setContent(note.content as any, false);
   }, [note.id]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -176,11 +193,42 @@ export function NoteEditor({ note }: { note: Note }) {
     notes.updateNote(note.id, { is_locked: next });
   };
 
+  const toggleFocusMode = () => {
+    if (!isPro) {
+      setFocusUpgradeOpen(true);
+      return;
+    }
+    setFocusMode(!focusMode);
+  };
+
+  const saveAsTemplate = async (name: string) => {
+    return saveTemplate(workspace.id, name, (editor?.getJSON() ?? note.content) as Record<string, unknown>);
+  };
+
   return (
     <div className="flex h-full flex-col">
       <div className="flex items-center justify-between gap-3 border-b border-line px-6 py-2.5">
-        <div className="flex items-center gap-1">
+        <div className="flex flex-wrap items-center gap-1">
           <StatusPicker note={note} />
+          <NoteDetailsPanel
+            color={color}
+            description={description}
+            tags={tags}
+            onChange={(patch) => {
+              if (patch.color !== undefined) {
+                setColor(patch.color);
+                notes.updateNote(note.id, { color: patch.color });
+              }
+              if (patch.description !== undefined) {
+                setDescription(patch.description);
+                notes.updateNote(note.id, { description: patch.description });
+              }
+              if (patch.tags !== undefined) {
+                setTags(patch.tags);
+                notes.updateNote(note.id, { tags: patch.tags });
+              }
+            }}
+          />
           <ReminderControl
             reminderAt={reminderAt}
             onSetReminder={(iso) => {
@@ -188,8 +236,24 @@ export function NoteEditor({ note }: { note: Note }) {
               notes.updateNote(note.id, { reminder_at: iso });
             }}
           />
+          <ExpirationControl
+            expiresAt={expiresAt}
+            onSetExpiration={(iso) => {
+              setExpiresAt(iso);
+              notes.updateNote(note.id, { expires_at: iso });
+            }}
+          />
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-1">
+          <button
+            type="button"
+            title={focusMode ? "Exit focus mode" : "Focus mode"}
+            onClick={toggleFocusMode}
+            className="flex h-7 w-7 items-center justify-center rounded-md text-muted hover:bg-surface-2 hover:text-ink"
+          >
+            {focusMode ? <Minimize2 size={15} /> : <Maximize2 size={15} />}
+          </button>
+          {editor && <NoteOutline editor={editor} contentTick={contentTick} />}
           <SaveIndicator state={saveState} onSaveNow={saveNow} />
           <NoteMenu
             note={note}
@@ -197,6 +261,7 @@ export function NoteEditor({ note }: { note: Note }) {
             onExportMarkdown={exportMarkdown}
             onExportPdf={exportPdf}
             onToggleLock={toggleLock}
+            onSaveAsTemplate={() => setSaveTemplateOpen(true)}
           />
         </div>
       </div>
@@ -251,6 +316,13 @@ export function NoteEditor({ note }: { note: Note }) {
         currentWordCount={stats.wordCount}
         onRestore={restoreVersion}
       />
+      <SaveTemplateDialog
+        open={saveTemplateOpen}
+        onOpenChange={setSaveTemplateOpen}
+        defaultName={title || "Untitled template"}
+        onSave={saveAsTemplate}
+      />
+      <UpgradeDialog open={focusUpgradeOpen} onOpenChange={setFocusUpgradeOpen} feature="Focus mode" />
     </div>
   );
 }
