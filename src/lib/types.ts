@@ -62,6 +62,15 @@ export interface NoteVersion {
   created_at: string;
 }
 
+export interface NoteComment {
+  id: string;
+  note_id: string;
+  workspace_id: string;
+  body: string;
+  created_by: string;
+  created_at: string;
+}
+
 // Distinct from the built-in static templates in lib/note-templates.ts —
 // this is a workspace-saved custom template (Pro), persisted in the DB.
 export interface CustomNoteTemplate {

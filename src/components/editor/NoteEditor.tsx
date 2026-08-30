@@ -45,6 +45,7 @@ import { ExpirationControl } from "@/components/editor/ExpirationControl";
 import { NoteDetailsPanel } from "@/components/editor/NoteDetailsPanel";
 import { NoteOutline } from "@/components/editor/NoteOutline";
 import { BacklinksPanel } from "@/components/editor/BacklinksPanel";
+import { CommentsPanel } from "@/components/editor/CommentsPanel";
 import { SaveTemplateDialog } from "@/components/editor/SaveTemplateDialog";
 import { ShareDialog } from "@/components/editor/ShareDialog";
 import { FindReplaceBar } from "@/components/editor/FindReplaceBar";
@@ -57,7 +58,7 @@ import { Lock, Maximize2, Minimize2, Search } from "lucide-react";
 import type { NoteVersion } from "@/lib/types";
 
 export function NoteEditor({ note }: { note: Note }) {
-  const { notes, workspace, focusMode, setFocusMode, navigate } = useWorkspaceContext();
+  const { notes, workspace, focusMode, setFocusMode, navigate, userId } = useWorkspaceContext();
   const isPro = useIsPro();
   const { saveTemplate } = useCustomTemplates(workspace.id);
   const [title, setTitle] = useState(note.title);
@@ -265,6 +266,7 @@ export function NoteEditor({ note }: { note: Note }) {
             }}
           />
           <BacklinksPanel note={note} allNotes={notes.notes} onNavigate={(id) => navigate({ name: "note", id })} />
+          <CommentsPanel noteId={note.id} workspaceId={workspace.id} currentUserId={userId} />
         </div>
         <div className="flex items-center gap-1">
           <button
