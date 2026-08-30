@@ -46,7 +46,13 @@ import { NoteMenu } from "@/components/editor/NoteMenu";
 import { WordGoalControl, WordGoalBar } from "@/components/editor/WordGoalControl";
 import { VersionHistoryDialog } from "@/components/editor/VersionHistoryDialog";
 import { NoteOutline } from "@/components/editor/NoteOutline";
-import { NotePropertiesPanel } from "@/components/editor/NotePropertiesPanel";
+import { StatusPicker } from "@/components/editor/StatusPicker";
+import { NoteDetailsPanel } from "@/components/editor/NoteDetailsPanel";
+import { ReminderControl } from "@/components/editor/ReminderControl";
+import { ExpirationControl } from "@/components/editor/ExpirationControl";
+import { BacklinksPanel } from "@/components/editor/BacklinksPanel";
+import { CommentsPanel } from "@/components/editor/CommentsPanel";
+import { CitationsPanel } from "@/components/editor/CitationsPanel";
 import { SelectionBubbleMenu } from "@/components/editor/SelectionBubbleMenu";
 import { useNoteSources } from "@/lib/data/use-note-sources";
 import { SaveTemplateDialog } from "@/components/editor/SaveTemplateDialog";
@@ -62,8 +68,7 @@ import { useCustomTemplates } from "@/lib/data/use-custom-templates";
 import { tiptapToMarkdown } from "@/lib/markdown-export";
 import { downloadTextFile, printNoteAsPdf } from "@/lib/download";
 import { encryptContent } from "@/lib/note-encryption";
-import { Lock, Maximize2, Minimize2, Search, AlertTriangle, ZoomIn, ZoomOut, PanelRightClose, PanelRightOpen } from "lucide-react";
-import { cn } from "@/lib/cn";
+import { Lock, Maximize2, Minimize2, Search, AlertTriangle, ZoomIn, ZoomOut } from "lucide-react";
 import type { NoteVersion } from "@/lib/types";
 
 const EMPTY_DOC = { type: "doc", content: [{ type: "paragraph" }] };
@@ -82,7 +87,6 @@ export function NoteEditor({ note }: { note: Note }) {
   const [studyModeOpen, setStudyModeOpen] = useState(false);
   const [zoomedHeading, setZoomedHeading] = useState<{ text: string; pos: number } | null>(null);
   const [splitDialogOpen, setSplitDialogOpen] = useState(false);
-  const [panelOpen, setPanelOpen] = useState(true);
   const passphraseRef = useRef<string | null>(null);
   const [reminderAt, setReminderAt] = useState<string | null>(note.reminder_at);
   const [expiresAt, setExpiresAt] = useState<string | null>(note.expires_at);
@@ -348,6 +352,53 @@ export function NoteEditor({ note }: { note: Note }) {
           className="min-w-0 flex-1 truncate border-none bg-transparent text-[17px] font-semibold text-ink outline-none placeholder:text-faint"
         />
         <div className="flex items-center gap-1">
+          {!focusMode && (
+            <>
+              <StatusPicker note={note} />
+              <NoteDetailsPanel
+                color={color}
+                description={description}
+                tags={tags}
+                onChange={(patch) => {
+                  if (patch.color !== undefined) {
+                    setColor(patch.color);
+                    notes.updateNote(note.id, { color: patch.color });
+                  }
+                  if (patch.description !== undefined) {
+                    setDescription(patch.description);
+                    notes.updateNote(note.id, { description: patch.description });
+                  }
+                  if (patch.tags !== undefined) {
+                    setTags(patch.tags);
+                    notes.updateNote(note.id, { tags: patch.tags });
+                  }
+                }}
+              />
+              <ReminderControl
+                reminderAt={reminderAt}
+                onSetReminder={(iso) => {
+                  setReminderAt(iso);
+                  notes.updateNote(note.id, { reminder_at: iso });
+                }}
+              />
+              <ExpirationControl
+                expiresAt={expiresAt}
+                onSetExpiration={(iso) => {
+                  setExpiresAt(iso);
+                  notes.updateNote(note.id, { expires_at: iso });
+                }}
+              />
+              <BacklinksPanel note={note} allNotes={notes.notes} onNavigate={(id) => navigate({ name: "note", id })} />
+              <CommentsPanel noteId={note.id} workspaceId={workspace.id} currentUserId={userId} />
+              <CitationsPanel
+                editor={editor}
+                sources={sources}
+                onAddSource={(input) => addSource(workspace.id, input)}
+                onDeleteSource={deleteSource}
+              />
+              <div className="mx-0.5 h-4 w-px shrink-0 bg-line" />
+            </>
+          )}
           <button
             type="button"
             title={focusMode ? "Exit focus mode" : "Focus mode"}
@@ -368,19 +419,6 @@ export function NoteEditor({ note }: { note: Note }) {
           )}
           {editor && <NoteOutline editor={editor} contentTick={contentTick} onZoom={setZoomedHeading} />}
           <SaveIndicator state={saveState} onSaveNow={saveNow} />
-          {!focusMode && (
-            <button
-              type="button"
-              title={panelOpen ? "Hide panel" : "Show panel"}
-              onClick={() => setPanelOpen((v) => !v)}
-              className={cn(
-                "flex h-7 w-7 items-center justify-center rounded-md transition-colors hover:bg-surface-2 hover:text-ink",
-                panelOpen ? "text-accent-ink" : "text-muted",
-              )}
-            >
-              {panelOpen ? <PanelRightClose size={15} /> : <PanelRightOpen size={15} />}
-            </button>
-          )}
           <NoteMenu
             note={note}
             onOpenVersionHistory={() => setVersionHistoryOpen(true)}
@@ -418,8 +456,7 @@ export function NoteEditor({ note }: { note: Note }) {
         </button>
       )}
 
-      <div className="flex min-h-0 flex-1">
-        <div className="flex min-w-0 flex-1 flex-col">
+      <div className="flex min-h-0 flex-1 flex-col">
           {isEncrypted && !unlocked ? (
             <UnlockNoteView content={note.content} onUnlock={handleUnlock} />
           ) : (
@@ -465,50 +502,6 @@ export function NoteEditor({ note }: { note: Note }) {
               </div>
             </>
           )}
-        </div>
-
-        {!focusMode && panelOpen && (
-          <aside className="flex w-72 shrink-0 flex-col overflow-y-auto border-l border-line bg-surface-2/30">
-            <NotePropertiesPanel
-              note={note}
-              color={color}
-              description={description}
-              tags={tags}
-              onDetailsChange={(patch) => {
-                if (patch.color !== undefined) {
-                  setColor(patch.color);
-                  notes.updateNote(note.id, { color: patch.color });
-                }
-                if (patch.description !== undefined) {
-                  setDescription(patch.description);
-                  notes.updateNote(note.id, { description: patch.description });
-                }
-                if (patch.tags !== undefined) {
-                  setTags(patch.tags);
-                  notes.updateNote(note.id, { tags: patch.tags });
-                }
-              }}
-              reminderAt={reminderAt}
-              onSetReminder={(iso) => {
-                setReminderAt(iso);
-                notes.updateNote(note.id, { reminder_at: iso });
-              }}
-              expiresAt={expiresAt}
-              onSetExpiration={(iso) => {
-                setExpiresAt(iso);
-                notes.updateNote(note.id, { expires_at: iso });
-              }}
-              allNotes={notes.notes}
-              onNavigate={(id) => navigate({ name: "note", id })}
-              workspaceId={workspace.id}
-              currentUserId={userId}
-              editor={editor}
-              sources={sources}
-              onAddSource={(input) => addSource(workspace.id, input)}
-              onDeleteSource={deleteSource}
-            />
-          </aside>
-        )}
       </div>
 
       <VersionHistoryDialog

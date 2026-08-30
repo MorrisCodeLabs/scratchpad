@@ -31,21 +31,16 @@ export function ReminderControl({
       <PopoverTrigger asChild>
         <button
           type="button"
-          className="flex w-full items-center justify-between gap-2 px-3 py-2.5 text-left text-[13px] transition-colors hover:bg-surface-2"
+          title={reminderAt ? `Reminder: ${format(new Date(reminderAt), "MMM d, h:mm a")}` : "Set reminder"}
+          className={cn(
+            "flex h-7 w-7 items-center justify-center rounded-md transition-colors hover:bg-surface-2",
+            reminderAt ? (overdue ? "text-danger" : "text-accent") : "text-muted hover:text-ink",
+          )}
         >
-          <span className="text-xs text-faint">Reminder</span>
-          <span
-            className={cn(
-              "flex items-center gap-1.5 font-medium",
-              reminderAt ? (overdue ? "text-danger" : "text-accent") : "text-faint",
-            )}
-          >
-            {reminderAt ? <Bell size={13} /> : <BellOff size={13} />}
-            {reminderAt ? format(new Date(reminderAt), "MMM d, h:mm a") : "None"}
-          </span>
+          {reminderAt ? <Bell size={15} /> : <BellOff size={15} />}
         </button>
       </PopoverTrigger>
-      <PopoverContent align="start" side="left" sideOffset={10} className="w-64">
+      <PopoverContent align="end" className="w-64">
         <p className="mb-2 text-xs font-medium text-ink">Note reminder</p>
         <div className="flex items-center gap-1.5">
           <input

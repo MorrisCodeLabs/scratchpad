@@ -31,15 +31,18 @@ export function CommentsPanel({
       <PopoverTrigger asChild>
         <button
           type="button"
-          className="flex w-full items-center justify-between gap-2 px-3 py-2.5 text-left text-[13px] transition-colors hover:bg-surface-2"
+          title={`Comments (${comments.length})`}
+          className="relative flex h-7 w-7 items-center justify-center rounded-md text-muted transition-colors hover:bg-surface-2 hover:text-ink"
         >
-          <span className="flex items-center gap-1.5 text-xs text-faint">
-            <MessageSquare size={13} /> Comments
-          </span>
-          <span className="tabular-nums text-xs font-medium text-ink">{comments.length}</span>
+          <MessageSquare size={15} />
+          {comments.length > 0 && (
+            <span className="absolute -right-0.5 -top-0.5 flex h-3.5 min-w-3.5 items-center justify-center rounded-full bg-accent px-0.5 text-[9px] font-semibold leading-none text-white">
+              {comments.length}
+            </span>
+          )}
         </button>
       </PopoverTrigger>
-      <PopoverContent align="start" side="left" sideOffset={10} className="w-72">
+      <PopoverContent align="end" className="w-72">
         <p className="mb-1.5 text-[11px] font-medium uppercase tracking-wide text-faint">Comments</p>
         <div className="mb-2 flex max-h-56 flex-col gap-2 overflow-y-auto">
           {comments.length === 0 ? (

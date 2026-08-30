@@ -51,15 +51,18 @@ export function CitationsPanel({
       <PopoverTrigger asChild>
         <button
           type="button"
-          className="flex w-full items-center justify-between gap-2 px-3 py-2.5 text-left text-[13px] transition-colors hover:bg-surface-2"
+          title={`Citations (${sources.length})`}
+          className="relative flex h-7 w-7 items-center justify-center rounded-md text-muted transition-colors hover:bg-surface-2 hover:text-ink"
         >
-          <span className="flex items-center gap-1.5 text-xs text-faint">
-            <BookMarked size={13} /> Citations
-          </span>
-          <span className="tabular-nums text-xs font-medium text-ink">{sources.length}</span>
+          <BookMarked size={15} />
+          {sources.length > 0 && (
+            <span className="absolute -right-0.5 -top-0.5 flex h-3.5 min-w-3.5 items-center justify-center rounded-full bg-accent px-0.5 text-[9px] font-semibold leading-none text-white">
+              {sources.length}
+            </span>
+          )}
         </button>
       </PopoverTrigger>
-      <PopoverContent align="start" side="left" sideOffset={10} className="w-80">
+      <PopoverContent align="end" className="w-80">
         <p className="mb-1.5 text-[11px] font-medium uppercase tracking-wide text-faint">Sources</p>
         <div className="mb-2 flex max-h-40 flex-col gap-1 overflow-y-auto">
           {sources.length === 0 ? (

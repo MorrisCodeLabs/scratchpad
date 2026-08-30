@@ -15,7 +15,6 @@ import {
   Sun,
   Moon,
   LogOut,
-  type LucideIcon,
 } from "lucide-react";
 import { useWorkspaceContext } from "@/lib/workspace-context";
 import type { Route } from "@/lib/use-router";
@@ -100,22 +99,6 @@ export function Sidebar() {
             <Plus size={16} />
           </IconRailButton>
         </NewNoteMenu>
-        <div className="my-1 h-px w-6 bg-line" />
-        <IconRailButton label="Trash" active={route.name === "trash"} onClick={() => navigate({ name: "trash" })}>
-          <Trash2 size={16} />
-        </IconRailButton>
-        {!isPro && (
-          <IconRailButton
-            label="Upgrade"
-            active={route.name === "settings" && route.section === "billing"}
-            onClick={() => navigate({ name: "settings", section: "billing" })}
-          >
-            <Sparkles size={16} />
-          </IconRailButton>
-        )}
-        <IconRailButton label="Settings" active={route.name === "settings"} onClick={() => navigate({ name: "settings" })}>
-          <Settings size={16} />
-        </IconRailButton>
         <div className="mt-auto flex flex-col items-center gap-1">
           <IconRailButton label="Toggle theme" onClick={toggleTheme}>
             {theme === "dark" ? <Sun size={16} /> : <Moon size={16} />}
@@ -242,29 +225,6 @@ export function Sidebar() {
           )}
         </nav>
 
-        <div className="flex flex-col gap-0.5 border-t border-line px-3 py-3">
-          <SidebarLink
-            icon={Trash2}
-            label="Trash"
-            active={route.name === "trash"}
-            onClick={() => navigate({ name: "trash" })}
-          />
-          {!isPro && (
-            <SidebarLink
-              icon={Sparkles}
-              label="Upgrade"
-              active={route.name === "settings" && route.section === "billing"}
-              onClick={() => navigate({ name: "settings", section: "billing" })}
-            />
-          )}
-          <SidebarLink
-            icon={Settings}
-            label="Settings"
-            active={route.name === "settings"}
-            onClick={() => navigate({ name: "settings" })}
-          />
-        </div>
-
         <div className="flex items-center gap-2 border-t border-line px-3 py-2.5">
           <AccountMenu email={email} isPro={isPro} navigate={navigate}>
             <button
@@ -303,32 +263,6 @@ export function Sidebar() {
   );
 }
 
-function SidebarLink({
-  icon: Icon,
-  label,
-  active,
-  onClick,
-}: {
-  icon: LucideIcon;
-  label: string;
-  active?: boolean;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={cn(
-        "flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-[13px] transition-colors",
-        active ? "bg-accent-soft font-medium text-accent-ink" : "text-muted hover:bg-surface-2 hover:text-ink",
-      )}
-    >
-      <Icon size={15} className="shrink-0" />
-      {label}
-    </button>
-  );
-}
-
 function AccountMenu({
   email,
   isPro,
@@ -349,14 +283,17 @@ function AccountMenu({
           <p className="text-[10.5px] text-faint">{isPro ? "Pro plan" : "Free plan"}</p>
         </div>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onSelect={() => navigate({ name: "settings" })}>
-          <Settings size={14} /> Settings
+        <DropdownMenuItem onSelect={() => navigate({ name: "trash" })}>
+          <Trash2 size={14} /> Trash
         </DropdownMenuItem>
         {!isPro && (
           <DropdownMenuItem onSelect={() => navigate({ name: "settings", section: "billing" })}>
             <Sparkles size={14} /> Upgrade plan
           </DropdownMenuItem>
         )}
+        <DropdownMenuItem onSelect={() => navigate({ name: "settings" })}>
+          <Settings size={14} /> Settings
+        </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem className="text-danger" onSelect={() => supabase.auth.signOut()}>
           <LogOut size={14} /> Log out

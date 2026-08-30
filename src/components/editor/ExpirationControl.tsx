@@ -4,6 +4,7 @@ import { Hourglass, X } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import { useIsPro } from "@/lib/use-plan";
+import { cn } from "@/lib/cn";
 
 function toLocalDateValue(iso: string | null) {
   if (!iso) return "";
@@ -33,16 +34,16 @@ export function ExpirationControl({
       <PopoverTrigger asChild>
         <button
           type="button"
-          className="flex w-full items-center justify-between gap-2 px-3 py-2.5 text-left text-[13px] transition-colors hover:bg-surface-2"
+          title={expiresAt ? `Expires ${format(new Date(expiresAt), "MMM d, yyyy")}` : "Set expiration"}
+          className={cn(
+            "flex h-7 w-7 items-center justify-center rounded-md transition-colors hover:bg-surface-2",
+            expiresAt ? "text-accent" : "text-muted hover:text-ink",
+          )}
         >
-          <span className="text-xs text-faint">Expires</span>
-          <span className="flex items-center gap-1.5 font-medium text-ink">
-            <Hourglass size={13} className="text-faint" />
-            {expiresAt ? format(new Date(expiresAt), "MMM d, yyyy") : "Never"}
-          </span>
+          <Hourglass size={15} />
         </button>
       </PopoverTrigger>
-      <PopoverContent align="start" side="left" sideOffset={10} className="w-64">
+      <PopoverContent align="end" className="w-64">
         <p className="mb-2 text-xs font-medium text-ink">Auto-archive on</p>
         <div className="flex items-center gap-1.5">
           <input
