@@ -6,7 +6,7 @@ export const Tabs = TabsPrimitive.Root;
 export function TabsList({ className, ...props }: TabsPrimitive.TabsListProps) {
   return (
     <TabsPrimitive.List
-      className={cn("flex flex-col gap-0.5 border-r border-line pr-4", className)}
+      className={cn("flex flex-row gap-0.5 border-b border-line pb-2", className)}
       {...props}
     />
   );

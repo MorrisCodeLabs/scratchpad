@@ -47,7 +47,20 @@ export function SelectionToolbar({ editor }: { editor: Editor }) {
   const [pos, setPos] = useState<{ top: number; left: number } | null>(null);
 
   useEffect(() => {
-    const hide = () => setPos(null);
+    // Radix's Popover (used by the link/color pickers below) moves real DOM
+    // focus into its portalled content when it opens — a genuine JS focus
+    // change, not a browser mousedown default, so it can't be stopped with
+    // preventDefault. Left unhandled, that blur would unconditionally hide
+    // this whole toolbar (unmounting the open popover along with it) the
+    // instant someone clicked a swatch or the link field. Radix wraps all
+    // its portalled popper content in a `[data-radix-popper-content-wrapper]`
+    // element, so skip the hide when focus is moving there instead of away
+    // from the toolbar entirely.
+    const hide = (props?: { event: FocusEvent }) => {
+      const related = props?.event.relatedTarget as HTMLElement | null;
+      if (related?.closest?.("[data-radix-popper-content-wrapper]")) return;
+      setPos(null);
+    };
 
     const update = () => {
       if (!editor.isEditable) {

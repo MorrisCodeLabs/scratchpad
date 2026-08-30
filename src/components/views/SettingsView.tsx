@@ -25,7 +25,7 @@ export function SettingsView() {
       <Tabs
         value={section}
         onValueChange={(v) => navigate({ name: "settings", section: v })}
-        className="flex gap-10"
+        className="flex flex-col gap-6"
       >
         <TabsList>
           <TabsTrigger value="account">Account</TabsTrigger>
