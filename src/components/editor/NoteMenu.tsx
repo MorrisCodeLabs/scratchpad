@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { MoreHorizontal, Pin, Star, Copy, Archive, Trash2, History, Download, FileDown, FileText } from "lucide-react";
+import { MoreHorizontal, Pin, Star, Copy, Archive, Trash2, History, Download, FileDown, FileText, Lock, Unlock } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -22,11 +22,13 @@ export function NoteMenu({
   onOpenVersionHistory,
   onExportMarkdown,
   onExportPdf,
+  onToggleLock,
 }: {
   note: Note;
   onOpenVersionHistory: () => void;
   onExportMarkdown: () => void;
   onExportPdf: () => void;
+  onToggleLock: () => void;
 }) {
   const { notes, navigate } = useWorkspaceContext();
   const isPro = useIsPro();
@@ -59,6 +61,11 @@ export function NoteMenu({
             }}
           >
             <Copy size={14} /> Duplicate
+          </DropdownMenuItem>
+          <DropdownMenuItem onSelect={gated("Note locking", onToggleLock)}>
+            {note.is_locked ? <Unlock size={14} /> : <Lock size={14} />}
+            {note.is_locked ? "Unlock note" : "Lock note (read-only)"}
+            {!isPro && <ProBadge className="ml-auto" />}
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem onSelect={gated("Version history", onOpenVersionHistory)}>

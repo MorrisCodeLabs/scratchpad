@@ -11,11 +11,16 @@ import { ShortcutsDialog } from "@/components/ShortcutsDialog";
 import { useWorkspaceContext } from "@/lib/workspace-context";
 import { useTheme } from "@/lib/use-theme";
 import { useShortcutsDialog } from "@/lib/use-shortcuts-dialog";
+import { applyBrandAccent } from "@/lib/brand-color";
 
 export function AppShell() {
-  const { route } = useWorkspaceContext();
+  const { route, workspace } = useWorkspaceContext();
   const { open: openShortcuts } = useShortcutsDialog();
   useTheme(); // applies the persisted theme preference to <html> on mount
+
+  useEffect(() => {
+    applyBrandAccent(workspace.theme?.accent ?? null);
+  }, [workspace.theme?.accent]);
 
   useEffect(() => {
     document.title = route.name === "note" ? "Note · Scratchpad" : "Scratchpad";

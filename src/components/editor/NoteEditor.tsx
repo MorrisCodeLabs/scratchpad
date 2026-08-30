@@ -38,10 +38,12 @@ import { NoteMenu } from "@/components/editor/NoteMenu";
 import { StatusPicker } from "@/components/editor/StatusPicker";
 import { WordGoalControl, WordGoalBar } from "@/components/editor/WordGoalControl";
 import { VersionHistoryDialog } from "@/components/editor/VersionHistoryDialog";
+import { ReminderControl } from "@/components/editor/ReminderControl";
 import { useIsPro } from "@/lib/use-plan";
 import { createNoteVersion } from "@/lib/data/use-note-versions";
 import { tiptapToMarkdown } from "@/lib/markdown-export";
 import { downloadTextFile, printNoteAsPdf } from "@/lib/download";
+import { Lock } from "lucide-react";
 import type { NoteVersion } from "@/lib/types";
 
 export function NoteEditor({ note }: { note: Note }) {
@@ -49,6 +51,8 @@ export function NoteEditor({ note }: { note: Note }) {
   const isPro = useIsPro();
   const [title, setTitle] = useState(note.title);
   const [wordGoal, setWordGoal] = useState<number | null>(note.word_goal);
+  const [isLocked, setIsLocked] = useState(note.is_locked);
+  const [reminderAt, setReminderAt] = useState<string | null>(note.reminder_at);
   const [versionHistoryOpen, setVersionHistoryOpen] = useState(false);
   const lastSnapshotAt = useRef(0);
 
@@ -96,9 +100,15 @@ export function NoteEditor({ note }: { note: Note }) {
   useEffect(() => {
     setTitle(note.title);
     setWordGoal(note.word_goal);
+    setIsLocked(note.is_locked);
+    setReminderAt(note.reminder_at);
     lastSnapshotAt.current = 0;
     editor?.commands.setContent(note.content as any, false);
   }, [note.id]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    editor?.setEditable(!isLocked);
+  }, [editor, isLocked]);
 
   const [contentTick, setContentTick] = useState(0);
   useEffect(() => {
@@ -160,10 +170,25 @@ export function NoteEditor({ note }: { note: Note }) {
     printNoteAsPdf(title || "Untitled", editor?.getHTML() ?? "");
   };
 
+  const toggleLock = () => {
+    const next = !isLocked;
+    setIsLocked(next);
+    notes.updateNote(note.id, { is_locked: next });
+  };
+
   return (
     <div className="flex h-full flex-col">
       <div className="flex items-center justify-between gap-3 border-b border-line px-6 py-2.5">
-        <StatusPicker note={note} />
+        <div className="flex items-center gap-1">
+          <StatusPicker note={note} />
+          <ReminderControl
+            reminderAt={reminderAt}
+            onSetReminder={(iso) => {
+              setReminderAt(iso);
+              notes.updateNote(note.id, { reminder_at: iso });
+            }}
+          />
+        </div>
         <div className="flex items-center gap-3">
           <SaveIndicator state={saveState} onSaveNow={saveNow} />
           <NoteMenu
@@ -171,20 +196,28 @@ export function NoteEditor({ note }: { note: Note }) {
             onOpenVersionHistory={() => setVersionHistoryOpen(true)}
             onExportMarkdown={exportMarkdown}
             onExportPdf={exportPdf}
+            onToggleLock={toggleLock}
           />
         </div>
       </div>
+
+      {isLocked && (
+        <div className="flex items-center gap-2 bg-warn-soft px-6 py-1.5 text-xs font-medium text-warn">
+          <Lock size={12} /> This note is locked — unlock it from the menu to edit.
+        </div>
+      )}
 
       <div className="mx-auto w-full max-w-3xl px-6 pb-5 pt-6">
         <input
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           placeholder="Untitled"
+          readOnly={isLocked}
           className="w-full border-none bg-transparent text-3xl font-bold text-ink outline-none placeholder:text-faint"
         />
       </div>
 
-      {editor && <EditorToolbar editor={editor} />}
+      {editor && !isLocked && <EditorToolbar editor={editor} />}
 
       <div className="min-h-0 flex-1 overflow-y-auto">
         <div className="sp-editor mx-auto max-w-3xl px-6 py-6">

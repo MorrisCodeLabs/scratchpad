@@ -12,6 +12,10 @@ import { supabase } from "@/lib/supabase";
 import { cn } from "@/lib/cn";
 import { BillingSettings } from "@/components/views/BillingSettings";
 import { useShortcutsDialog } from "@/lib/use-shortcuts-dialog";
+import { useIsPro } from "@/lib/use-plan";
+import { ProBadge } from "@/components/pro/ProBadge";
+import { UpgradeDialog } from "@/components/pro/UpgradeDialog";
+import { BRAND_PRESETS } from "@/lib/brand-color";
 
 export function SettingsView() {
   const { route, navigate } = useWorkspaceContext();
@@ -53,7 +57,15 @@ export function SettingsView() {
   );
 }
 
-function SettingsRow({ label, description, children }: { label: string; description?: string; children: React.ReactNode }) {
+function SettingsRow({
+  label,
+  description,
+  children,
+}: {
+  label: React.ReactNode;
+  description?: string;
+  children: React.ReactNode;
+}) {
   return (
     <div className="flex items-center justify-between gap-4 py-3">
       <div>
@@ -83,11 +95,28 @@ function AccountSettings() {
 
 function AppearanceSettings() {
   const { preference, setPreference } = useTheme();
+  const { workspace, refreshWorkspace } = useWorkspaceContext();
+  const isPro = useIsPro();
+  const [upgradeOpen, setUpgradeOpen] = useState(false);
+  const currentAccent = workspace.theme?.accent ?? null;
+
   const options: { value: ThemePreference; label: string }[] = [
     { value: "light", label: "Light" },
     { value: "dark", label: "Dark" },
     { value: "system", label: "System" },
   ];
+
+  const setAccent = async (hex: string | null) => {
+    if (!isPro) {
+      setUpgradeOpen(true);
+      return;
+    }
+    const nextTheme = { ...workspace.theme };
+    if (hex) nextTheme.accent = hex;
+    else delete nextTheme.accent;
+    await supabase.from("workspaces").update({ theme: nextTheme }).eq("id", workspace.id);
+    await refreshWorkspace();
+  };
 
   return (
     <div className="divide-y divide-line">
@@ -107,6 +136,38 @@ function AppearanceSettings() {
           ))}
         </div>
       </SettingsRow>
+      <SettingsRow
+        label={
+          <span className="flex items-center gap-1.5">
+            Brand color
+            {!isPro && <ProBadge />}
+          </span>
+        }
+        description="Replaces Scratchpad's accent color across the whole workspace — buttons, active states, highlights."
+      >
+        <div className="flex items-center gap-1.5">
+          {BRAND_PRESETS.map((preset) => (
+            <button
+              key={preset.value}
+              type="button"
+              title={preset.name}
+              onClick={() => setAccent(preset.value)}
+              className={cn(
+                "h-6 w-6 rounded-full border-2",
+                currentAccent === preset.value ? "border-ink" : "border-transparent",
+              )}
+              style={{ background: preset.value }}
+            />
+          ))}
+          {currentAccent && (
+            <button type="button" onClick={() => setAccent(null)} className="ml-1 text-xs text-faint hover:text-ink">
+              Reset
+            </button>
+          )}
+        </div>
+      </SettingsRow>
+
+      <UpgradeDialog open={upgradeOpen} onOpenChange={setUpgradeOpen} feature="Custom brand color" />
     </div>
   );
 }

@@ -1,5 +1,5 @@
 import { useDraggable } from "@dnd-kit/core";
-import { FileText, Trash2 } from "lucide-react";
+import { FileText, Trash2, Lock, Bell } from "lucide-react";
 import { useWorkspaceContext } from "@/lib/workspace-context";
 import type { Note } from "@/lib/types";
 import { cn } from "@/lib/cn";
@@ -26,6 +26,8 @@ export function NoteRow({ note, active, indent }: { note: Note; active: boolean;
       >
         <FileText size={14} className="mr-1 shrink-0" />
         <span className="truncate">{note.title || "Untitled"}</span>
+        {note.is_locked && <Lock size={11} className="ml-auto shrink-0 text-faint" />}
+        {note.reminder_at && <Bell size={11} className="shrink-0 text-faint" />}
       </button>
       <button
         type="button"

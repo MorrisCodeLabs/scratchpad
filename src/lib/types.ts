@@ -36,6 +36,8 @@ export interface Note {
   word_count: number;
   char_count: number;
   word_goal: number | null;
+  is_locked: boolean;
+  reminder_at: string | null;
   created_by: string;
   created_at: string;
   updated_at: string;

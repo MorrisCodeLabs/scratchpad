@@ -23,6 +23,7 @@ This is the **Phase 1 MVP** build: auth, a single workspace per account, note CR
    - `supabase/migrations/0002_notes_created_by_default.sql` — defaults `notes.created_by` to the authenticated user (fixes note creation on a project created before this fix landed).
    - `supabase/migrations/0003_attachments_storage.sql` — creates the `attachments` storage bucket used by image/file blocks in the editor.
    - `supabase/migrations/0004_pro_features.sql` — adds `workspaces.plan`, `notes.word_goal`, and the `note_versions` table used by the Pro version-history feature.
+   - `supabase/migrations/0005_pro_features_2.sql` — adds `notes.is_locked` and `notes.reminder_at`, used by the note-locking and reminder Pro features.
 3. **Copy the env file** and fill in your project's credentials (Settings → API in the Supabase dashboard):
    ```sh
    cp .env.example .env
@@ -63,8 +64,10 @@ supabase/
 
 ## Resale / white-label notes
 
-Every table is scoped to `workspace_id` and enforced via Postgres RLS (`is_workspace_member()`), not just client-side checks — a reseller can run this schema multi-tenant safely. Theme is driven entirely by CSS custom properties in `src/styles/global.css` (`--sp-*` tokens); the `workspaces.theme` JSONB column is reserved for per-workspace brand overrides once white-labeling is wired up in a later phase.
+Every table is scoped to `workspace_id` and enforced via Postgres RLS (`is_workspace_member()`), not just client-side checks — a reseller can run this schema multi-tenant safely. Theme is driven entirely by CSS custom properties in `src/styles/global.css` (`--sp-*` tokens). The `workspaces.theme` JSONB column now carries the first real per-workspace override — `theme.accent`, a Pro feature (Settings → Appearance → Brand color) applied at runtime via `src/lib/brand-color.ts`'s `applyBrandAccent()`, which uses `color-mix()` to derive the accent's soft/ink variants from a single hex rather than hand-picking three colors per brand.
 
 ## Plan tiers (Free / Pro)
 
-`workspaces.plan` gates two features: automatic version history (Settings → Billing shows the toggle; `src/lib/use-plan.ts` is the single read-path every gate uses) and export (Markdown/PDF). **No payment processor is wired up** — Settings → Billing flips the flag directly. Swapping in real billing means replacing `src/lib/plan-actions.ts`'s `setWorkspacePlan` with a Stripe checkout (or similar) that lands on the same column; nothing else in the app needs to change.
+`workspaces.plan` gates: automatic version history, export (Markdown/PDF), note locking (read-only mode), reminders, and the custom brand accent color above. `src/lib/use-plan.ts`'s `useIsPro()` is the single read-path every gate uses. **No payment processor is wired up** — Settings → Billing flips the flag directly. Swapping in real billing means replacing `src/lib/plan-actions.ts`'s `setWorkspacePlan` with a Stripe checkout (or similar) that lands on the same column; nothing else in the app needs to change.
+
+`useIsPro()` also has a hardcoded owner-account override (an email constant in the same file) that always returns Pro regardless of `workspace.plan` — meant for the app's own creator, independent of any billing state. Swap or remove that constant before reselling this codebase to someone else, since it's currently a real email in source.
