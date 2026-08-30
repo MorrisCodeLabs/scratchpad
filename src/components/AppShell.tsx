@@ -43,7 +43,7 @@ export function AppShell() {
   }, [openShortcuts]);
 
   return (
-    <div className="flex h-screen w-screen overflow-hidden bg-bg text-ink">
+    <div className="flex h-dvh w-full overflow-hidden bg-bg text-ink">
       {!focusMode && <Sidebar />}
       <main className="min-w-0 flex-1">
         {route.name === "all-notes" && <AllNotesView />}
