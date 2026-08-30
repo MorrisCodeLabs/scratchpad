@@ -26,6 +26,7 @@ import {
   Paperclip,
   Sigma,
   Table2,
+  BookOpen,
 } from "lucide-react";
 import { SlashMenu, type SlashMenuHandle, type SlashMenuItem } from "@/components/editor/SlashMenu";
 import { pickFile } from "@/lib/editor/pick-file";
@@ -198,6 +199,19 @@ const ITEMS: SlashMenuItem[] = [
         return;
       }
       editor.chain().focus().deleteRange(range).setDatabaseBlock().run();
+    },
+  },
+  {
+    title: "Bibliography",
+    description: "Auto-generated reference list from this note's saved sources.",
+    icon: BookOpen,
+    command: ({ editor, range }) => {
+      const pro = editor.storage.proContext;
+      if (pro && !pro.isPro) {
+        pro.requestUpgrade("Citation manager");
+        return;
+      }
+      editor.chain().focus().deleteRange(range).setBibliographyBlock().run();
     },
   },
 ];

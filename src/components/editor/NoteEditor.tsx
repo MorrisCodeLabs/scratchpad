@@ -28,6 +28,8 @@ import { MathBlock } from "@/lib/editor/math-block";
 import { NoteContext } from "@/lib/editor/note-context";
 import { ProContext } from "@/lib/editor/pro-context";
 import { DatabaseBlock } from "@/lib/editor/database-block";
+import { Citation } from "@/lib/editor/citation";
+import { BibliographyBlock } from "@/lib/editor/bibliography-block";
 import { NoteLink } from "@/lib/editor/note-link";
 import { NoteLinkCommand } from "@/lib/editor/note-link-command";
 import { EmojiCommand } from "@/lib/editor/emoji-command";
@@ -48,6 +50,8 @@ import { NoteDetailsPanel } from "@/components/editor/NoteDetailsPanel";
 import { NoteOutline } from "@/components/editor/NoteOutline";
 import { BacklinksPanel } from "@/components/editor/BacklinksPanel";
 import { CommentsPanel } from "@/components/editor/CommentsPanel";
+import { CitationsPanel } from "@/components/editor/CitationsPanel";
+import { useNoteSources } from "@/lib/data/use-note-sources";
 import { SaveTemplateDialog } from "@/components/editor/SaveTemplateDialog";
 import { ShareDialog } from "@/components/editor/ShareDialog";
 import { FindReplaceBar } from "@/components/editor/FindReplaceBar";
@@ -69,6 +73,7 @@ export function NoteEditor({ note }: { note: Note }) {
   const { notes, workspace, focusMode, setFocusMode, navigate, userId } = useWorkspaceContext();
   const isPro = useIsPro();
   const { saveTemplate } = useCustomTemplates(workspace.id);
+  const { sources, addSource, deleteSource } = useNoteSources(note.id);
   const [title, setTitle] = useState(note.title);
   const [wordGoal, setWordGoal] = useState<number | null>(note.word_goal);
   const [isLocked, setIsLocked] = useState(note.is_locked);
@@ -86,7 +91,7 @@ export function NoteEditor({ note }: { note: Note }) {
   const [saveTemplateOpen, setSaveTemplateOpen] = useState(false);
   const [findOpen, setFindOpen] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
-  const [dbUpgradeOpen, setDbUpgradeOpen] = useState(false);
+  const [proBlockUpgradeFeature, setProBlockUpgradeFeature] = useState<string | null>(null);
   const lastSnapshotAt = useRef(0);
 
   const editor = useEditor({
@@ -118,6 +123,8 @@ export function NoteEditor({ note }: { note: Note }) {
       FileBlock,
       MathBlock,
       DatabaseBlock,
+      Citation,
+      BibliographyBlock,
       Image.configure({ inline: false, allowBase64: false }),
       NoteContext.configure({ workspaceId: note.workspace_id, noteId: note.id }),
       ProContext,
@@ -181,8 +188,13 @@ export function NoteEditor({ note }: { note: Note }) {
   useEffect(() => {
     if (!editor) return;
     editor.storage.proContext.isPro = isPro;
-    editor.storage.proContext.requestUpgrade = () => setDbUpgradeOpen(true);
+    editor.storage.proContext.requestUpgrade = (feature: string) => setProBlockUpgradeFeature(feature);
   }, [editor, isPro]);
+
+  useEffect(() => {
+    if (!editor) return;
+    editor.storage.citation.sources = sources;
+  }, [editor, sources]);
 
   const [contentTick, setContentTick] = useState(0);
   useEffect(() => {
@@ -345,6 +357,12 @@ export function NoteEditor({ note }: { note: Note }) {
           />
           <BacklinksPanel note={note} allNotes={notes.notes} onNavigate={(id) => navigate({ name: "note", id })} />
           <CommentsPanel noteId={note.id} workspaceId={workspace.id} currentUserId={userId} />
+          <CitationsPanel
+            editor={editor}
+            sources={sources}
+            onAddSource={(input) => addSource(workspace.id, input)}
+            onDeleteSource={deleteSource}
+          />
         </div>
         <div className="flex items-center gap-1">
           <button
@@ -464,7 +482,11 @@ export function NoteEditor({ note }: { note: Note }) {
         note={note}
         onSetShareToken={(token) => notes.updateNote(note.id, { share_token: token })}
       />
-      <UpgradeDialog open={dbUpgradeOpen} onOpenChange={setDbUpgradeOpen} feature="Database block" />
+      <UpgradeDialog
+        open={proBlockUpgradeFeature !== null}
+        onOpenChange={(open) => !open && setProBlockUpgradeFeature(null)}
+        feature={proBlockUpgradeFeature ?? undefined}
+      />
       <EncryptDialog open={encryptDialogOpen} onOpenChange={setEncryptDialogOpen} onConfirm={handleEncrypt} />
       <UpgradeDialog open={encryptUpgradeOpen} onOpenChange={setEncryptUpgradeOpen} feature="Encrypted notes" />
     </div>

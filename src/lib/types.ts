@@ -65,6 +65,21 @@ export interface NoteVersion {
   created_at: string;
 }
 
+export type CitationStyle = "apa" | "mla" | "chicago";
+
+export interface NoteSource {
+  id: string;
+  note_id: string;
+  workspace_id: string;
+  title: string;
+  author: string | null;
+  year: number | null;
+  url: string | null;
+  source_type: string;
+  created_by: string;
+  created_at: string;
+}
+
 export interface NoteComment {
   id: string;
   note_id: string;
