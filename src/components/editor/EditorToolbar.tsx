@@ -2,6 +2,11 @@ import * as React from "react";
 import type { Editor } from "@tiptap/react";
 import type { Level } from "@tiptap/extension-heading";
 import {
+  Bold,
+  Italic,
+  Underline as UnderlineIcon,
+  Strikethrough,
+  Code,
   List,
   ListOrdered,
   ListChecks,
@@ -14,12 +19,15 @@ import {
   AlignJustify,
   Undo2,
   Redo2,
+  RemoveFormatting,
   Code2,
   Minus,
   IndentIncrease,
   IndentDecrease,
 } from "lucide-react";
 import { cn } from "@/lib/cn";
+import { TextColorPicker, HighlightColorPicker } from "@/components/editor/ColorPicker";
+import { LinkPicker } from "@/components/editor/LinkPicker";
 
 const FONT_FAMILIES = [
   { label: "Default", value: "" },
@@ -108,12 +116,6 @@ function currentHeadingValue(editor: Editor) {
   return "0";
 }
 
-// The bubble menu that appears on text selection already covers the marks
-// people reach for mid-sentence (bold/italic/underline/strike/code/link/
-// colors). This bar only carries what that menu can't: document-level
-// actions (undo/redo), block structure (headings, lists, alignment,
-// quote/code block/divider), and attributes that apply to a whole
-// selection rather than a mark toggle (font family/size, super/subscript).
 export function EditorToolbar({ editor }: { editor: Editor }) {
   return (
     <div className="flex items-center gap-0.5 overflow-x-auto border-b border-line bg-surface px-8 py-2">
@@ -174,6 +176,30 @@ export function EditorToolbar({ editor }: { editor: Editor }) {
           </option>
         ))}
       </ToolbarSelect>
+
+      <ToolbarDivider />
+
+      <ToolbarButton label="Bold" active={editor.isActive("bold")} onClick={() => editor.chain().focus().toggleBold().run()}>
+        <Bold size={15} />
+      </ToolbarButton>
+      <ToolbarButton label="Italic" active={editor.isActive("italic")} onClick={() => editor.chain().focus().toggleItalic().run()}>
+        <Italic size={15} />
+      </ToolbarButton>
+      <ToolbarButton label="Underline" active={editor.isActive("underline")} onClick={() => editor.chain().focus().toggleUnderline().run()}>
+        <UnderlineIcon size={15} />
+      </ToolbarButton>
+      <ToolbarButton label="Strikethrough" active={editor.isActive("strike")} onClick={() => editor.chain().focus().toggleStrike().run()}>
+        <Strikethrough size={15} />
+      </ToolbarButton>
+      <ToolbarButton label="Inline code" active={editor.isActive("code")} onClick={() => editor.chain().focus().toggleCode().run()}>
+        <Code size={15} />
+      </ToolbarButton>
+      <LinkPicker editor={editor} />
+      <TextColorPicker editor={editor} />
+      <HighlightColorPicker editor={editor} />
+      <ToolbarButton label="Clear formatting" onClick={() => editor.chain().focus().unsetAllMarks().clearNodes().run()}>
+        <RemoveFormatting size={15} />
+      </ToolbarButton>
 
       <ToolbarDivider />
 

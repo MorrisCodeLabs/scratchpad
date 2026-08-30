@@ -53,7 +53,6 @@ import { ExpirationControl } from "@/components/editor/ExpirationControl";
 import { BacklinksPanel } from "@/components/editor/BacklinksPanel";
 import { CommentsPanel } from "@/components/editor/CommentsPanel";
 import { CitationsPanel } from "@/components/editor/CitationsPanel";
-import { SelectionBubbleMenu } from "@/components/editor/SelectionBubbleMenu";
 import { useNoteSources } from "@/lib/data/use-note-sources";
 import { SaveTemplateDialog } from "@/components/editor/SaveTemplateDialog";
 import { ShareDialog } from "@/components/editor/ShareDialog";
@@ -96,6 +95,9 @@ export function NoteEditor({ note }: { note: Note }) {
   const [versionHistoryOpen, setVersionHistoryOpen] = useState(false);
   const [saveTemplateOpen, setSaveTemplateOpen] = useState(false);
   const [findOpen, setFindOpen] = useState(false);
+  useEffect(() => {
+    if (isLocked) setFindOpen(false);
+  }, [isLocked]);
   const [shareOpen, setShareOpen] = useState(false);
   const lastSnapshotAt = useRef(0);
 
@@ -339,7 +341,7 @@ export function NoteEditor({ note }: { note: Note }) {
     return saveTemplate(workspace.id, name, (editor?.getJSON() ?? note.content) as Record<string, unknown>);
   };
 
-  const showEditingControls = editor && !isLocked && (!isEncrypted || unlocked);
+  const showEditingControls = editor && (!isEncrypted || unlocked);
 
   return (
     <div className="flex h-full flex-col">
@@ -407,12 +409,13 @@ export function NoteEditor({ note }: { note: Note }) {
           >
             {focusMode ? <Minimize2 size={15} /> : <Maximize2 size={15} />}
           </button>
-          {editor && !isLocked && (
+          {editor && (
             <button
               type="button"
               title="Find and replace (⌘F)"
+              disabled={isLocked}
               onClick={() => setFindOpen((v) => !v)}
-              className="flex h-7 w-7 items-center justify-center rounded-md text-muted transition-colors hover:bg-surface-2 hover:text-ink"
+              className="flex h-7 w-7 items-center justify-center rounded-md text-muted transition-colors hover:bg-surface-2 hover:text-ink disabled:pointer-events-none disabled:opacity-35"
             >
               <Search size={15} />
             </button>
@@ -437,7 +440,11 @@ export function NoteEditor({ note }: { note: Note }) {
         </div>
       </div>
 
-      {showEditingControls && editor && <EditorToolbar editor={editor} />}
+      {showEditingControls && editor && (
+        <div className={isLocked ? "pointer-events-none opacity-40" : undefined} aria-hidden={isLocked}>
+          <EditorToolbar editor={editor} />
+        </div>
+      )}
 
       {isLocked && (
         <div className="flex items-center gap-2 bg-warn-soft px-8 py-2 text-[13px] font-medium text-warn">
@@ -461,7 +468,7 @@ export function NoteEditor({ note }: { note: Note }) {
             <UnlockNoteView content={note.content} onUnlock={handleUnlock} />
           ) : (
             <>
-              {editor && findOpen && !isLocked && (
+              {editor && findOpen && (
                 <FindReplaceBar editor={editor} contentTick={contentTick} onClose={() => setFindOpen(false)} />
               )}
               {zoomedHeading && (
@@ -475,8 +482,6 @@ export function NoteEditor({ note }: { note: Note }) {
                   </button>
                 </div>
               )}
-
-              {editor && !isLocked && <SelectionBubbleMenu editor={editor} />}
 
               <div className="min-h-0 flex-1 overflow-y-auto">
                 <div className="sp-editor mx-auto max-w-[720px] px-8 py-8">
