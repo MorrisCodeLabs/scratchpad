@@ -40,6 +40,9 @@ export function useFolders(workspaceId: string | undefined) {
     };
   }, [workspaceId, reload]);
 
+  // As in use-notes.ts, every mutation reloads the list itself rather than
+  // relying only on the postgres_changes subscription — Realtime replication
+  // is opt-in per table in Supabase and off by default for new tables.
   const createFolder = useCallback(
     async (name: string, parentId: string | null = null) => {
       if (!workspaceId) return null;
@@ -56,26 +59,37 @@ export function useFolders(workspaceId: string | undefined) {
         notifyError(`Couldn't create the folder: ${error.message}`);
         return null;
       }
+      await reload();
       return data as Folder;
     },
-    [workspaceId, folders],
+    [workspaceId, folders, reload],
   );
 
-  const renameFolder = useCallback(async (id: string, name: string) => {
-    const { error } = await supabase.from("folders").update({ name }).eq("id", id);
-    if (error) {
-      console.error(error);
-      notifyError(`Couldn't rename the folder: ${error.message}`);
-    }
-  }, []);
+  const renameFolder = useCallback(
+    async (id: string, name: string) => {
+      const { error } = await supabase.from("folders").update({ name }).eq("id", id);
+      if (error) {
+        console.error(error);
+        notifyError(`Couldn't rename the folder: ${error.message}`);
+        return;
+      }
+      await reload();
+    },
+    [reload],
+  );
 
-  const toggleFavorite = useCallback(async (id: string, isFavorite: boolean) => {
-    const { error } = await supabase.from("folders").update({ is_favorite: isFavorite }).eq("id", id);
-    if (error) {
-      console.error(error);
-      notifyError(`Couldn't update favorites: ${error.message}`);
-    }
-  }, []);
+  const toggleFavorite = useCallback(
+    async (id: string, isFavorite: boolean) => {
+      const { error } = await supabase.from("folders").update({ is_favorite: isFavorite }).eq("id", id);
+      if (error) {
+        console.error(error);
+        notifyError(`Couldn't update favorites: ${error.message}`);
+        return;
+      }
+      await reload();
+    },
+    [reload],
+  );
 
   const moveFolder = useCallback(
     async (id: string, parentId: string | null, sortOrder: number) => {
@@ -86,21 +100,29 @@ export function useFolders(workspaceId: string | undefined) {
       if (error) {
         console.error(error);
         notifyError(`Couldn't move the folder: ${error.message}`);
+        return;
       }
+      await reload();
     },
-    [],
+    [reload],
   );
 
-  const deleteFolder = useCallback(async (id: string) => {
-    // ON DELETE CASCADE on folders.parent_id removes subfolders; notes in this
-    // folder fall back to folder_id = null via ON DELETE SET NULL rather than
-    // being deleted, so a folder delete never silently destroys notes.
-    const { error } = await supabase.from("folders").delete().eq("id", id);
-    if (error) {
-      console.error(error);
-      notifyError(`Couldn't delete the folder: ${error.message}`);
-    }
-  }, []);
+  const deleteFolder = useCallback(
+    async (id: string) => {
+      // ON DELETE CASCADE on folders.parent_id removes subfolders; notes in
+      // this folder fall back to folder_id = null via ON DELETE SET NULL
+      // rather than being deleted, so a folder delete never silently
+      // destroys notes.
+      const { error } = await supabase.from("folders").delete().eq("id", id);
+      if (error) {
+        console.error(error);
+        notifyError(`Couldn't delete the folder: ${error.message}`);
+        return;
+      }
+      await reload();
+    },
+    [reload],
+  );
 
   return { folders, loading, createFolder, renameFolder, toggleFavorite, moveFolder, deleteFolder, reload };
 }

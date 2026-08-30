@@ -43,6 +43,11 @@ export function useNotes(workspaceId: string | undefined, options: UseNotesOptio
     };
   }, [workspaceId, includeDeleted, reload]);
 
+  // Every mutation below reloads the list itself rather than relying only on
+  // the postgres_changes subscription above — Realtime replication is an
+  // opt-in setting per table in Supabase, off by default for new tables, so
+  // a fresh project would otherwise save changes that never show up in the
+  // sidebar until something else happens to trigger a refetch.
   const createNote = useCallback(
     async (workspace: string, folderId: string | null = null) => {
       const { data, error } = await supabase
@@ -55,70 +60,100 @@ export function useNotes(workspaceId: string | undefined, options: UseNotesOptio
         notifyError(`Couldn't create the note: ${error.message}`);
         return null;
       }
+      await reload();
       return data as Note;
     },
-    [],
+    [reload],
   );
 
-  const updateNote = useCallback(async (id: string, patch: Partial<Note>) => {
-    const { error } = await supabase.from("notes").update(patch).eq("id", id);
-    if (error) {
-      console.error(error);
-      notifyError(`Couldn't save the note: ${error.message}`);
-    }
-  }, []);
+  const updateNote = useCallback(
+    async (id: string, patch: Partial<Note>) => {
+      const { error } = await supabase.from("notes").update(patch).eq("id", id);
+      if (error) {
+        console.error(error);
+        notifyError(`Couldn't save the note: ${error.message}`);
+        return;
+      }
+      await reload();
+    },
+    [reload],
+  );
 
-  const duplicateNote = useCallback(async (note: Note) => {
-    const { data, error } = await supabase
-      .from("notes")
-      .insert({
-        workspace_id: note.workspace_id,
-        folder_id: note.folder_id,
-        title: `${note.title} (copy)`,
-        content: note.content,
-        status: "draft",
-      })
-      .select()
-      .single();
-    if (error) {
-      console.error(error);
-      notifyError(`Couldn't duplicate the note: ${error.message}`);
-      return null;
-    }
-    return data as Note;
-  }, []);
+  const duplicateNote = useCallback(
+    async (note: Note) => {
+      const { data, error } = await supabase
+        .from("notes")
+        .insert({
+          workspace_id: note.workspace_id,
+          folder_id: note.folder_id,
+          title: `${note.title} (copy)`,
+          content: note.content,
+          status: "draft",
+        })
+        .select()
+        .single();
+      if (error) {
+        console.error(error);
+        notifyError(`Couldn't duplicate the note: ${error.message}`);
+        return null;
+      }
+      await reload();
+      return data as Note;
+    },
+    [reload],
+  );
 
-  const archiveNote = useCallback(async (id: string) => {
-    const { error } = await supabase.from("notes").update({ status: "archived" }).eq("id", id);
-    if (error) {
-      console.error(error);
-      notifyError(`Couldn't archive the note: ${error.message}`);
-    }
-  }, []);
+  const archiveNote = useCallback(
+    async (id: string) => {
+      const { error } = await supabase.from("notes").update({ status: "archived" }).eq("id", id);
+      if (error) {
+        console.error(error);
+        notifyError(`Couldn't archive the note: ${error.message}`);
+        return;
+      }
+      await reload();
+    },
+    [reload],
+  );
 
-  const trashNote = useCallback(async (id: string) => {
-    const { error } = await supabase.from("notes").update({ deleted_at: new Date().toISOString() }).eq("id", id);
-    if (error) {
-      console.error(error);
-      notifyError(`Couldn't move the note to trash: ${error.message}`);
-    }
-  }, []);
+  const trashNote = useCallback(
+    async (id: string) => {
+      const { error } = await supabase.from("notes").update({ deleted_at: new Date().toISOString() }).eq("id", id);
+      if (error) {
+        console.error(error);
+        notifyError(`Couldn't move the note to trash: ${error.message}`);
+        return;
+      }
+      await reload();
+    },
+    [reload],
+  );
 
-  const restoreNote = useCallback(async (id: string) => {
-    const { error } = await supabase.from("notes").update({ deleted_at: null }).eq("id", id);
-    if (error) {
-      console.error(error);
-      notifyError(`Couldn't restore the note: ${error.message}`);
-    }
-  }, []);
+  const restoreNote = useCallback(
+    async (id: string) => {
+      const { error } = await supabase.from("notes").update({ deleted_at: null }).eq("id", id);
+      if (error) {
+        console.error(error);
+        notifyError(`Couldn't restore the note: ${error.message}`);
+        return;
+      }
+      await reload();
+    },
+    [reload],
+  );
 
-  const deleteNotePermanently = useCallback(async (id: string) => {
-    const { error } = await supabase.from("notes").delete().eq("id", id);
-    if (error) {
-      console.error(error);
-      notifyError(`Couldn't delete the note: ${error.message}`);
-    }
-  }, []);
+  const deleteNotePermanently = useCallback(
+    async (id: string) => {
+      const { error } = await supabase.from("notes").delete().eq("id", id);
+      if (error) {
+        console.error(error);
+        notifyError(`Couldn't delete the note: ${error.message}`);
+        return;
+      }
+      await reload();
+    },
+    [reload],
+  );
 
   return {
     notes,

@@ -124,16 +124,19 @@ export function NoteEditor({ note }: { note: Note }) {
         </div>
       </div>
 
+      <div className="mx-auto w-full max-w-3xl px-6 pt-6">
+        <input
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          placeholder="Untitled"
+          className="w-full border-none bg-transparent text-3xl font-bold text-ink outline-none placeholder:text-faint"
+        />
+      </div>
+
       {editor && <EditorToolbar editor={editor} />}
 
       <div className="min-h-0 flex-1 overflow-y-auto">
-        <div className="sp-editor mx-auto max-w-3xl px-6 py-8">
-          <input
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            placeholder="Untitled"
-            className="mb-3 w-full border-none bg-transparent text-3xl font-bold text-ink outline-none placeholder:text-faint"
-          />
+        <div className="sp-editor mx-auto max-w-3xl px-6 py-6">
           <EditorContent editor={editor} />
         </div>
       </div>

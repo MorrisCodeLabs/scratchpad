@@ -225,8 +225,18 @@ body {
 
 .sp-editor .ProseMirror mark {
   background: var(--sp-warn-soft);
+  /* Highlight swatches are fixed light pastels regardless of app theme
+     (like a real highlighter pen), so the text on top must stay a fixed
+     dark ink too — inheriting the theme's ink color would turn light (and
+     invisible against a light highlight) in dark mode. */
+  color: #1a1e22;
   border-radius: 2px;
   padding: 0 0.1em;
+}
+
+.sp-editor ::selection {
+  background: var(--sp-accent-soft);
+  color: var(--sp-ink);
 }
 
 .sp-editor .ProseMirror table {
