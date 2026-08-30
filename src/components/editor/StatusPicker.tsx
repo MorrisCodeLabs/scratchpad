@@ -21,16 +21,16 @@ export function StatusPicker({ note }: { note: Note }) {
       <DropdownMenuTrigger asChild>
         <button
           type="button"
-          className={cn(
-            "flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-medium hover:bg-surface-2",
-            current.className,
-          )}
+          className="flex w-full items-center justify-between gap-2 px-3 py-2.5 text-left text-[13px] transition-colors hover:bg-surface-2"
         >
-          <Icon size={13} />
-          {current.label}
+          <span className="text-xs text-faint">Status</span>
+          <span className={cn("flex items-center gap-1.5 font-medium", current.className)}>
+            <Icon size={13} />
+            {current.label}
+          </span>
         </button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="start">
+      <DropdownMenuContent align="start" side="left" sideOffset={10}>
         {STATUSES.map((s) => (
           <DropdownMenuItem key={s.value} onSelect={() => notes.updateNote(note.id, { status: s.value })}>
             <s.icon size={14} />

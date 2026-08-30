@@ -29,12 +29,12 @@ export function TextColorPicker({ editor }: { editor: Editor }) {
         <button
           type="button"
           title="Text color"
-          className="flex h-7 w-7 items-center justify-center rounded-md text-muted hover:bg-surface-2 hover:text-ink"
+          className="flex h-8 w-8 items-center justify-center rounded-md text-muted transition-colors hover:bg-surface hover:text-ink"
         >
           <Palette size={15} />
         </button>
       </PopoverTrigger>
-      <PopoverContent align="start" className="flex w-40 flex-wrap gap-1.5">
+      <PopoverContent align="start" side="left" sideOffset={10} className="flex w-40 flex-wrap gap-1.5">
         {TEXT_COLORS.map((c) => (
           <button
             key={c.name}
@@ -65,14 +65,14 @@ export function HighlightColorPicker({ editor }: { editor: Editor }) {
           type="button"
           title="Highlight color"
           className={cn(
-            "flex h-7 w-7 items-center justify-center rounded-md text-muted hover:bg-surface-2 hover:text-ink",
-            editor.isActive("highlight") && "bg-accent-soft text-accent-ink",
+            "flex h-8 w-8 items-center justify-center rounded-md text-muted transition-colors hover:bg-surface hover:text-ink",
+            editor.isActive("highlight") && "bg-accent-soft text-accent-ink hover:bg-accent-soft hover:text-accent-ink",
           )}
         >
           <Highlighter size={15} />
         </button>
       </PopoverTrigger>
-      <PopoverContent align="start" className="flex w-40 flex-wrap gap-1.5">
+      <PopoverContent align="start" side="left" sideOffset={10} className="flex w-40 flex-wrap gap-1.5">
         {HIGHLIGHT_COLORS.map((c) => (
           <button
             key={c.name}

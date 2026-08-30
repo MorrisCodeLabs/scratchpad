@@ -40,15 +40,19 @@ export function NoteDetailsPanel({
       <PopoverTrigger asChild>
         <button
           type="button"
-          className="flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-medium text-faint hover:bg-surface-2"
+          className="flex w-full items-center justify-between gap-2 px-3 py-2.5 text-left text-[13px] transition-colors hover:bg-surface-2"
         >
-          {color && <span className="h-2 w-2 rounded-full" style={{ background: color }} />}
-          <Info size={13} />
-          Details
-          {(tags.length > 0 || description) && <span className="tabular-nums">({tags.length})</span>}
+          <span className="flex items-center gap-1.5 text-xs text-faint">
+            <Info size={13} /> Details
+          </span>
+          <span className="flex items-center gap-1.5 text-faint">
+            {color && <span className="h-2 w-2 rounded-full" style={{ background: color }} />}
+            {tags.length > 0 && <span className="tabular-nums text-xs">{tags.length} tag{tags.length === 1 ? "" : "s"}</span>}
+            {!color && tags.length === 0 && !description && <span className="text-xs">Add</span>}
+          </span>
         </button>
       </PopoverTrigger>
-      <PopoverContent align="start" className="w-72">
+      <PopoverContent align="start" side="left" sideOffset={10} className="w-72">
         <p className="mb-1.5 text-[11px] font-medium uppercase tracking-wide text-faint">Color</p>
         <div className="mb-3 flex items-center gap-1.5">
           {COLORS.map((c) => (

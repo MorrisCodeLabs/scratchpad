@@ -51,15 +51,15 @@ export function CitationsPanel({
       <PopoverTrigger asChild>
         <button
           type="button"
-          title="Citations"
-          className="flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-medium text-faint hover:bg-surface-2"
+          className="flex w-full items-center justify-between gap-2 px-3 py-2.5 text-left text-[13px] transition-colors hover:bg-surface-2"
         >
-          <BookMarked size={13} />
-          Citations
-          {sources.length > 0 && <span className="tabular-nums">({sources.length})</span>}
+          <span className="flex items-center gap-1.5 text-xs text-faint">
+            <BookMarked size={13} /> Citations
+          </span>
+          <span className="tabular-nums text-xs font-medium text-ink">{sources.length}</span>
         </button>
       </PopoverTrigger>
-      <PopoverContent align="start" className="w-80">
+      <PopoverContent align="start" side="left" sideOffset={10} className="w-80">
         <p className="mb-1.5 text-[11px] font-medium uppercase tracking-wide text-faint">Sources</p>
         <div className="mb-2 flex max-h-40 flex-col gap-1 overflow-y-auto">
           {sources.length === 0 ? (

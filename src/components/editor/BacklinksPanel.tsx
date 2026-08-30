@@ -24,15 +24,15 @@ export function BacklinksPanel({
       <PopoverTrigger asChild>
         <button
           type="button"
-          title="Linked mentions"
-          className="flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-medium text-faint hover:bg-surface-2"
+          className="flex w-full items-center justify-between gap-2 px-3 py-2.5 text-left text-[13px] transition-colors hover:bg-surface-2"
         >
-          <Link2 size={13} />
-          Linked mentions
-          {backlinks.length > 0 && <span className="tabular-nums">({backlinks.length})</span>}
+          <span className="flex items-center gap-1.5 text-xs text-faint">
+            <Link2 size={13} /> Linked mentions
+          </span>
+          <span className="tabular-nums text-xs font-medium text-ink">{backlinks.length}</span>
         </button>
       </PopoverTrigger>
-      <PopoverContent align="start" className="w-64">
+      <PopoverContent align="start" side="left" sideOffset={10} className="w-64">
         <p className="mb-1.5 text-[11px] font-medium uppercase tracking-wide text-faint">Linked mentions</p>
         {backlinks.length === 0 ? (
           <p className="text-xs text-faint">No other notes link here yet.</p>

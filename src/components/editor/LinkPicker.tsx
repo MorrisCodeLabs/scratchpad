@@ -32,14 +32,14 @@ export function LinkPicker({ editor }: { editor: Editor }) {
           type="button"
           title="Link"
           className={cn(
-            "flex h-7 w-7 items-center justify-center rounded-md text-muted hover:bg-surface-2 hover:text-ink",
-            editor.isActive("link") && "bg-accent-soft text-accent-ink",
+            "flex h-8 w-8 items-center justify-center rounded-md text-muted transition-colors hover:bg-surface hover:text-ink",
+            editor.isActive("link") && "bg-accent-soft text-accent-ink hover:bg-accent-soft hover:text-accent-ink",
           )}
         >
           <Link2 size={15} />
         </button>
       </PopoverTrigger>
-      <PopoverContent align="start" className="w-64">
+      <PopoverContent align="start" side="left" sideOffset={10} className="w-64">
         <div className="flex items-center gap-1.5">
           <Input
             autoFocus

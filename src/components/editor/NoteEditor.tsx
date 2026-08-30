@@ -43,16 +43,10 @@ import { computeStats } from "@/lib/text-stats";
 import type { Note } from "@/lib/types";
 import { SaveIndicator } from "@/components/editor/SaveIndicator";
 import { NoteMenu } from "@/components/editor/NoteMenu";
-import { StatusPicker } from "@/components/editor/StatusPicker";
 import { WordGoalControl, WordGoalBar } from "@/components/editor/WordGoalControl";
 import { VersionHistoryDialog } from "@/components/editor/VersionHistoryDialog";
-import { ReminderControl } from "@/components/editor/ReminderControl";
-import { ExpirationControl } from "@/components/editor/ExpirationControl";
-import { NoteDetailsPanel } from "@/components/editor/NoteDetailsPanel";
 import { NoteOutline } from "@/components/editor/NoteOutline";
-import { BacklinksPanel } from "@/components/editor/BacklinksPanel";
-import { CommentsPanel } from "@/components/editor/CommentsPanel";
-import { CitationsPanel } from "@/components/editor/CitationsPanel";
+import { NotePropertiesPanel } from "@/components/editor/NotePropertiesPanel";
 import { useNoteSources } from "@/lib/data/use-note-sources";
 import { SaveTemplateDialog } from "@/components/editor/SaveTemplateDialog";
 import { ShareDialog } from "@/components/editor/ShareDialog";
@@ -338,53 +332,12 @@ export function NoteEditor({ note }: { note: Note }) {
     return saveTemplate(workspace.id, name, (editor?.getJSON() ?? note.content) as Record<string, unknown>);
   };
 
+  const showSidePanel = editor && !isLocked && (!isEncrypted || unlocked);
+
   return (
     <div className="flex h-full flex-col">
       <div className="flex items-center justify-between gap-3 border-b border-line px-8 py-3">
-        <div className="flex flex-wrap items-center gap-0.5">
-          <StatusPicker note={note} />
-          <NoteDetailsPanel
-            color={color}
-            description={description}
-            tags={tags}
-            onChange={(patch) => {
-              if (patch.color !== undefined) {
-                setColor(patch.color);
-                notes.updateNote(note.id, { color: patch.color });
-              }
-              if (patch.description !== undefined) {
-                setDescription(patch.description);
-                notes.updateNote(note.id, { description: patch.description });
-              }
-              if (patch.tags !== undefined) {
-                setTags(patch.tags);
-                notes.updateNote(note.id, { tags: patch.tags });
-              }
-            }}
-          />
-          <ReminderControl
-            reminderAt={reminderAt}
-            onSetReminder={(iso) => {
-              setReminderAt(iso);
-              notes.updateNote(note.id, { reminder_at: iso });
-            }}
-          />
-          <ExpirationControl
-            expiresAt={expiresAt}
-            onSetExpiration={(iso) => {
-              setExpiresAt(iso);
-              notes.updateNote(note.id, { expires_at: iso });
-            }}
-          />
-          <BacklinksPanel note={note} allNotes={notes.notes} onNavigate={(id) => navigate({ name: "note", id })} />
-          <CommentsPanel noteId={note.id} workspaceId={workspace.id} currentUserId={userId} />
-          <CitationsPanel
-            editor={editor}
-            sources={sources}
-            onAddSource={(input) => addSource(workspace.id, input)}
-            onDeleteSource={deleteSource}
-          />
-        </div>
+        <p className="min-w-0 flex-1 truncate text-[13px] font-medium text-ink">{title.trim() || "Untitled"}</p>
         <div className="flex items-center gap-1">
           <button
             type="button"
@@ -430,70 +383,117 @@ export function NoteEditor({ note }: { note: Note }) {
         </div>
       )}
 
-      {isEncrypted && !unlocked ? (
-        <UnlockNoteView content={note.content} onUnlock={handleUnlock} />
-      ) : (
-        <>
-          <div className="mx-auto w-full max-w-[720px] px-8 pb-4 pt-8">
-            <input
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="Untitled"
-              readOnly={isLocked}
-              className="w-full border-none bg-transparent text-[2.25rem] font-bold leading-tight tracking-tight text-ink outline-none placeholder:text-faint"
-            />
-            {duplicateTitleNote && (
-              <button
-                type="button"
-                onClick={() => navigate({ name: "note", id: duplicateTitleNote.id })}
-                className="mt-1.5 flex items-center gap-1.5 text-xs text-warn hover:underline"
-              >
-                <AlertTriangle size={12} />
-                Another note is already titled “{duplicateTitleNote.title}” — open it?
-              </button>
-            )}
-          </div>
+      <div className="flex min-h-0 flex-1">
+        <div className="flex min-w-0 flex-1 flex-col">
+          {isEncrypted && !unlocked ? (
+            <UnlockNoteView content={note.content} onUnlock={handleUnlock} />
+          ) : (
+            <>
+              <div className="mx-auto w-full max-w-[720px] px-8 pb-4 pt-8">
+                <input
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  placeholder="Untitled"
+                  readOnly={isLocked}
+                  className="w-full border-none bg-transparent text-[2.25rem] font-bold leading-tight tracking-tight text-ink outline-none placeholder:text-faint"
+                />
+                {duplicateTitleNote && (
+                  <button
+                    type="button"
+                    onClick={() => navigate({ name: "note", id: duplicateTitleNote.id })}
+                    className="mt-1.5 flex items-center gap-1.5 text-xs text-warn hover:underline"
+                  >
+                    <AlertTriangle size={12} />
+                    Another note is already titled “{duplicateTitleNote.title}” — open it?
+                  </button>
+                )}
+              </div>
 
-          {editor && !isLocked && <EditorToolbar editor={editor} />}
-          {editor && findOpen && !isLocked && (
-            <FindReplaceBar editor={editor} contentTick={contentTick} onClose={() => setFindOpen(false)} />
+              {editor && findOpen && !isLocked && (
+                <FindReplaceBar editor={editor} contentTick={contentTick} onClose={() => setFindOpen(false)} />
+              )}
+              {zoomedHeading && (
+                <div className="flex items-center gap-2 border-b border-line bg-accent-soft px-8 py-2 text-[13px] text-accent-ink">
+                  <ZoomIn size={13} />
+                  <span className="truncate">
+                    Zoomed into <span className="font-medium">{zoomedHeading.text}</span>
+                  </span>
+                  <button type="button" onClick={exitZoom} className="ml-auto flex items-center gap-1 font-medium hover:underline">
+                    <ZoomOut size={13} /> Exit zoom
+                  </button>
+                </div>
+              )}
+
+              <div className="min-h-0 flex-1 overflow-y-auto">
+                <div className="sp-editor mx-auto max-w-[720px] px-8 py-8">
+                  <EditorContent editor={editor} />
+                </div>
+              </div>
+
+              <div className="flex items-center gap-4 border-t border-line bg-surface px-8 py-2 text-xs text-faint">
+                <WordGoalControl
+                  wordCount={stats.wordCount}
+                  goal={wordGoal}
+                  onSetGoal={(goal) => {
+                    setWordGoal(goal);
+                    notes.updateNote(note.id, { word_goal: goal });
+                  }}
+                />
+                {wordGoal && <WordGoalBar wordCount={stats.wordCount} goal={wordGoal} />}
+                <span className="tabular-nums">{stats.charCount} characters</span>
+                <span className="tabular-nums">{stats.readingTimeMinutes} min read</span>
+                <span className="ml-auto tabular-nums">
+                  Updated {new Date(note.updated_at).toLocaleString()}
+                </span>
+              </div>
+            </>
           )}
-          {zoomedHeading && (
-            <div className="flex items-center gap-2 border-b border-line bg-accent-soft px-8 py-2 text-[13px] text-accent-ink">
-              <ZoomIn size={13} />
-              <span className="truncate">
-                Zoomed into <span className="font-medium">{zoomedHeading.text}</span>
-              </span>
-              <button type="button" onClick={exitZoom} className="ml-auto flex items-center gap-1 font-medium hover:underline">
-                <ZoomOut size={13} /> Exit zoom
-              </button>
-            </div>
-          )}
+        </div>
 
-          <div className="min-h-0 flex-1 overflow-y-auto">
-            <div className="sp-editor mx-auto max-w-[720px] px-8 py-8">
-              <EditorContent editor={editor} />
-            </div>
-          </div>
-
-          <div className="flex items-center gap-4 border-t border-line bg-surface px-8 py-2 text-xs text-faint">
-            <WordGoalControl
-              wordCount={stats.wordCount}
-              goal={wordGoal}
-              onSetGoal={(goal) => {
-                setWordGoal(goal);
-                notes.updateNote(note.id, { word_goal: goal });
+        {!focusMode && (
+          <aside className="flex w-72 shrink-0 flex-col overflow-y-auto border-l border-line bg-surface-2/30">
+            <NotePropertiesPanel
+              note={note}
+              color={color}
+              description={description}
+              tags={tags}
+              onDetailsChange={(patch) => {
+                if (patch.color !== undefined) {
+                  setColor(patch.color);
+                  notes.updateNote(note.id, { color: patch.color });
+                }
+                if (patch.description !== undefined) {
+                  setDescription(patch.description);
+                  notes.updateNote(note.id, { description: patch.description });
+                }
+                if (patch.tags !== undefined) {
+                  setTags(patch.tags);
+                  notes.updateNote(note.id, { tags: patch.tags });
+                }
               }}
+              reminderAt={reminderAt}
+              onSetReminder={(iso) => {
+                setReminderAt(iso);
+                notes.updateNote(note.id, { reminder_at: iso });
+              }}
+              expiresAt={expiresAt}
+              onSetExpiration={(iso) => {
+                setExpiresAt(iso);
+                notes.updateNote(note.id, { expires_at: iso });
+              }}
+              allNotes={notes.notes}
+              onNavigate={(id) => navigate({ name: "note", id })}
+              workspaceId={workspace.id}
+              currentUserId={userId}
+              editor={editor}
+              sources={sources}
+              onAddSource={(input) => addSource(workspace.id, input)}
+              onDeleteSource={deleteSource}
             />
-            {wordGoal && <WordGoalBar wordCount={stats.wordCount} goal={wordGoal} />}
-            <span className="tabular-nums">{stats.charCount} characters</span>
-            <span className="tabular-nums">{stats.readingTimeMinutes} min read</span>
-            <span className="ml-auto tabular-nums">
-              Updated {new Date(note.updated_at).toLocaleString()}
-            </span>
-          </div>
-        </>
-      )}
+            {showSidePanel && <EditorToolbar editor={editor} />}
+          </aside>
+        )}
+      </div>
 
       <VersionHistoryDialog
         open={versionHistoryOpen}
