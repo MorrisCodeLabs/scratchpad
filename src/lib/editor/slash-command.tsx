@@ -22,8 +22,27 @@ import {
   ChevronRight,
   ListTree,
   BarChart3,
+  Image as ImageIcon,
+  Paperclip,
+  Sigma,
 } from "lucide-react";
 import { SlashMenu, type SlashMenuHandle, type SlashMenuItem } from "@/components/editor/SlashMenu";
+import { pickFile } from "@/lib/editor/pick-file";
+import { uploadAttachment } from "@/lib/storage";
+import { notifyError } from "@/lib/toast";
+
+async function uploadFromEditor(editor: any, accept: string) {
+  const file = await pickFile(accept);
+  if (!file) return null;
+  const { workspaceId, noteId } = editor.storage.noteContext ?? {};
+  if (!workspaceId || !noteId) return null;
+  try {
+    return await uploadAttachment(workspaceId, noteId, file);
+  } catch (err) {
+    notifyError(err instanceof Error ? `Upload failed: ${err.message}` : "Upload failed.");
+    return null;
+  }
+}
 
 const ITEMS: SlashMenuItem[] = [
   {
@@ -140,6 +159,32 @@ const ITEMS: SlashMenuItem[] = [
     description: "Track completion with a slider.",
     icon: BarChart3,
     command: ({ editor, range }) => editor.chain().focus().deleteRange(range).setProgressBar().run(),
+  },
+  {
+    title: "Image",
+    description: "Upload and embed an image.",
+    icon: ImageIcon,
+    command: async ({ editor, range }) => {
+      editor.chain().focus().deleteRange(range).run();
+      const uploaded = await uploadFromEditor(editor, "image/*");
+      if (uploaded) editor.chain().focus().setImage({ src: uploaded.url, alt: uploaded.name }).run();
+    },
+  },
+  {
+    title: "File",
+    description: "Attach any file for download.",
+    icon: Paperclip,
+    command: async ({ editor, range }) => {
+      editor.chain().focus().deleteRange(range).run();
+      const uploaded = await uploadFromEditor(editor, "*/*");
+      if (uploaded) editor.chain().focus().setFileBlock(uploaded).run();
+    },
+  },
+  {
+    title: "Math equation",
+    description: "A LaTeX equation, rendered with KaTeX.",
+    icon: Sigma,
+    command: ({ editor, range }) => editor.chain().focus().deleteRange(range).setMathBlock().run(),
   },
 ];
 

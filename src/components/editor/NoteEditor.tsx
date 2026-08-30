@@ -17,11 +17,15 @@ import TextStyle from "@tiptap/extension-text-style";
 import Color from "@tiptap/extension-color";
 import FontFamily from "@tiptap/extension-font-family";
 import TextAlign from "@tiptap/extension-text-align";
+import Image from "@tiptap/extension-image";
 import { Callout } from "@/lib/editor/callout";
 import { FontSize } from "@/lib/editor/font-size";
 import { Toggle } from "@/lib/editor/toggle";
 import { DefinitionList, DefinitionItem, DefinitionTerm, DefinitionDescription } from "@/lib/editor/definition-list";
 import { ProgressBar } from "@/lib/editor/progress-bar";
+import { FileBlock } from "@/lib/editor/file-block";
+import { MathBlock } from "@/lib/editor/math-block";
+import { NoteContext } from "@/lib/editor/note-context";
 import { EmojiCommand } from "@/lib/editor/emoji-command";
 import { SlashCommand } from "@/lib/editor/slash-command";
 import { EditorToolbar } from "@/components/editor/EditorToolbar";
@@ -63,6 +67,10 @@ export function NoteEditor({ note }: { note: Note }) {
       DefinitionTerm,
       DefinitionDescription,
       ProgressBar,
+      FileBlock,
+      MathBlock,
+      Image.configure({ inline: false, allowBase64: false }),
+      NoteContext.configure({ workspaceId: note.workspace_id, noteId: note.id }),
       Placeholder.configure({ placeholder: "Write, or press '/' for commands…" }),
       SlashCommand,
       EmojiCommand,

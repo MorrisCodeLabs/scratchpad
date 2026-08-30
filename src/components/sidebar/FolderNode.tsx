@@ -7,9 +7,10 @@ import { cn } from "@/lib/cn";
 import { DropZone } from "@/components/sidebar/DropZone";
 import { NoteRow } from "@/components/sidebar/NoteRow";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { NewNoteMenu } from "@/components/NewNoteMenu";
 
 export function FolderNode({ folder, depth }: { folder: FolderType; depth: number }) {
-  const { folders, notes, route, navigate } = useWorkspaceContext();
+  const { folders, notes, route } = useWorkspaceContext();
   const [open, setOpen] = useState(depth === 0);
   const [renaming, setRenaming] = useState(false);
   const [name, setName] = useState(folder.name);
@@ -65,17 +66,11 @@ export function FolderNode({ folder, depth }: { folder: FolderType; depth: numbe
           {folder.is_favorite && <Star size={11} className="shrink-0 fill-current text-warn" />}
 
           <div className="hidden items-center gap-0.5 group-hover:flex">
-            <button
-              type="button"
-              title="New note in folder"
-              onClick={async () => {
-                const note = await notes.createNote(folder.workspace_id, folder.id);
-                if (note) navigate({ name: "note", id: note.id });
-              }}
-              className="text-faint hover:text-ink"
-            >
-              <Plus size={13} />
-            </button>
+            <NewNoteMenu folderId={folder.id}>
+              <button type="button" title="New note in folder" className="text-faint hover:text-ink">
+                <Plus size={13} />
+              </button>
+            </NewNoteMenu>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button type="button" className="text-faint hover:text-ink">

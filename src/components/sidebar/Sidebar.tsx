@@ -6,9 +6,10 @@ import { FolderNode } from "@/components/sidebar/FolderNode";
 import { NoteRow } from "@/components/sidebar/NoteRow";
 import { DropZone } from "@/components/sidebar/DropZone";
 import { WorkspaceMenu } from "@/components/sidebar/WorkspaceMenu";
+import { NewNoteMenu } from "@/components/NewNoteMenu";
 
 export function Sidebar() {
-  const { workspace, folders, notes, route, navigate, setCommandMenuOpen } = useWorkspaceContext();
+  const { folders, notes, route, navigate, setCommandMenuOpen } = useWorkspaceContext();
   const [favoritesOpen, setFavoritesOpen] = useState(true);
   const [foldersOpen, setFoldersOpen] = useState(true);
 
@@ -41,11 +42,6 @@ export function Sidebar() {
     }
   };
 
-  const createNote = async () => {
-    const note = await notes.createNote(workspace.id, null);
-    if (note) navigate({ name: "note", id: note.id });
-  };
-
   return (
     <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
       <aside className="flex h-full w-64 shrink-0 flex-col border-r border-line bg-surface">
@@ -63,14 +59,15 @@ export function Sidebar() {
             Search
             <kbd className="ml-auto rounded border border-line px-1.5 py-0.5 text-[10px] text-faint">⌘K</kbd>
           </button>
-          <button
-            type="button"
-            onClick={createNote}
-            className="flex items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm text-muted hover:bg-surface-2"
-          >
-            <Plus size={15} />
-            New note
-          </button>
+          <NewNoteMenu>
+            <button
+              type="button"
+              className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm text-muted hover:bg-surface-2"
+            >
+              <Plus size={15} />
+              New note
+            </button>
+          </NewNoteMenu>
         </div>
 
         <nav className="mt-2 flex-1 overflow-y-auto px-2 pb-2">

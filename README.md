@@ -18,7 +18,10 @@ This is the **Phase 1 MVP** build: auth, a single workspace per account, note CR
 ## Getting started
 
 1. **Create a Supabase project** at [supabase.com](https://supabase.com).
-2. **Run the schema migration**: open the SQL editor in your Supabase dashboard and run `supabase/migrations/0001_init.sql`. This creates the `workspaces`, `workspace_members`, `folders`, and `notes` tables, enables Row-Level Security, and wires up a trigger that auto-creates a personal workspace for every new user.
+2. **Run the schema migrations, in order**, in your Supabase dashboard's SQL editor:
+   - `supabase/migrations/0001_init.sql` — `workspaces`, `workspace_members`, `folders`, `notes`, Row-Level Security, and a trigger that auto-creates a personal workspace for every new user.
+   - `supabase/migrations/0002_notes_created_by_default.sql` — defaults `notes.created_by` to the authenticated user (fixes note creation on a project created before this fix landed).
+   - `supabase/migrations/0003_attachments_storage.sql` — creates the `attachments` storage bucket used by image/file blocks in the editor.
 3. **Copy the env file** and fill in your project's credentials (Settings → API in the Supabase dashboard):
    ```sh
    cp .env.example .env
@@ -54,7 +57,7 @@ src/
   pages/
     [...path].astro Single catch-all page — mounts the app shell for any route
 supabase/
-  migrations/0001_init.sql  Schema + RLS policies
+  migrations/  Schema, RLS policies, and the attachments storage bucket
 ```
 
 ## Resale / white-label notes

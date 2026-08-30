@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "katex/dist/katex.min.css";
 
 /* ---------------------------------------------------------------------
    Theme tokens. Light palette lives on :root; dark overrides the same
@@ -269,4 +270,14 @@ body {
 .sp-editor .ProseMirror sup,
 .sp-editor .ProseMirror sub {
   font-size: 0.75em;
+}
+
+.sp-editor .ProseMirror img {
+  max-width: 100%;
+  border-radius: var(--sp-radius-md);
+  display: block;
+}
+.sp-editor .ProseMirror img.ProseMirror-selectednode {
+  outline: 2px solid var(--sp-accent);
+  outline-offset: 2px;
 }
