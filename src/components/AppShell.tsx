@@ -9,6 +9,7 @@ import { TrashView } from "@/components/views/TrashView";
 import { SettingsView } from "@/components/views/SettingsView";
 import { Toaster } from "@/components/Toaster";
 import { ShortcutsDialog } from "@/components/ShortcutsDialog";
+import { WelcomeDialog } from "@/components/WelcomeDialog";
 import { useWorkspaceContext } from "@/lib/workspace-context";
 import { useTheme } from "@/lib/use-theme";
 import { useShortcutsDialog } from "@/lib/use-shortcuts-dialog";
@@ -76,6 +77,7 @@ export function AppShell() {
       <CommandMenu />
       <Toaster />
       <ShortcutsDialog />
+      <WelcomeDialog />
     </div>
   );
 }

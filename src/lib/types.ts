@@ -8,6 +8,7 @@ export interface Workspace {
   theme: Record<string, string>;
   plan: WorkspacePlan;
   trash_retention_days: number;
+  onboarded_at: string | null;
   created_by: string;
   created_at: string;
   updated_at: string;
