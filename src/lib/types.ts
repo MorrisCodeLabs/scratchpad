@@ -1,5 +1,5 @@
 export type NoteStatus = "draft" | "active" | "completed" | "archived";
-export type WorkspacePlan = "free" | "pro";
+export type WorkspacePlan = "free" | "pro" | "team";
 
 export interface Workspace {
   id: string;
@@ -56,7 +56,7 @@ export interface Note {
   deleted_at: string | null;
 }
 
-export type SaveState = "idle" | "saving" | "saved" | "error";
+export type SaveState = "idle" | "saving" | "saved" | "error" | "offline";
 
 export interface NoteVersion {
   id: string;

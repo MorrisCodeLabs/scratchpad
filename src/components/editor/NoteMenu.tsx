@@ -1,4 +1,5 @@
-import { MoreHorizontal, Pin, Star, Copy, Archive, Trash2, History, Download, FileDown, FileText, Lock, Unlock, BookmarkPlus, Globe, ShieldOff, ShieldCheck, GraduationCap, Columns2 } from "lucide-react";
+import { useState } from "react";
+import { MoreHorizontal, Pin, Star, Copy, Archive, Trash2, History, Download, FileDown, FileText, Lock, Unlock, BookmarkPlus, Globe, ShieldOff, ShieldCheck, GraduationCap, Columns2, ShieldAlert } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,6 +11,7 @@ import {
   DropdownMenuSubContent,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
+import { SimilarityCheckDialog } from "@/components/editor/SimilarityCheckDialog";
 import { useWorkspaceContext } from "@/lib/workspace-context";
 import { useIsPro } from "@/lib/use-plan";
 import type { Note } from "@/lib/types";
@@ -45,6 +47,7 @@ export function NoteMenu({
 }) {
   const { notes, navigate } = useWorkspaceContext();
   const isPro = useIsPro();
+  const [similarityOpen, setSimilarityOpen] = useState(false);
 
   return (
     <DropdownMenu>
@@ -71,6 +74,9 @@ export function NoteMenu({
         <DropdownMenuItem onSelect={() => setTimeout(onToggleLock, 0)}>
           {note.is_locked ? <Unlock size={14} /> : <Lock size={14} />}
           {note.is_locked ? "Unlock note" : "Lock note (read-only)"}
+        </DropdownMenuItem>
+        <DropdownMenuItem onSelect={() => setSimilarityOpen(true)}>
+          <ShieldAlert size={14} /> Check similarity
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         {isPro && (
@@ -139,6 +145,13 @@ export function NoteMenu({
           <Trash2 size={14} /> Move to trash
         </DropdownMenuItem>
       </DropdownMenuContent>
+      <SimilarityCheckDialog
+        open={similarityOpen}
+        onOpenChange={setSimilarityOpen}
+        note={note}
+        allNotes={notes.notes}
+        onOpenNote={(id) => navigate({ name: "note", id })}
+      />
     </DropdownMenu>
   );
 }

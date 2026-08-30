@@ -27,6 +27,9 @@ import {
   Sigma,
   Table2,
   BookOpen,
+  ChefHat,
+  QrCode,
+  PenLine,
 } from "lucide-react";
 import { SlashMenu, type SlashMenuHandle, type SlashMenuItem } from "@/components/editor/SlashMenu";
 import { pickFile } from "@/lib/editor/pick-file";
@@ -205,6 +208,25 @@ const ITEMS: SlashMenuItem[] = [
     command: ({ editor, range }) => {
       editor.chain().focus().deleteRange(range).setBibliographyBlock().run();
     },
+  },
+  {
+    title: "Recipe",
+    description: "An ingredient list with a servings multiplier that scales quantities.",
+    icon: ChefHat,
+    command: ({ editor, range }) => editor.chain().focus().deleteRange(range).setRecipeBlock().run(),
+  },
+  {
+    title: "QR code",
+    description: "Generate a QR code from a URL or text.",
+    icon: QrCode,
+    command: ({ editor, range }) => editor.chain().focus().deleteRange(range).setQrBlock().run(),
+  },
+  {
+    title: "Sketch",
+    description: "Freeform drawing canvas.",
+    icon: PenLine,
+    proOnly: true,
+    command: ({ editor, range }) => editor.chain().focus().deleteRange(range).setSketchBlock().run(),
   },
 ];
 

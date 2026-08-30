@@ -8,11 +8,19 @@ import { useSession } from "@/lib/data/use-session";
 // workspace.plan as normal.
 const OWNER_EMAIL = "calebd0716@icloud.com";
 
+// Team includes everything Pro does, plus (eventually) multiple seats —
+// so anywhere in the app that gates on "is this a paying workspace" reads
+// this rather than checking `plan === "pro"` directly.
 export function useIsPro() {
   const { workspace } = useWorkspaceContext();
   const isOwner = useIsOwnerAccount();
   if (isOwner) return true;
-  return workspace.plan === "pro";
+  return workspace.plan === "pro" || workspace.plan === "team";
+}
+
+export function useIsTeam() {
+  const { workspace } = useWorkspaceContext();
+  return workspace.plan === "team";
 }
 
 export function useIsOwnerAccount() {

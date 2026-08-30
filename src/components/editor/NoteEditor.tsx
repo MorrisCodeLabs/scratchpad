@@ -30,6 +30,9 @@ import { ProContext } from "@/lib/editor/pro-context";
 import { DatabaseBlock } from "@/lib/editor/database-block";
 import { Citation } from "@/lib/editor/citation";
 import { BibliographyBlock } from "@/lib/editor/bibliography-block";
+import { RecipeBlock } from "@/lib/editor/recipe-block";
+import { QrBlock } from "@/lib/editor/qr-block";
+import { SketchBlock } from "@/lib/editor/sketch-block";
 import { OutlineZoom } from "@/lib/editor/outline-zoom";
 import { BlockDragHandle } from "@/lib/editor/block-drag-handle";
 import { NoteLink } from "@/lib/editor/note-link";
@@ -38,6 +41,7 @@ import { EmojiCommand } from "@/lib/editor/emoji-command";
 import { SlashCommand } from "@/lib/editor/slash-command";
 import { EditorToolbar } from "@/components/editor/EditorToolbar";
 import { useAutosave } from "@/lib/data/use-autosave";
+import { readOfflineSave, clearOfflineSave } from "@/lib/data/offline-queue";
 import { useWorkspaceContext } from "@/lib/workspace-context";
 import { computeStats } from "@/lib/text-stats";
 import type { Note } from "@/lib/types";
@@ -132,6 +136,9 @@ export function NoteEditor({ note }: { note: Note }) {
       DatabaseBlock,
       Citation,
       BibliographyBlock,
+      RecipeBlock,
+      QrBlock,
+      SketchBlock,
       OutlineZoom,
       BlockDragHandle,
       Image.configure({ inline: false, allowBase64: false }),
@@ -167,6 +174,23 @@ export function NoteEditor({ note }: { note: Note }) {
     setZoomedHeading(null);
     editor?.commands.setContent((note.is_encrypted ? EMPTY_DOC : note.content) as any, false);
   }, [note.id]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Reapply an edit that was queued while offline (browser closed/crashed
+  // before connectivity returned) — encrypted notes are skipped since the
+  // queued payload was stored plaintext-in-memory only, never persisted.
+  useEffect(() => {
+    if (!editor || note.is_encrypted) return;
+    const queued = readOfflineSave(note.id);
+    if (!queued) return;
+    const data = queued.data as { title: string; content: unknown };
+    if (new Date(queued.queuedAt) <= new Date(note.updated_at)) {
+      clearOfflineSave(note.id);
+      return;
+    }
+    setTitle(data.title);
+    editor.commands.setContent(data.content as any, true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [editor, note.id]);
 
   const handleUnlock = (passphrase: string, decrypted: Record<string, unknown>) => {
     passphraseRef.current = passphrase;
@@ -245,6 +269,7 @@ export function NoteEditor({ note }: { note: Note }) {
 
   const { saveState, saveNow } = useAutosave({
     data: saveData,
+    offlineKey: note.id,
     onSave: async (data) => {
       if (isEncrypted) {
         // Never persist plaintext for an encrypted note, and never snapshot

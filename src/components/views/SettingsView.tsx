@@ -47,8 +47,9 @@ export function SettingsView() {
         <TabsContent value="editor">
           <EditorSettings />
         </TabsContent>
-        <TabsContent value="workspace">
+        <TabsContent value="workspace" className="flex flex-col gap-5">
           <WorkspaceSettings />
+          <UsageCard />
         </TabsContent>
         <TabsContent value="billing">
           <Card>
@@ -285,6 +286,53 @@ function WorkspaceSettings() {
           Save changes
         </Button>
       </CardFooter>
+    </Card>
+  );
+}
+
+const NUDGE_THRESHOLD = 20;
+
+function UsageCard() {
+  const { notes, folders, navigate } = useWorkspaceContext();
+  const isPro = useIsPro();
+
+  const noteCount = notes.notes.length;
+  const folderCount = folders.folders.length;
+  const wordCount = notes.notes.reduce((sum, n) => sum + (n.word_count ?? 0), 0);
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Usage</CardTitle>
+        <CardDescription>How much you've written in this workspace so far.</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <div className="grid grid-cols-3 gap-3">
+          <div className="rounded-lg border border-line bg-surface-2/50 px-3 py-2.5 text-center">
+            <p className="text-lg font-semibold tabular-nums text-ink">{noteCount}</p>
+            <p className="text-[11px] text-faint">Notes</p>
+          </div>
+          <div className="rounded-lg border border-line bg-surface-2/50 px-3 py-2.5 text-center">
+            <p className="text-lg font-semibold tabular-nums text-ink">{folderCount}</p>
+            <p className="text-[11px] text-faint">Folders</p>
+          </div>
+          <div className="rounded-lg border border-line bg-surface-2/50 px-3 py-2.5 text-center">
+            <p className="text-lg font-semibold tabular-nums text-ink">{wordCount.toLocaleString()}</p>
+            <p className="text-[11px] text-faint">Words</p>
+          </div>
+        </div>
+
+        {!isPro && noteCount >= NUDGE_THRESHOLD && (
+          <button
+            type="button"
+            onClick={() => navigate({ name: "settings", section: "billing" })}
+            className="mt-4 w-full rounded-lg border border-accent bg-accent-soft px-3.5 py-2.5 text-left text-xs text-accent-ink transition-opacity hover:opacity-90"
+          >
+            <span className="font-medium">You've written {noteCount} notes.</span> Pro adds version history, bulk
+            trash/import, and custom templates for workspaces this active — take a look.
+          </button>
+        )}
+      </CardContent>
     </Card>
   );
 }

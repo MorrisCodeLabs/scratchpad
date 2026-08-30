@@ -1,12 +1,13 @@
 import { useState, type ReactNode } from "react";
-import { Check, Sparkles, Crown } from "lucide-react";
+import { Check, Sparkles, Users, Crown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { useWorkspaceContext } from "@/lib/workspace-context";
-import { useIsPro, useIsOwnerAccount } from "@/lib/use-plan";
+import { useIsOwnerAccount } from "@/lib/use-plan";
 import { setWorkspacePlan } from "@/lib/plan-actions";
 import { cn } from "@/lib/cn";
+import type { WorkspacePlan } from "@/lib/types";
 
 const FREE_FEATURES = [
   "Unlimited notes and folders",
@@ -35,16 +36,17 @@ const PRO_FEATURES = [
   "Encrypted notes",
   "Split-screen editing",
 ];
+const TEAM_FEATURES = ["Everything in Pro", "Multiple seats billed per workspace", "Shared team billing (one invoice, not per-person)"];
 
 export function BillingSettings() {
   const { workspace, refreshWorkspace } = useWorkspaceContext();
-  const isPro = useIsPro();
   const isOwner = useIsOwnerAccount();
   const [loading, setLoading] = useState(false);
+  const plan = workspace.plan;
 
-  const setPlan = async (plan: "free" | "pro") => {
+  const setPlan = async (next: WorkspacePlan) => {
     setLoading(true);
-    const ok = await setWorkspacePlan(workspace.id, plan);
+    const ok = await setWorkspacePlan(workspace.id, next);
     if (ok) await refreshWorkspace();
     setLoading(false);
   };
@@ -66,20 +68,20 @@ export function BillingSettings() {
         </div>
       )}
 
-      <div className="grid gap-5 sm:grid-cols-2">
+      <div className="grid gap-5 sm:grid-cols-3">
         <PlanCard
           title="Free"
           tagline="For getting your notes organized."
           features={FREE_FEATURES}
-          active={!isPro}
+          active={plan === "free"}
           cta={
             <Button
-              variant={isPro ? "outline" : "secondary"}
+              variant={plan === "free" ? "secondary" : "outline"}
               className="w-full"
-              disabled={loading || !isPro || isOwner}
+              disabled={loading || plan === "free" || isOwner}
               onClick={() => setPlan("free")}
             >
-              {isPro ? (loading ? "Working…" : "Downgrade to Free") : "Current plan"}
+              {plan === "free" ? "Current plan" : loading ? "Working…" : "Downgrade to Free"}
             </Button>
           }
         />
@@ -87,16 +89,45 @@ export function BillingSettings() {
           title="Pro"
           tagline="For power users who live in their notes."
           features={PRO_FEATURES}
-          active={isPro}
+          active={plan === "pro"}
           icon={Sparkles}
           popular
           cta={
-            <Button className="w-full" disabled={loading || isPro || isOwner} onClick={() => setPlan("pro")}>
-              {isPro ? "Current plan" : loading ? "Working…" : "Upgrade to Pro"}
+            <Button
+              variant={plan === "pro" ? "secondary" : "default"}
+              className="w-full"
+              disabled={loading || plan === "pro" || isOwner}
+              onClick={() => setPlan("pro")}
+            >
+              {plan === "pro" ? "Current plan" : loading ? "Working…" : "Upgrade to Pro"}
+            </Button>
+          }
+        />
+        <PlanCard
+          title="Team"
+          tagline="For groups sharing a workspace."
+          features={TEAM_FEATURES}
+          active={plan === "team"}
+          icon={Users}
+          cta={
+            <Button
+              variant={plan === "team" ? "secondary" : "outline"}
+              className="w-full"
+              disabled={loading || plan === "team" || isOwner}
+              onClick={() => setPlan("team")}
+            >
+              {plan === "team" ? "Current plan" : loading ? "Working…" : "Switch to Team"}
             </Button>
           }
         />
       </div>
+
+      {plan === "team" && (
+        <p className="mt-4 rounded-md bg-warn-soft px-3 py-2 text-center text-[11px] text-warn">
+          Team billing is set up, but inviting a second person into this workspace needs a data-model change
+          (shared access, membership roles) that hasn't shipped yet — for now this plan reflects billing tier only.
+        </p>
+      )}
 
       <p className="mt-5 text-center text-[11px] text-faint">
         Demo build — no payment processor is wired up, so the buttons above flip the plan directly. In production
