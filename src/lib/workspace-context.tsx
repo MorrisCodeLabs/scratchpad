@@ -34,6 +34,7 @@ export function WorkspaceProvider({
 }) {
   const folders = useFolders(workspace.id);
   const notes = useNotes(workspace.id);
+  const trashedNotes = useNotes(workspace.id, { includeDeleted: true });
   const { route, navigate } = useRouter();
   const [commandMenuOpen, setCommandMenuOpen] = useState(false);
   const [focusMode, setFocusMode] = useState(false);
@@ -57,6 +58,24 @@ export function WorkspaceProvider({
       }
     }
   }, [notes.notes]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Trash auto-empty: permanently delete notes that have sat in trash past
+  // the workspace's retention window. Same client-side sweep trade-off as
+  // the expiration sweep above — no background job, self-corrects on load.
+  const purgedRef = useRef(new Set<string>());
+  useEffect(() => {
+    const cutoff = Date.now() - workspace.trash_retention_days * 24 * 60 * 60 * 1000;
+    for (const note of trashedNotes.notes) {
+      if (
+        note.deleted_at &&
+        new Date(note.deleted_at).getTime() < cutoff &&
+        !purgedRef.current.has(note.id)
+      ) {
+        purgedRef.current.add(note.id);
+        trashedNotes.deleteNotePermanently(note.id);
+      }
+    }
+  }, [trashedNotes.notes, workspace.trash_retention_days]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const value = useMemo(
     () => ({

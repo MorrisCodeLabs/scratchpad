@@ -202,13 +202,22 @@ function EditorSettings() {
   );
 }
 
+const RETENTION_OPTIONS = [7, 14, 30, 60, 90];
+
 function WorkspaceSettings() {
   const { workspace, userId, refreshWorkspace } = useWorkspaceContext();
+  const isPro = useIsPro();
   const [name, setName] = useState(workspace.name);
   const [icon, setIcon] = useState(workspace.icon ?? "");
+  const [upgradeOpen, setUpgradeOpen] = useState(false);
 
   const save = async () => {
     await supabase.from("workspaces").update({ name: name.trim() || "Workspace", icon: icon || null }).eq("id", workspace.id);
+    await refreshWorkspace();
+  };
+
+  const setRetention = async (days: number) => {
+    await supabase.from("workspaces").update({ trash_retention_days: days }).eq("id", workspace.id);
     await refreshWorkspace();
   };
 
@@ -220,12 +229,44 @@ function WorkspaceSettings() {
       <SettingsRow label="Icon" description="An emoji shown next to the workspace name.">
         <Input value={icon} onChange={(e) => setIcon(e.target.value)} className="w-20 text-center" maxLength={4} />
       </SettingsRow>
+      <SettingsRow
+        label={
+          <span className="flex items-center gap-1.5">
+            Trash auto-empty
+            {!isPro && <ProBadge />}
+          </span>
+        }
+        description={
+          isPro
+            ? "Notes are permanently deleted this many days after being trashed."
+            : `Trashed notes are permanently deleted after ${workspace.trash_retention_days} days.`
+        }
+      >
+        {isPro ? (
+          <select
+            value={workspace.trash_retention_days}
+            onChange={(e) => setRetention(Number(e.target.value))}
+            className="h-9 rounded-lg border border-line bg-surface px-2.5 text-[13px] text-ink"
+          >
+            {RETENTION_OPTIONS.map((d) => (
+              <option key={d} value={d}>
+                {d} days
+              </option>
+            ))}
+          </select>
+        ) : (
+          <Button variant="outline" size="sm" onClick={() => setUpgradeOpen(true)}>
+            Customize
+          </Button>
+        )}
+      </SettingsRow>
       <div className="flex justify-end py-3">
         <Button size="sm" onClick={save}>
           Save changes
         </Button>
       </div>
       <p className="pt-3 text-xs text-faint">Owner: {userId}</p>
+      <UpgradeDialog open={upgradeOpen} onOpenChange={setUpgradeOpen} feature="Custom trash retention" />
     </div>
   );
 }
