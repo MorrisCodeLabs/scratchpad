@@ -7,10 +7,12 @@ import { NoteRow } from "@/components/sidebar/NoteRow";
 import { DropZone } from "@/components/sidebar/DropZone";
 import { WorkspaceMenu } from "@/components/sidebar/WorkspaceMenu";
 import { NewNoteMenu } from "@/components/NewNoteMenu";
+import { useIsPro } from "@/lib/use-plan";
 import { cn } from "@/lib/cn";
 
 export function Sidebar() {
   const { folders, notes, route, navigate, setCommandMenuOpen } = useWorkspaceContext();
+  const isPro = useIsPro();
   const [favoritesOpen, setFavoritesOpen] = useState(true);
   const [foldersOpen, setFoldersOpen] = useState(true);
 
@@ -30,6 +32,13 @@ export function Sidebar() {
     if (!over) return;
     const [activeType, activeId] = String(active.id).split(":");
     const [overType, overId] = String(over.id).split(":");
+
+    if (activeType === "note" && overType === "note") {
+      if (!isPro || activeId === overId) return;
+      await notes.reorderNote(activeId, overId);
+      return;
+    }
+
     const targetFolderId = overType === "folder" ? overId : overType === "root" ? null : undefined;
     if (targetFolderId === undefined) return;
 
@@ -131,7 +140,13 @@ export function Sidebar() {
                 <FolderNode key={f.id} folder={f} depth={0} />
               ))}
               {rootNotes.map((n) => (
-                <NoteRow key={n.id} note={n} active={route.name === "note" && route.id === n.id} indent={0} />
+                <NoteRow
+                  key={n.id}
+                  note={n}
+                  active={route.name === "note" && route.id === n.id}
+                  indent={0}
+                  reorderable={isPro}
+                />
               ))}
             </DropZone>
           )}

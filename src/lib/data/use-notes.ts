@@ -16,7 +16,10 @@ export function useNotes(workspaceId: string | undefined, options: UseNotesOptio
     if (!workspaceId) return;
     let query = supabase.from("notes").select("*").eq("workspace_id", workspaceId);
     query = includeDeleted ? query.not("deleted_at", "is", null) : query.is("deleted_at", null);
-    const { data, error } = await query.order("is_pinned", { ascending: false }).order("updated_at", { ascending: false });
+    const { data, error } = await query
+      .order("is_pinned", { ascending: false })
+      .order("sort_order", { ascending: true })
+      .order("updated_at", { ascending: false });
     if (error) {
       console.error(error);
       return;
@@ -142,6 +145,34 @@ export function useNotes(workspaceId: string | undefined, options: UseNotesOptio
     [reload],
   );
 
+  // Pro: manual drag-to-reorder within a folder (or the root list). Free
+  // tier never calls this, so sort_order stays at its default 0 for every
+  // note and the is_pinned/updated_at ordering above is untouched.
+  const reorderNote = useCallback(
+    async (activeId: string, overId: string) => {
+      const active = notes.find((n) => n.id === activeId);
+      const overNote = notes.find((n) => n.id === overId);
+      if (!active || !overNote || active.folder_id !== overNote.folder_id) return;
+
+      const siblingIds = notes.filter((n) => n.folder_id === active.folder_id).map((n) => n.id);
+      const reordered = siblingIds.filter((id) => id !== activeId);
+      const insertAt = reordered.indexOf(overId);
+      reordered.splice(insertAt, 0, activeId);
+
+      const results = await Promise.all(
+        reordered.map((id, index) => supabase.from("notes").update({ sort_order: index }).eq("id", id)),
+      );
+      const failed = results.find((r) => r.error);
+      if (failed?.error) {
+        console.error(failed.error);
+        notifyError(`Couldn't reorder notes: ${failed.error.message}`);
+        return;
+      }
+      await reload();
+    },
+    [notes, reload],
+  );
+
   const deleteNotePermanently = useCallback(
     async (id: string) => {
       const { error } = await supabase.from("notes").delete().eq("id", id);
@@ -160,6 +191,7 @@ export function useNotes(workspaceId: string | undefined, options: UseNotesOptio
     loading,
     createNote,
     updateNote,
+    reorderNote,
     duplicateNote,
     archiveNote,
     trashNote,

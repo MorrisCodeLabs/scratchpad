@@ -8,9 +8,11 @@ import { DropZone } from "@/components/sidebar/DropZone";
 import { NoteRow } from "@/components/sidebar/NoteRow";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { NewNoteMenu } from "@/components/NewNoteMenu";
+import { useIsPro } from "@/lib/use-plan";
 
 export function FolderNode({ folder, depth }: { folder: FolderType; depth: number }) {
   const { folders, notes, route } = useWorkspaceContext();
+  const isPro = useIsPro();
   const [open, setOpen] = useState(depth === 0);
   const [renaming, setRenaming] = useState(false);
   const [name, setName] = useState(folder.name);
@@ -100,7 +102,13 @@ export function FolderNode({ folder, depth }: { folder: FolderType; depth: numbe
             <FolderNode key={f.id} folder={f} depth={depth + 1} />
           ))}
           {childNotes.map((n) => (
-            <NoteRow key={n.id} note={n} active={route.name === "note" && route.id === n.id} indent={depth + 1} />
+            <NoteRow
+              key={n.id}
+              note={n}
+              active={route.name === "note" && route.id === n.id}
+              indent={depth + 1}
+              reorderable={isPro}
+            />
           ))}
         </div>
       )}

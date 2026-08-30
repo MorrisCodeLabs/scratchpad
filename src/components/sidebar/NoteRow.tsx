@@ -1,20 +1,36 @@
-import { useDraggable } from "@dnd-kit/core";
+import { useDraggable, useDroppable } from "@dnd-kit/core";
 import { FileText, Trash2, Lock, Bell } from "lucide-react";
 import { useWorkspaceContext } from "@/lib/workspace-context";
 import type { Note } from "@/lib/types";
 import { cn } from "@/lib/cn";
 
-export function NoteRow({ note, active, indent }: { note: Note; active: boolean; indent: number }) {
+export function NoteRow({
+  note,
+  active,
+  indent,
+  reorderable = false,
+}: {
+  note: Note;
+  active: boolean;
+  indent: number;
+  reorderable?: boolean;
+}) {
   const { navigate, notes } = useWorkspaceContext();
-  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({ id: `note:${note.id}` });
+  const { attributes, listeners, setNodeRef: setDragRef, isDragging } = useDraggable({ id: `note:${note.id}` });
+  const { setNodeRef: setDropRef, isOver } = useDroppable({ id: `note:${note.id}`, disabled: !reorderable });
+
+  const setRefs = (el: HTMLDivElement | null) => {
+    setDragRef(el);
+    setDropRef(el);
+  };
 
   return (
     <div
-      ref={setNodeRef}
+      ref={setRefs}
       {...attributes}
       {...listeners}
       style={{ paddingLeft: `${10 + indent * 14}px`, opacity: isDragging ? 0.4 : 1 }}
-      className="group relative"
+      className={cn("group relative rounded-lg", reorderable && isOver && "outline outline-2 outline-accent")}
     >
       <button
         type="button"
