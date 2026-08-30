@@ -1,7 +1,25 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { DndContext, type DragEndEvent, PointerSensor, useSensor, useSensors } from "@dnd-kit/core";
-import { Pin, Star, Calendar, Trash2, Settings, Plus, Search, FolderPlus, ChevronDown, Sparkles, type LucideIcon } from "lucide-react";
+import {
+  Pin,
+  Star,
+  Calendar,
+  Trash2,
+  Settings,
+  Plus,
+  Search,
+  FolderPlus,
+  ChevronDown,
+  Sparkles,
+  PanelLeftClose,
+  PanelLeftOpen,
+  Sun,
+  Moon,
+  type LucideIcon,
+} from "lucide-react";
 import { useWorkspaceContext } from "@/lib/workspace-context";
+import { useSession } from "@/lib/data/use-session";
+import { useTheme } from "@/lib/use-theme";
 import { FolderNode } from "@/components/sidebar/FolderNode";
 import { NoteRow } from "@/components/sidebar/NoteRow";
 import { DropZone } from "@/components/sidebar/DropZone";
@@ -10,11 +28,20 @@ import { NewNoteMenu } from "@/components/NewNoteMenu";
 import { useIsPro } from "@/lib/use-plan";
 import { cn } from "@/lib/cn";
 
+const COLLAPSED_KEY = "scratchpad:sidebar-collapsed";
+
 export function Sidebar() {
   const { folders, notes, route, navigate, setCommandMenuOpen } = useWorkspaceContext();
+  const { session } = useSession();
+  const { theme, toggleTheme } = useTheme();
   const isPro = useIsPro();
   const [favoritesOpen, setFavoritesOpen] = useState(true);
   const [foldersOpen, setFoldersOpen] = useState(true);
+  const [collapsed, setCollapsed] = useState(() => typeof window !== "undefined" && localStorage.getItem(COLLAPSED_KEY) === "1");
+
+  useEffect(() => {
+    localStorage.setItem(COLLAPSED_KEY, collapsed ? "1" : "0");
+  }, [collapsed]);
 
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 4 } }));
 
@@ -26,6 +53,9 @@ export function Sidebar() {
     () => notes.notes.filter((n) => n.folder_id === null),
     [notes.notes],
   );
+
+  const email = session?.user.email ?? "";
+  const initial = email ? email[0].toUpperCase() : "?";
 
   const handleDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event;
@@ -52,11 +82,68 @@ export function Sidebar() {
     }
   };
 
+  if (collapsed) {
+    return (
+      <aside className="flex h-full w-14 shrink-0 flex-col items-center gap-1 border-r border-line bg-surface py-3">
+        <IconRailButton label="Expand sidebar" onClick={() => setCollapsed(false)}>
+          <PanelLeftOpen size={16} />
+        </IconRailButton>
+        <div className="my-1 h-px w-6 bg-line" />
+        <IconRailButton label="Search (⌘K)" onClick={() => setCommandMenuOpen(true)}>
+          <Search size={16} />
+        </IconRailButton>
+        <NewNoteMenu>
+          <IconRailButton label="New note" onClick={() => {}}>
+            <Plus size={16} />
+          </IconRailButton>
+        </NewNoteMenu>
+        <div className="my-1 h-px w-6 bg-line" />
+        <IconRailButton label="Calendar" active={route.name === "calendar"} onClick={() => navigate({ name: "calendar" })}>
+          <Calendar size={16} />
+        </IconRailButton>
+        <IconRailButton label="Trash" active={route.name === "trash"} onClick={() => navigate({ name: "trash" })}>
+          <Trash2 size={16} />
+        </IconRailButton>
+        {!isPro && (
+          <IconRailButton
+            label="Upgrade"
+            active={route.name === "settings" && route.section === "billing"}
+            onClick={() => navigate({ name: "settings", section: "billing" })}
+          >
+            <Sparkles size={16} />
+          </IconRailButton>
+        )}
+        <IconRailButton label="Settings" active={route.name === "settings"} onClick={() => navigate({ name: "settings" })}>
+          <Settings size={16} />
+        </IconRailButton>
+        <div className="mt-auto flex flex-col items-center gap-1">
+          <IconRailButton label="Toggle theme" onClick={toggleTheme}>
+            {theme === "dark" ? <Sun size={16} /> : <Moon size={16} />}
+          </IconRailButton>
+          <span
+            title={email}
+            className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-accent-soft text-xs font-semibold text-accent-ink"
+          >
+            {initial}
+          </span>
+        </div>
+      </aside>
+    );
+  }
+
   return (
     <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
       <aside className="flex h-full w-72 shrink-0 flex-col border-r border-line bg-surface">
-        <div className="flex items-center justify-between px-4 pb-3 pt-4">
+        <div className="flex items-center justify-between gap-1 px-4 pb-3 pt-4">
           <WorkspaceMenu />
+          <button
+            type="button"
+            title="Collapse sidebar"
+            onClick={() => setCollapsed(true)}
+            className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-faint transition-colors hover:bg-surface-2 hover:text-ink"
+          >
+            <PanelLeftClose size={15} />
+          </button>
         </div>
 
         <div className="flex flex-col gap-0.5 px-3">
@@ -180,6 +267,39 @@ export function Sidebar() {
             onClick={() => navigate({ name: "settings" })}
           />
         </div>
+
+        <div className="flex items-center gap-2 border-t border-line px-3 py-2.5">
+          <button
+            type="button"
+            onClick={() => navigate({ name: "settings" })}
+            title="Account"
+            className="flex min-w-0 flex-1 items-center gap-2 rounded-md px-1 py-0.5 text-left transition-colors hover:bg-surface-2"
+          >
+            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-accent-soft text-xs font-semibold text-accent-ink">
+              {initial}
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block truncate text-xs font-medium text-ink">{email || "Account"}</span>
+              <span className="block text-[10px] text-faint">{isPro ? "Pro" : "Free"}</span>
+            </span>
+          </button>
+          <button
+            type="button"
+            title="Toggle theme"
+            onClick={toggleTheme}
+            className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-faint transition-colors hover:bg-surface-2 hover:text-ink"
+          >
+            {theme === "dark" ? <Sun size={14} /> : <Moon size={14} />}
+          </button>
+          <button
+            type="button"
+            title="Collapse sidebar"
+            onClick={() => setCollapsed(true)}
+            className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-faint transition-colors hover:bg-surface-2 hover:text-ink"
+          >
+            <PanelLeftClose size={14} />
+          </button>
+        </div>
       </aside>
     </DndContext>
   );
@@ -207,6 +327,33 @@ function SidebarLink({
     >
       <Icon size={15} className="shrink-0" />
       {label}
+    </button>
+  );
+}
+
+function IconRailButton({
+  label,
+  active,
+  onClick,
+  children,
+}: {
+  label: string;
+  active?: boolean;
+  onClick: () => void;
+  children: ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      title={label}
+      aria-label={label}
+      onClick={onClick}
+      className={cn(
+        "flex h-9 w-9 shrink-0 items-center justify-center rounded-md transition-colors",
+        active ? "bg-accent-soft text-accent-ink" : "text-muted hover:bg-surface-2 hover:text-ink",
+      )}
+    >
+      {children}
     </button>
   );
 }

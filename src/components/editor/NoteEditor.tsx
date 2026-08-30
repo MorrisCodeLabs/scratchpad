@@ -61,7 +61,8 @@ import { useCustomTemplates } from "@/lib/data/use-custom-templates";
 import { tiptapToMarkdown } from "@/lib/markdown-export";
 import { downloadTextFile, printNoteAsPdf } from "@/lib/download";
 import { encryptContent } from "@/lib/note-encryption";
-import { Lock, Maximize2, Minimize2, Search, AlertTriangle, ZoomIn, ZoomOut } from "lucide-react";
+import { Lock, Maximize2, Minimize2, Search, AlertTriangle, ZoomIn, ZoomOut, PanelRightClose, PanelRightOpen } from "lucide-react";
+import { cn } from "@/lib/cn";
 import type { NoteVersion } from "@/lib/types";
 
 const EMPTY_DOC = { type: "doc", content: [{ type: "paragraph" }] };
@@ -80,6 +81,7 @@ export function NoteEditor({ note }: { note: Note }) {
   const [studyModeOpen, setStudyModeOpen] = useState(false);
   const [zoomedHeading, setZoomedHeading] = useState<{ text: string; pos: number } | null>(null);
   const [splitDialogOpen, setSplitDialogOpen] = useState(false);
+  const [panelOpen, setPanelOpen] = useState(true);
   const passphraseRef = useRef<string | null>(null);
   const [reminderAt, setReminderAt] = useState<string | null>(note.reminder_at);
   const [expiresAt, setExpiresAt] = useState<string | null>(note.expires_at);
@@ -342,7 +344,7 @@ export function NoteEditor({ note }: { note: Note }) {
           onChange={(e) => setTitle(e.target.value)}
           placeholder="Untitled"
           readOnly={isLocked}
-          className="min-w-0 flex-1 truncate border-none bg-transparent text-[13px] font-medium text-ink outline-none placeholder:text-faint"
+          className="min-w-0 flex-1 truncate border-none bg-transparent text-[17px] font-semibold text-ink outline-none placeholder:text-faint"
         />
         <div className="flex items-center gap-1">
           <button
@@ -365,6 +367,19 @@ export function NoteEditor({ note }: { note: Note }) {
           )}
           {editor && <NoteOutline editor={editor} contentTick={contentTick} onZoom={setZoomedHeading} />}
           <SaveIndicator state={saveState} onSaveNow={saveNow} />
+          {!focusMode && (
+            <button
+              type="button"
+              title={panelOpen ? "Hide panel" : "Show panel"}
+              onClick={() => setPanelOpen((v) => !v)}
+              className={cn(
+                "flex h-7 w-7 items-center justify-center rounded-md transition-colors hover:bg-surface-2 hover:text-ink",
+                panelOpen ? "text-accent-ink" : "text-muted",
+              )}
+            >
+              {panelOpen ? <PanelRightClose size={15} /> : <PanelRightOpen size={15} />}
+            </button>
+          )}
           <NoteMenu
             note={note}
             onOpenVersionHistory={() => setVersionHistoryOpen(true)}
@@ -447,7 +462,7 @@ export function NoteEditor({ note }: { note: Note }) {
           )}
         </div>
 
-        {!focusMode && (
+        {!focusMode && panelOpen && (
           <aside className="flex w-72 shrink-0 flex-col overflow-y-auto border-l border-line bg-surface-2/30">
             <NotePropertiesPanel
               note={note}
