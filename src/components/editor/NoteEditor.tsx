@@ -26,6 +26,8 @@ import { ProgressBar } from "@/lib/editor/progress-bar";
 import { FileBlock } from "@/lib/editor/file-block";
 import { MathBlock } from "@/lib/editor/math-block";
 import { NoteContext } from "@/lib/editor/note-context";
+import { NoteLink } from "@/lib/editor/note-link";
+import { NoteLinkCommand } from "@/lib/editor/note-link-command";
 import { EmojiCommand } from "@/lib/editor/emoji-command";
 import { SlashCommand } from "@/lib/editor/slash-command";
 import { EditorToolbar } from "@/components/editor/EditorToolbar";
@@ -42,6 +44,7 @@ import { ReminderControl } from "@/components/editor/ReminderControl";
 import { ExpirationControl } from "@/components/editor/ExpirationControl";
 import { NoteDetailsPanel } from "@/components/editor/NoteDetailsPanel";
 import { NoteOutline } from "@/components/editor/NoteOutline";
+import { BacklinksPanel } from "@/components/editor/BacklinksPanel";
 import { SaveTemplateDialog } from "@/components/editor/SaveTemplateDialog";
 import { FindReplaceBar } from "@/components/editor/FindReplaceBar";
 import { useIsPro } from "@/lib/use-plan";
@@ -53,7 +56,7 @@ import { Lock, Maximize2, Minimize2, Search } from "lucide-react";
 import type { NoteVersion } from "@/lib/types";
 
 export function NoteEditor({ note }: { note: Note }) {
-  const { notes, workspace, focusMode, setFocusMode } = useWorkspaceContext();
+  const { notes, workspace, focusMode, setFocusMode, navigate } = useWorkspaceContext();
   const isPro = useIsPro();
   const { saveTemplate } = useCustomTemplates(workspace.id);
   const [title, setTitle] = useState(note.title);
@@ -99,7 +102,9 @@ export function NoteEditor({ note }: { note: Note }) {
       MathBlock,
       Image.configure({ inline: false, allowBase64: false }),
       NoteContext.configure({ workspaceId: note.workspace_id, noteId: note.id }),
-      Placeholder.configure({ placeholder: "Write, or press '/' for commands…" }),
+      NoteLink,
+      NoteLinkCommand,
+      Placeholder.configure({ placeholder: "Write, or press '/' for commands, '[[' to link a note…" }),
       SlashCommand,
       EmojiCommand,
     ],
@@ -138,6 +143,12 @@ export function NoteEditor({ note }: { note: Note }) {
   useEffect(() => {
     editor?.setEditable(!isLocked);
   }, [editor, isLocked]);
+
+  useEffect(() => {
+    if (!editor) return;
+    editor.storage.noteLink.notes = notes.notes.map((n) => ({ id: n.id, title: n.title }));
+    editor.storage.noteLink.onNavigate = (id: string) => navigate({ name: "note", id });
+  }, [editor, notes.notes, navigate]);
 
   const [contentTick, setContentTick] = useState(0);
   useEffect(() => {
@@ -251,6 +262,7 @@ export function NoteEditor({ note }: { note: Note }) {
               notes.updateNote(note.id, { expires_at: iso });
             }}
           />
+          <BacklinksPanel note={note} allNotes={notes.notes} onNavigate={(id) => navigate({ name: "note", id })} />
         </div>
         <div className="flex items-center gap-1">
           <button
