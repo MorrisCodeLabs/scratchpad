@@ -10,6 +10,7 @@ import { SettingsView } from "@/components/views/SettingsView";
 import { Toaster } from "@/components/Toaster";
 import { ShortcutsDialog } from "@/components/ShortcutsDialog";
 import { WelcomeDialog } from "@/components/WelcomeDialog";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { useWorkspaceContext } from "@/lib/workspace-context";
 import { useTheme } from "@/lib/use-theme";
 import { useShortcutsDialog } from "@/lib/use-shortcuts-dialog";
@@ -46,33 +47,35 @@ export function AppShell() {
     <div className="flex h-dvh w-full overflow-hidden bg-bg text-ink">
       {!focusMode && <Sidebar />}
       <main className="min-w-0 flex-1">
-        {route.name === "all-notes" && <AllNotesView />}
-        {route.name === "note" && (
-          <div className="flex h-full">
-            <div className="min-w-0 flex-1">
-              <NoteView noteId={route.id} />
+        <ErrorBoundary key={route.name === "note" ? `note:${route.id}` : route.name}>
+          {route.name === "all-notes" && <AllNotesView />}
+          {route.name === "note" && (
+            <div className="flex h-full">
+              <div className="min-w-0 flex-1">
+                <NoteView noteId={route.id} />
+              </div>
+              {splitNoteId && splitNoteId !== route.id && (
+                <>
+                  <div className="w-px shrink-0 bg-line" />
+                  <div className="relative min-w-0 flex-1">
+                    <button
+                      type="button"
+                      title="Close split"
+                      onClick={() => setSplitNoteId(null)}
+                      className="absolute right-2 top-2.5 z-10 flex h-6 w-6 items-center justify-center rounded-md text-faint transition-colors hover:bg-surface-2 hover:text-ink"
+                    >
+                      <X size={14} />
+                    </button>
+                    <NoteView noteId={splitNoteId} />
+                  </div>
+                </>
+              )}
             </div>
-            {splitNoteId && splitNoteId !== route.id && (
-              <>
-                <div className="w-px shrink-0 bg-line" />
-                <div className="relative min-w-0 flex-1">
-                  <button
-                    type="button"
-                    title="Close split"
-                    onClick={() => setSplitNoteId(null)}
-                    className="absolute right-2 top-2.5 z-10 flex h-6 w-6 items-center justify-center rounded-md text-faint transition-colors hover:bg-surface-2 hover:text-ink"
-                  >
-                    <X size={14} />
-                  </button>
-                  <NoteView noteId={splitNoteId} />
-                </div>
-              </>
-            )}
-          </div>
-        )}
-        {route.name === "calendar" && <CalendarView />}
-        {route.name === "trash" && <TrashView />}
-        {route.name === "settings" && <SettingsView />}
+          )}
+          {route.name === "calendar" && <CalendarView />}
+          {route.name === "trash" && <TrashView />}
+          {route.name === "settings" && <SettingsView />}
+        </ErrorBoundary>
       </main>
       <CommandMenu />
       <Toaster />

@@ -26,7 +26,16 @@ export function FindReplaceBar({
   useEffect(() => {
     if (matches.length === 0) return;
     const m = matches[Math.min(index, matches.length - 1)];
-    editor.chain().setTextSelection({ from: m.from, to: m.to }).scrollIntoView().run();
+    const docSize = editor.state.doc.content.size;
+    if (m.from < 0 || m.to > docSize || m.from > m.to) return;
+    try {
+      editor.chain().setTextSelection({ from: m.from, to: m.to }).scrollIntoView().run();
+    } catch (err) {
+      // A match position can go stale for a moment between an edit and the
+      // matches recomputing off contentTick — better to skip the scroll
+      // than let a ProseMirror RangeError take down the whole page.
+      console.warn("Find: skipped selecting a stale match", err);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [matches, index]);
 

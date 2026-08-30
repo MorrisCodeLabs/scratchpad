@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { Users, Rocket, BookOpen, Sparkles, Trash2, type LucideIcon } from "lucide-react";
+import { FileText, Users, Rocket, BookOpen, Sparkles, Trash2, type LucideIcon } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,6 +13,7 @@ import { useCustomTemplates } from "@/lib/data/use-custom-templates";
 import type { CustomNoteTemplate } from "@/lib/types";
 
 const ICONS: Record<NoteTemplate["iconName"], LucideIcon> = {
+  blank: FileText,
   meeting: Users,
   project: Rocket,
   journal: BookOpen,
@@ -54,7 +55,7 @@ export function NewNoteMenu({
                 <Icon size={14} />
               </span>
               <span className="min-w-0">
-                <span className="block text-sm font-medium text-ink">{template.title}</span>
+                <span className="block text-sm font-medium text-ink">{template.name}</span>
                 <span className="block text-xs text-faint">{template.description}</span>
               </span>
             </DropdownMenuItem>

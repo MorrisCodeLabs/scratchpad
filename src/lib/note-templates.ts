@@ -1,8 +1,11 @@
 export interface NoteTemplate {
   id: string;
+  /** Shown as the menu item's label. */
+  name: string;
+  /** Set as the created note's initial title — empty for a truly blank note. */
   title: string;
   description: string;
-  iconName: "meeting" | "project" | "journal";
+  iconName: "blank" | "meeting" | "project" | "journal";
   content: Record<string, unknown>;
 }
 
@@ -37,7 +40,16 @@ function taskList(items: string[]) {
 
 export const NOTE_TEMPLATES: NoteTemplate[] = [
   {
+    id: "blank",
+    name: "Blank",
+    title: "",
+    description: "Start with a blank page.",
+    iconName: "blank",
+    content: doc(paragraph()),
+  },
+  {
     id: "meeting",
+    name: "Meeting notes",
     title: "Meeting notes",
     description: "Agenda, notes, and action items.",
     iconName: "meeting",
@@ -55,6 +67,7 @@ export const NOTE_TEMPLATES: NoteTemplate[] = [
   },
   {
     id: "project",
+    name: "Project brief",
     title: "Project brief",
     description: "Overview, goals, and timeline.",
     iconName: "project",
@@ -72,6 +85,7 @@ export const NOTE_TEMPLATES: NoteTemplate[] = [
   },
   {
     id: "journal",
+    name: "Journal entry",
     title: "Journal entry",
     description: "A blank page with a prompt to start writing.",
     iconName: "journal",
