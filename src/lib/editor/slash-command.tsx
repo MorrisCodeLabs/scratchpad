@@ -25,6 +25,7 @@ import {
   Image as ImageIcon,
   Paperclip,
   Sigma,
+  Table2,
 } from "lucide-react";
 import { SlashMenu, type SlashMenuHandle, type SlashMenuItem } from "@/components/editor/SlashMenu";
 import { pickFile } from "@/lib/editor/pick-file";
@@ -185,6 +186,19 @@ const ITEMS: SlashMenuItem[] = [
     description: "A LaTeX equation, rendered with KaTeX.",
     icon: Sigma,
     command: ({ editor, range }) => editor.chain().focus().deleteRange(range).setMathBlock().run(),
+  },
+  {
+    title: "Database",
+    description: "A sortable, filterable table with typed columns.",
+    icon: Table2,
+    command: ({ editor, range }) => {
+      const pro = editor.storage.proContext;
+      if (pro && !pro.isPro) {
+        pro.requestUpgrade("Database block");
+        return;
+      }
+      editor.chain().focus().deleteRange(range).setDatabaseBlock().run();
+    },
   },
 ];
 

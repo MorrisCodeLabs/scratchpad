@@ -26,6 +26,8 @@ import { ProgressBar } from "@/lib/editor/progress-bar";
 import { FileBlock } from "@/lib/editor/file-block";
 import { MathBlock } from "@/lib/editor/math-block";
 import { NoteContext } from "@/lib/editor/note-context";
+import { ProContext } from "@/lib/editor/pro-context";
+import { DatabaseBlock } from "@/lib/editor/database-block";
 import { NoteLink } from "@/lib/editor/note-link";
 import { NoteLinkCommand } from "@/lib/editor/note-link-command";
 import { EmojiCommand } from "@/lib/editor/emoji-command";
@@ -49,6 +51,7 @@ import { CommentsPanel } from "@/components/editor/CommentsPanel";
 import { SaveTemplateDialog } from "@/components/editor/SaveTemplateDialog";
 import { ShareDialog } from "@/components/editor/ShareDialog";
 import { FindReplaceBar } from "@/components/editor/FindReplaceBar";
+import { UpgradeDialog } from "@/components/pro/UpgradeDialog";
 import { useIsPro } from "@/lib/use-plan";
 import { createNoteVersion } from "@/lib/data/use-note-versions";
 import { useCustomTemplates } from "@/lib/data/use-custom-templates";
@@ -73,6 +76,7 @@ export function NoteEditor({ note }: { note: Note }) {
   const [saveTemplateOpen, setSaveTemplateOpen] = useState(false);
   const [findOpen, setFindOpen] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
+  const [dbUpgradeOpen, setDbUpgradeOpen] = useState(false);
   const lastSnapshotAt = useRef(0);
 
   const editor = useEditor({
@@ -103,8 +107,10 @@ export function NoteEditor({ note }: { note: Note }) {
       ProgressBar,
       FileBlock,
       MathBlock,
+      DatabaseBlock,
       Image.configure({ inline: false, allowBase64: false }),
       NoteContext.configure({ workspaceId: note.workspace_id, noteId: note.id }),
+      ProContext,
       NoteLink,
       NoteLinkCommand,
       Placeholder.configure({ placeholder: "Write, or press '/' for commands, '[[' to link a note…" }),
@@ -152,6 +158,12 @@ export function NoteEditor({ note }: { note: Note }) {
     editor.storage.noteLink.notes = notes.notes.map((n) => ({ id: n.id, title: n.title }));
     editor.storage.noteLink.onNavigate = (id: string) => navigate({ name: "note", id });
   }, [editor, notes.notes, navigate]);
+
+  useEffect(() => {
+    if (!editor) return;
+    editor.storage.proContext.isPro = isPro;
+    editor.storage.proContext.requestUpgrade = () => setDbUpgradeOpen(true);
+  }, [editor, isPro]);
 
   const [contentTick, setContentTick] = useState(0);
   useEffect(() => {
@@ -382,6 +394,7 @@ export function NoteEditor({ note }: { note: Note }) {
         note={note}
         onSetShareToken={(token) => notes.updateNote(note.id, { share_token: token })}
       />
+      <UpgradeDialog open={dbUpgradeOpen} onOpenChange={setDbUpgradeOpen} feature="Database block" />
     </div>
   );
 }

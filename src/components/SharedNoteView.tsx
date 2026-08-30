@@ -23,6 +23,7 @@ import { DefinitionList, DefinitionItem, DefinitionTerm, DefinitionDescription }
 import { ProgressBar } from "@/lib/editor/progress-bar";
 import { FileBlock } from "@/lib/editor/file-block";
 import { MathBlock } from "@/lib/editor/math-block";
+import { DatabaseBlock } from "@/lib/editor/database-block";
 import { NoteLink } from "@/lib/editor/note-link";
 import { Globe } from "lucide-react";
 
@@ -64,6 +65,7 @@ export function SharedNoteView({
       ProgressBar,
       FileBlock,
       MathBlock,
+      DatabaseBlock,
       Image.configure({ inline: false, allowBase64: false }),
       NoteLink,
     ],
