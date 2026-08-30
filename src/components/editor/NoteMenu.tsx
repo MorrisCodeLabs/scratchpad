@@ -1,4 +1,4 @@
-import { MoreHorizontal, Pin, Star, Copy, Archive, Trash2, Lock, Unlock, Download, FileText, FileType, Globe } from "lucide-react";
+import { MoreHorizontal, Pin, Star, Copy, Archive, Trash2, Lock, Unlock, Download, FileText, FileType, Globe, History } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -19,12 +19,14 @@ export function NoteMenu({
   onExportMarkdown,
   onExportText,
   onOpenShare,
+  onOpenVersionHistory,
 }: {
   note: Note;
   onToggleLock: () => void;
   onExportMarkdown: () => void;
   onExportText: () => void;
   onOpenShare: () => void;
+  onOpenVersionHistory: () => void;
 }) {
   const { notes, navigate } = useWorkspaceContext();
 
@@ -55,6 +57,9 @@ export function NoteMenu({
           {note.is_locked ? "Unlock note" : "Lock note (read-only)"}
         </DropdownMenuItem>
         <DropdownMenuSeparator />
+        <DropdownMenuItem onSelect={onOpenVersionHistory}>
+          <History size={14} /> Version history
+        </DropdownMenuItem>
         <DropdownMenuSub>
           <DropdownMenuSubTrigger className="flex cursor-pointer select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm text-ink outline-none data-[highlighted]:bg-surface-2">
             <Download size={14} /> Export

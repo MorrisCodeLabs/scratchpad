@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Underline from "@tiptap/extension-underline";
@@ -41,17 +41,23 @@ import { NoteOutline } from "@/components/editor/NoteOutline";
 import { BacklinksPanel } from "@/components/editor/BacklinksPanel";
 import { NoteTagsPopover } from "@/components/editor/NoteTagsPopover";
 import { ShareDialog } from "@/components/editor/ShareDialog";
+import { VersionHistoryDialog } from "@/components/editor/VersionHistoryDialog";
+import { createNoteVersion } from "@/lib/data/use-note-versions";
+import { readOfflineSave, clearOfflineSave } from "@/lib/data/offline-queue";
 import { tiptapToMarkdown } from "@/lib/markdown-export";
 import { docToText } from "@/lib/text-stats";
 import { downloadTextFile } from "@/lib/download";
 import { Lock, Maximize2, Minimize2, AlertTriangle } from "lucide-react";
+import type { NoteVersion } from "@/lib/types";
 
 export function NoteEditor({ note }: { note: Note }) {
-  const { notes, focusMode, setFocusMode, navigate } = useWorkspaceContext();
+  const { notes, workspace, focusMode, setFocusMode, navigate } = useWorkspaceContext();
   const [title, setTitle] = useState(note.title);
   const [isLocked, setIsLocked] = useState(note.is_locked);
   const [tags, setTags] = useState<string[]>(note.tags);
   const [shareOpen, setShareOpen] = useState(false);
+  const [versionHistoryOpen, setVersionHistoryOpen] = useState(false);
+  const lastSnapshotAt = useRef(0);
 
   const editor = useEditor({
     extensions: [
@@ -109,6 +115,24 @@ export function NoteEditor({ note }: { note: Note }) {
     editor.storage.noteLink.onNavigate = (id: string) => navigate({ name: "note", id });
   }, [editor, notes.notes, navigate]);
 
+  // Note recovery: reapply an edit that was queued while offline (browser
+  // closed/crashed before connectivity returned) and never made it to the
+  // server. Only applied if it's actually newer than what's on the note —
+  // otherwise a stale queued edit could clobber a since-synced save.
+  useEffect(() => {
+    if (!editor) return;
+    const queued = readOfflineSave(note.id);
+    if (!queued) return;
+    const data = queued.data as { title: string; content: unknown };
+    if (new Date(queued.queuedAt) <= new Date(note.updated_at)) {
+      clearOfflineSave(note.id);
+      return;
+    }
+    setTitle(data.title);
+    editor.commands.setContent(data.content as any, true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [editor, note.id]);
+
   const [contentTick, setContentTick] = useState(0);
   useEffect(() => {
     if (!editor) return;
@@ -149,6 +173,7 @@ export function NoteEditor({ note }: { note: Note }) {
 
   const { saveState, saveNow } = useAutosave({
     data: saveData,
+    offlineKey: note.id,
     onSave: async (data) => {
       await notes.updateNote(note.id, {
         title: data.title || "Untitled",
@@ -156,6 +181,16 @@ export function NoteEditor({ note }: { note: Note }) {
         word_count: stats.wordCount,
         char_count: stats.charCount,
       });
+
+      // Version history: snapshot a restore point, throttled so every
+      // autosave tick doesn't spam note_versions — one snapshot per 3
+      // minutes of active editing is enough for meaningful restore points
+      // without flooding the table.
+      const now = Date.now();
+      if (now - lastSnapshotAt.current > 3 * 60 * 1000) {
+        lastSnapshotAt.current = now;
+        createNoteVersion(workspace.id, note.id, data.title || "Untitled", data.content as any, stats.wordCount);
+      }
     },
   });
 
@@ -187,6 +222,11 @@ export function NoteEditor({ note }: { note: Note }) {
   const exportText = () => {
     const text = docToText(editor?.getJSON() ?? note.content);
     downloadTextFile(`${(title || "untitled").replace(/[^a-z0-9]+/gi, "-").toLowerCase()}.txt`, `${title || "Untitled"}\n\n${text}`, "text/plain");
+  };
+
+  const restoreVersion = (version: NoteVersion) => {
+    setTitle(version.title);
+    editor?.commands.setContent(version.content as any, false);
   };
 
   return (
@@ -223,6 +263,7 @@ export function NoteEditor({ note }: { note: Note }) {
             onExportMarkdown={exportMarkdown}
             onExportText={exportText}
             onOpenShare={() => setShareOpen(true)}
+            onOpenVersionHistory={() => setVersionHistoryOpen(true)}
           />
         </div>
       </div>
@@ -272,6 +313,15 @@ export function NoteEditor({ note }: { note: Note }) {
         onOpenChange={setShareOpen}
         note={note}
         onUpdateShare={(patch) => notes.updateNote(note.id, patch)}
+      />
+      <VersionHistoryDialog
+        open={versionHistoryOpen}
+        onOpenChange={setVersionHistoryOpen}
+        note={note}
+        currentTitle={title}
+        currentContent={(editor?.getJSON() ?? note.content) as Record<string, unknown>}
+        currentWordCount={stats.wordCount}
+        onRestore={restoreVersion}
       />
     </div>
   );
