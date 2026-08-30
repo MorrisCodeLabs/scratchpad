@@ -39,6 +39,7 @@ export interface Note {
   char_count: number;
   word_goal: number | null;
   is_locked: boolean;
+  is_encrypted: boolean;
   reminder_at: string | null;
   color: string | null;
   description: string | null;

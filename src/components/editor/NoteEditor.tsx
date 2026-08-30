@@ -52,13 +52,18 @@ import { SaveTemplateDialog } from "@/components/editor/SaveTemplateDialog";
 import { ShareDialog } from "@/components/editor/ShareDialog";
 import { FindReplaceBar } from "@/components/editor/FindReplaceBar";
 import { UpgradeDialog } from "@/components/pro/UpgradeDialog";
+import { EncryptDialog } from "@/components/editor/EncryptDialog";
+import { UnlockNoteView } from "@/components/editor/UnlockNoteView";
 import { useIsPro } from "@/lib/use-plan";
 import { createNoteVersion } from "@/lib/data/use-note-versions";
 import { useCustomTemplates } from "@/lib/data/use-custom-templates";
 import { tiptapToMarkdown } from "@/lib/markdown-export";
 import { downloadTextFile, printNoteAsPdf } from "@/lib/download";
+import { encryptContent } from "@/lib/note-encryption";
 import { Lock, Maximize2, Minimize2, Search, AlertTriangle } from "lucide-react";
 import type { NoteVersion } from "@/lib/types";
+
+const EMPTY_DOC = { type: "doc", content: [{ type: "paragraph" }] };
 
 export function NoteEditor({ note }: { note: Note }) {
   const { notes, workspace, focusMode, setFocusMode, navigate, userId } = useWorkspaceContext();
@@ -67,6 +72,11 @@ export function NoteEditor({ note }: { note: Note }) {
   const [title, setTitle] = useState(note.title);
   const [wordGoal, setWordGoal] = useState<number | null>(note.word_goal);
   const [isLocked, setIsLocked] = useState(note.is_locked);
+  const [isEncrypted, setIsEncrypted] = useState(note.is_encrypted);
+  const [unlocked, setUnlocked] = useState(!note.is_encrypted);
+  const [encryptDialogOpen, setEncryptDialogOpen] = useState(false);
+  const [encryptUpgradeOpen, setEncryptUpgradeOpen] = useState(false);
+  const passphraseRef = useRef<string | null>(null);
   const [reminderAt, setReminderAt] = useState<string | null>(note.reminder_at);
   const [expiresAt, setExpiresAt] = useState<string | null>(note.expires_at);
   const [color, setColor] = useState<string | null>(note.color);
@@ -117,7 +127,7 @@ export function NoteEditor({ note }: { note: Note }) {
       SlashCommand,
       EmojiCommand,
     ],
-    content: note.content,
+    content: note.is_encrypted ? EMPTY_DOC : note.content,
     editorProps: {
       attributes: { class: "sp-editor-content" },
     },
@@ -133,10 +143,19 @@ export function NoteEditor({ note }: { note: Note }) {
     setColor(note.color);
     setDescription(note.description);
     setTags(note.tags);
+    setIsEncrypted(note.is_encrypted);
+    setUnlocked(!note.is_encrypted);
+    passphraseRef.current = null;
     lastSnapshotAt.current = 0;
     setFindOpen(false);
-    editor?.commands.setContent(note.content as any, false);
+    editor?.commands.setContent((note.is_encrypted ? EMPTY_DOC : note.content) as any, false);
   }, [note.id]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const handleUnlock = (passphrase: string, decrypted: Record<string, unknown>) => {
+    passphraseRef.current = passphrase;
+    setUnlocked(true);
+    editor?.commands.setContent(decrypted as any, false);
+  };
 
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
@@ -150,8 +169,8 @@ export function NoteEditor({ note }: { note: Note }) {
   }, [isLocked]);
 
   useEffect(() => {
-    editor?.setEditable(!isLocked);
-  }, [editor, isLocked]);
+    editor?.setEditable(!isLocked && (!isEncrypted || unlocked));
+  }, [editor, isLocked, isEncrypted, unlocked]);
 
   useEffect(() => {
     if (!editor) return;
@@ -192,6 +211,20 @@ export function NoteEditor({ note }: { note: Note }) {
   const { saveState, saveNow } = useAutosave({
     data: saveData,
     onSave: async (data) => {
+      if (isEncrypted) {
+        // Never persist plaintext for an encrypted note, and never snapshot
+        // it into note_versions either — that would defeat the point.
+        if (!passphraseRef.current) return;
+        const payload = await encryptContent(data.content as Record<string, unknown>, passphraseRef.current);
+        await notes.updateNote(note.id, {
+          title: data.title || "Untitled",
+          content: payload as any,
+          word_count: stats.wordCount,
+          char_count: stats.charCount,
+        });
+        return;
+      }
+
       await notes.updateNote(note.id, {
         title: data.title || "Untitled",
         content: data.content as any,
@@ -235,6 +268,33 @@ export function NoteEditor({ note }: { note: Note }) {
     const next = !isLocked;
     setIsLocked(next);
     notes.updateNote(note.id, { is_locked: next });
+  };
+
+  const requestEncrypt = () => {
+    if (!isPro) {
+      setEncryptUpgradeOpen(true);
+      return;
+    }
+    setEncryptDialogOpen(true);
+  };
+
+  const handleEncrypt = async (passphrase: string) => {
+    const payload = await encryptContent((editor?.getJSON() ?? note.content) as Record<string, unknown>, passphrase);
+    passphraseRef.current = passphrase;
+    setIsEncrypted(true);
+    await notes.updateNote(note.id, { content: payload as any, is_encrypted: true });
+  };
+
+  const removeEncryption = async () => {
+    const plain = (editor?.getJSON() ?? EMPTY_DOC) as Record<string, unknown>;
+    passphraseRef.current = null;
+    setIsEncrypted(false);
+    await notes.updateNote(note.id, {
+      content: plain as any,
+      is_encrypted: false,
+      word_count: stats.wordCount,
+      char_count: stats.charCount,
+    });
   };
 
   const toggleFocusMode = () => {
@@ -315,6 +375,10 @@ export function NoteEditor({ note }: { note: Note }) {
             onToggleLock={toggleLock}
             onSaveAsTemplate={() => setSaveTemplateOpen(true)}
             onOpenShare={() => setShareOpen(true)}
+            isEncrypted={isEncrypted}
+            unlocked={unlocked}
+            onEncrypt={requestEncrypt}
+            onRemoveEncryption={removeEncryption}
           />
         </div>
       </div>
@@ -325,53 +389,59 @@ export function NoteEditor({ note }: { note: Note }) {
         </div>
       )}
 
-      <div className="mx-auto w-full max-w-[720px] px-8 pb-4 pt-8">
-        <input
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          placeholder="Untitled"
-          readOnly={isLocked}
-          className="w-full border-none bg-transparent text-[2.25rem] font-bold leading-tight tracking-tight text-ink outline-none placeholder:text-faint"
-        />
-        {duplicateTitleNote && (
-          <button
-            type="button"
-            onClick={() => navigate({ name: "note", id: duplicateTitleNote.id })}
-            className="mt-1.5 flex items-center gap-1.5 text-xs text-warn hover:underline"
-          >
-            <AlertTriangle size={12} />
-            Another note is already titled “{duplicateTitleNote.title}” — open it?
-          </button>
-        )}
-      </div>
+      {isEncrypted && !unlocked ? (
+        <UnlockNoteView content={note.content} onUnlock={handleUnlock} />
+      ) : (
+        <>
+          <div className="mx-auto w-full max-w-[720px] px-8 pb-4 pt-8">
+            <input
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="Untitled"
+              readOnly={isLocked}
+              className="w-full border-none bg-transparent text-[2.25rem] font-bold leading-tight tracking-tight text-ink outline-none placeholder:text-faint"
+            />
+            {duplicateTitleNote && (
+              <button
+                type="button"
+                onClick={() => navigate({ name: "note", id: duplicateTitleNote.id })}
+                className="mt-1.5 flex items-center gap-1.5 text-xs text-warn hover:underline"
+              >
+                <AlertTriangle size={12} />
+                Another note is already titled “{duplicateTitleNote.title}” — open it?
+              </button>
+            )}
+          </div>
 
-      {editor && !isLocked && <EditorToolbar editor={editor} />}
-      {editor && findOpen && !isLocked && (
-        <FindReplaceBar editor={editor} contentTick={contentTick} onClose={() => setFindOpen(false)} />
+          {editor && !isLocked && <EditorToolbar editor={editor} />}
+          {editor && findOpen && !isLocked && (
+            <FindReplaceBar editor={editor} contentTick={contentTick} onClose={() => setFindOpen(false)} />
+          )}
+
+          <div className="min-h-0 flex-1 overflow-y-auto">
+            <div className="sp-editor mx-auto max-w-[720px] px-8 py-8">
+              <EditorContent editor={editor} />
+            </div>
+          </div>
+
+          <div className="flex items-center gap-4 border-t border-line bg-surface px-8 py-2 text-xs text-faint">
+            <WordGoalControl
+              wordCount={stats.wordCount}
+              goal={wordGoal}
+              onSetGoal={(goal) => {
+                setWordGoal(goal);
+                notes.updateNote(note.id, { word_goal: goal });
+              }}
+            />
+            {wordGoal && <WordGoalBar wordCount={stats.wordCount} goal={wordGoal} />}
+            <span className="tabular-nums">{stats.charCount} characters</span>
+            <span className="tabular-nums">{stats.readingTimeMinutes} min read</span>
+            <span className="ml-auto tabular-nums">
+              Updated {new Date(note.updated_at).toLocaleString()}
+            </span>
+          </div>
+        </>
       )}
-
-      <div className="min-h-0 flex-1 overflow-y-auto">
-        <div className="sp-editor mx-auto max-w-[720px] px-8 py-8">
-          <EditorContent editor={editor} />
-        </div>
-      </div>
-
-      <div className="flex items-center gap-4 border-t border-line bg-surface px-8 py-2 text-xs text-faint">
-        <WordGoalControl
-          wordCount={stats.wordCount}
-          goal={wordGoal}
-          onSetGoal={(goal) => {
-            setWordGoal(goal);
-            notes.updateNote(note.id, { word_goal: goal });
-          }}
-        />
-        {wordGoal && <WordGoalBar wordCount={stats.wordCount} goal={wordGoal} />}
-        <span className="tabular-nums">{stats.charCount} characters</span>
-        <span className="tabular-nums">{stats.readingTimeMinutes} min read</span>
-        <span className="ml-auto tabular-nums">
-          Updated {new Date(note.updated_at).toLocaleString()}
-        </span>
-      </div>
 
       <VersionHistoryDialog
         open={versionHistoryOpen}
@@ -395,6 +465,8 @@ export function NoteEditor({ note }: { note: Note }) {
         onSetShareToken={(token) => notes.updateNote(note.id, { share_token: token })}
       />
       <UpgradeDialog open={dbUpgradeOpen} onOpenChange={setDbUpgradeOpen} feature="Database block" />
+      <EncryptDialog open={encryptDialogOpen} onOpenChange={setEncryptDialogOpen} onConfirm={handleEncrypt} />
+      <UpgradeDialog open={encryptUpgradeOpen} onOpenChange={setEncryptUpgradeOpen} feature="Encrypted notes" />
     </div>
   );
 }

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { MoreHorizontal, Pin, Star, Copy, Archive, Trash2, History, Download, FileDown, FileText, Lock, Unlock, BookmarkPlus, Globe } from "lucide-react";
+import { MoreHorizontal, Pin, Star, Copy, Archive, Trash2, History, Download, FileDown, FileText, Lock, Unlock, BookmarkPlus, Globe, ShieldOff, ShieldCheck } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -25,6 +25,10 @@ export function NoteMenu({
   onToggleLock,
   onSaveAsTemplate,
   onOpenShare,
+  isEncrypted,
+  unlocked,
+  onEncrypt,
+  onRemoveEncryption,
 }: {
   note: Note;
   onOpenVersionHistory: () => void;
@@ -33,6 +37,10 @@ export function NoteMenu({
   onToggleLock: () => void;
   onSaveAsTemplate: () => void;
   onOpenShare: () => void;
+  isEncrypted: boolean;
+  unlocked: boolean;
+  onEncrypt: () => void;
+  onRemoveEncryption: () => void;
 }) {
   const { notes, navigate } = useWorkspaceContext();
   const isPro = useIsPro();
@@ -97,6 +105,18 @@ export function NoteMenu({
             <Globe size={14} /> Share to web
             {!isPro && <ProBadge className="ml-auto" />}
           </DropdownMenuItem>
+          {isEncrypted ? (
+            unlocked && (
+              <DropdownMenuItem onSelect={onRemoveEncryption}>
+                <ShieldOff size={14} /> Remove encryption
+              </DropdownMenuItem>
+            )
+          ) : (
+            <DropdownMenuItem onSelect={onEncrypt}>
+              <ShieldCheck size={14} /> Encrypt note
+              {!isPro && <ProBadge className="ml-auto" />}
+            </DropdownMenuItem>
+          )}
           <DropdownMenuSeparator />
           <DropdownMenuItem onSelect={() => notes.archiveNote(note.id)}>
             <Archive size={14} /> Archive
