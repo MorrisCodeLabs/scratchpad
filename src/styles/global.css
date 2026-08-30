@@ -194,6 +194,50 @@ h3 {
   display: none;
 }
 
+.sp-block-drag-handle {
+  position: absolute;
+  left: -28px;
+  width: 20px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 5px;
+  color: var(--sp-faint);
+  font-size: 13px;
+  line-height: 1;
+  cursor: grab;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.1s, background-color 0.1s;
+  user-select: none;
+}
+.sp-block-drag-handle.visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+.sp-block-drag-handle:hover {
+  background: var(--sp-surface-2);
+  color: var(--sp-ink);
+}
+.sp-block-drag-handle:active {
+  cursor: grabbing;
+}
+
+.sp-block-drop-indicator {
+  position: absolute;
+  left: -28px;
+  right: 0;
+  height: 2px;
+  border-radius: 1px;
+  background: var(--sp-accent);
+  opacity: 0;
+  pointer-events: none;
+}
+.sp-block-drop-indicator.visible {
+  opacity: 1;
+}
+
 .sp-editor .ProseMirror p.is-editor-empty:first-child::before {
   content: attr(data-placeholder);
   float: left;

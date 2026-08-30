@@ -31,6 +31,7 @@ import { DatabaseBlock } from "@/lib/editor/database-block";
 import { Citation } from "@/lib/editor/citation";
 import { BibliographyBlock } from "@/lib/editor/bibliography-block";
 import { OutlineZoom } from "@/lib/editor/outline-zoom";
+import { BlockDragHandle } from "@/lib/editor/block-drag-handle";
 import { NoteLink } from "@/lib/editor/note-link";
 import { NoteLinkCommand } from "@/lib/editor/note-link-command";
 import { EmojiCommand } from "@/lib/editor/emoji-command";
@@ -130,6 +131,7 @@ export function NoteEditor({ note }: { note: Note }) {
       Citation,
       BibliographyBlock,
       OutlineZoom,
+      BlockDragHandle,
       Image.configure({ inline: false, allowBase64: false }),
       NoteContext.configure({ workspaceId: note.workspace_id, noteId: note.id }),
       ProContext,
