@@ -61,7 +61,7 @@ create table if not exists public.notes (
   sort_order double precision not null default 0,
   word_count integer not null default 0,
   char_count integer not null default 0,
-  created_by uuid not null references auth.users (id) on delete cascade,
+  created_by uuid not null default auth.uid() references auth.users (id) on delete cascade,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
   last_viewed_at timestamptz,

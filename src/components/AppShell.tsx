@@ -6,6 +6,7 @@ import { NoteView } from "@/components/views/NoteView";
 import { CalendarView } from "@/components/views/CalendarView";
 import { TrashView } from "@/components/views/TrashView";
 import { SettingsView } from "@/components/views/SettingsView";
+import { Toaster } from "@/components/Toaster";
 import { useWorkspaceContext } from "@/lib/workspace-context";
 import { useTheme } from "@/lib/use-theme";
 
@@ -28,6 +29,7 @@ export function AppShell() {
         {route.name === "settings" && <SettingsView />}
       </main>
       <CommandMenu />
+      <Toaster />
     </div>
   );
 }

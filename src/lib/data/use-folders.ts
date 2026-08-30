@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
+import { notifyError } from "@/lib/toast";
 import type { Folder } from "@/lib/types";
 
 export function useFolders(workspaceId: string | undefined) {
@@ -52,6 +53,7 @@ export function useFolders(workspaceId: string | undefined) {
         .single();
       if (error) {
         console.error(error);
+        notifyError(`Couldn't create the folder: ${error.message}`);
         return null;
       }
       return data as Folder;
@@ -61,12 +63,18 @@ export function useFolders(workspaceId: string | undefined) {
 
   const renameFolder = useCallback(async (id: string, name: string) => {
     const { error } = await supabase.from("folders").update({ name }).eq("id", id);
-    if (error) console.error(error);
+    if (error) {
+      console.error(error);
+      notifyError(`Couldn't rename the folder: ${error.message}`);
+    }
   }, []);
 
   const toggleFavorite = useCallback(async (id: string, isFavorite: boolean) => {
     const { error } = await supabase.from("folders").update({ is_favorite: isFavorite }).eq("id", id);
-    if (error) console.error(error);
+    if (error) {
+      console.error(error);
+      notifyError(`Couldn't update favorites: ${error.message}`);
+    }
   }, []);
 
   const moveFolder = useCallback(
@@ -75,7 +83,10 @@ export function useFolders(workspaceId: string | undefined) {
         .from("folders")
         .update({ parent_id: parentId, sort_order: sortOrder })
         .eq("id", id);
-      if (error) console.error(error);
+      if (error) {
+        console.error(error);
+        notifyError(`Couldn't move the folder: ${error.message}`);
+      }
     },
     [],
   );
@@ -85,7 +96,10 @@ export function useFolders(workspaceId: string | undefined) {
     // folder fall back to folder_id = null via ON DELETE SET NULL rather than
     // being deleted, so a folder delete never silently destroys notes.
     const { error } = await supabase.from("folders").delete().eq("id", id);
-    if (error) console.error(error);
+    if (error) {
+      console.error(error);
+      notifyError(`Couldn't delete the folder: ${error.message}`);
+    }
   }, []);
 
   return { folders, loading, createFolder, renameFolder, toggleFavorite, moveFolder, deleteFolder, reload };
