@@ -1,0 +1,156 @@
+import * as React from "react";
+import { useState } from "react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Switch } from "@/components/ui/switch";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { useWorkspaceContext } from "@/lib/workspace-context";
+import { useSession } from "@/lib/data/use-session";
+import { useTheme, type ThemePreference } from "@/lib/use-theme";
+import { supabase } from "@/lib/supabase";
+import { cn } from "@/lib/cn";
+
+export function SettingsView() {
+  const { route, navigate } = useWorkspaceContext();
+  const section = route.name === "settings" ? (route.section ?? "account") : "account";
+
+  return (
+    <div className="mx-auto h-full max-w-3xl overflow-y-auto px-8 py-8">
+      <h1 className="mb-6 text-2xl font-bold text-ink">Settings</h1>
+      <Tabs
+        value={section}
+        onValueChange={(v) => navigate({ name: "settings", section: v })}
+        className="flex gap-8"
+      >
+        <TabsList>
+          <TabsTrigger value="account">Account</TabsTrigger>
+          <TabsTrigger value="appearance">Appearance</TabsTrigger>
+          <TabsTrigger value="editor">Editor</TabsTrigger>
+          <TabsTrigger value="workspace">Workspace</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="account">
+          <AccountSettings />
+        </TabsContent>
+        <TabsContent value="appearance">
+          <AppearanceSettings />
+        </TabsContent>
+        <TabsContent value="editor">
+          <EditorSettings />
+        </TabsContent>
+        <TabsContent value="workspace">
+          <WorkspaceSettings />
+        </TabsContent>
+      </Tabs>
+    </div>
+  );
+}
+
+function SettingsRow({ label, description, children }: { label: string; description?: string; children: React.ReactNode }) {
+  return (
+    <div className="flex items-center justify-between gap-4 py-3">
+      <div>
+        <p className="text-sm font-medium text-ink">{label}</p>
+        {description && <p className="text-xs text-faint">{description}</p>}
+      </div>
+      {children}
+    </div>
+  );
+}
+
+function AccountSettings() {
+  const { session } = useSession();
+  return (
+    <div className="divide-y divide-line">
+      <SettingsRow label="Email" description="Used to sign in to Scratchpad.">
+        <Input value={session?.user.email ?? ""} readOnly className="w-56 bg-surface-2 text-muted" />
+      </SettingsRow>
+      <SettingsRow label="Sign out" description="End your session on this device.">
+        <Button variant="outline" size="sm" onClick={() => supabase.auth.signOut()}>
+          Sign out
+        </Button>
+      </SettingsRow>
+    </div>
+  );
+}
+
+function AppearanceSettings() {
+  const { preference, setPreference } = useTheme();
+  const options: { value: ThemePreference; label: string }[] = [
+    { value: "light", label: "Light" },
+    { value: "dark", label: "Dark" },
+    { value: "system", label: "System" },
+  ];
+
+  return (
+    <div className="divide-y divide-line">
+      <SettingsRow label="Theme" description="Controls light/dark appearance across Scratchpad.">
+        <div className="flex gap-1 rounded-md border border-line p-0.5">
+          {options.map((opt) => (
+            <button
+              key={opt.value}
+              onClick={() => setPreference(opt.value)}
+              className={cn(
+                "rounded px-2.5 py-1 text-xs font-medium",
+                preference === opt.value ? "bg-accent text-white" : "text-muted hover:bg-surface-2",
+              )}
+            >
+              {opt.label}
+            </button>
+          ))}
+        </div>
+      </SettingsRow>
+    </div>
+  );
+}
+
+function EditorSettings() {
+  const [autosave, setAutosave] = useState(true);
+  const [defaultFont, setDefaultFont] = useState("System UI");
+
+  return (
+    <div className="divide-y divide-line">
+      <SettingsRow label="Autosave" description="Save notes automatically a moment after you stop typing.">
+        <Switch checked={autosave} onCheckedChange={setAutosave} />
+      </SettingsRow>
+      <SettingsRow label="Default font" description="Applied to new notes' body text.">
+        <select
+          value={defaultFont}
+          onChange={(e) => setDefaultFont(e.target.value)}
+          className="h-9 rounded-md border border-line bg-surface px-2 text-sm text-ink"
+        >
+          <option>System UI</option>
+          <option>Serif</option>
+          <option>Monospace</option>
+        </select>
+      </SettingsRow>
+    </div>
+  );
+}
+
+function WorkspaceSettings() {
+  const { workspace, userId } = useWorkspaceContext();
+  const [name, setName] = useState(workspace.name);
+  const [icon, setIcon] = useState(workspace.icon ?? "");
+
+  const save = async () => {
+    await supabase.from("workspaces").update({ name: name.trim() || "Workspace", icon: icon || null }).eq("id", workspace.id);
+  };
+
+  return (
+    <div className="divide-y divide-line">
+      <SettingsRow label="Workspace name">
+        <Input value={name} onChange={(e) => setName(e.target.value)} className="w-56" />
+      </SettingsRow>
+      <SettingsRow label="Icon" description="An emoji shown next to the workspace name.">
+        <Input value={icon} onChange={(e) => setIcon(e.target.value)} className="w-20 text-center" maxLength={4} />
+      </SettingsRow>
+      <div className="flex justify-end py-3">
+        <Button size="sm" onClick={save}>
+          Save changes
+        </Button>
+      </div>
+      <p className="pt-3 text-xs text-faint">Owner: {userId}</p>
+    </div>
+  );
+}

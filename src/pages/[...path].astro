@@ -1,0 +1,9 @@
+---
+export const prerender = false;
+import Base from "@/layouts/Base.astro";
+import Workspace from "@/components/Workspace.tsx";
+---
+
+<Base>
+  <Workspace client:load />
+</Base>

@@ -1,0 +1,245 @@
+@import "tailwindcss";
+
+/* ---------------------------------------------------------------------
+   Theme tokens. Light palette lives on :root; dark overrides the same
+   token names so every component reads through var(--token), never a
+   literal color. A workspace's brand tokens (resale/white-label) are
+   applied at runtime by ThemeProvider as inline custom properties on
+   <html>, which win over these defaults.
+   --------------------------------------------------------------------- */
+:root {
+  --sp-bg: #f5f7f5;
+  --sp-surface: #ffffff;
+  --sp-surface-2: #eef1ef;
+  --sp-ink: #1a1e22;
+  --sp-muted: #5b6570;
+  --sp-faint: #8791a0;
+  --sp-accent: #2954a5;
+  --sp-accent-ink: #173a7c;
+  --sp-accent-soft: #e5eaf6;
+  --sp-line: #d9dee2;
+  --sp-danger: #b3261e;
+  --sp-danger-soft: #fbe9e7;
+  --sp-warn: #9a5b12;
+  --sp-warn-soft: #f9ecd9;
+  --sp-good: #2f7a4f;
+  --sp-good-soft: #e3f3e8;
+
+  --sp-radius-sm: 6px;
+  --sp-radius-md: 8px;
+  --sp-radius-lg: 12px;
+}
+
+:root[data-theme="dark"] {
+  --sp-bg: #14171a;
+  --sp-surface: #1b1f23;
+  --sp-surface-2: #20252a;
+  --sp-ink: #e9ecef;
+  --sp-muted: #9aa5af;
+  --sp-faint: #6d7681;
+  --sp-accent: #7ea6f2;
+  --sp-accent-ink: #a8c4f7;
+  --sp-accent-soft: #233150;
+  --sp-line: #2a2f35;
+  --sp-danger: #e5847c;
+  --sp-danger-soft: #3a1f1d;
+  --sp-warn: #e0a352;
+  --sp-warn-soft: #3a2c17;
+  --sp-good: #5cb583;
+  --sp-good-soft: #1c3324;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]):not([data-theme="dark"]) {
+    --sp-bg: #14171a;
+    --sp-surface: #1b1f23;
+    --sp-surface-2: #20252a;
+    --sp-ink: #e9ecef;
+    --sp-muted: #9aa5af;
+    --sp-faint: #6d7681;
+    --sp-accent: #7ea6f2;
+    --sp-accent-ink: #a8c4f7;
+    --sp-accent-soft: #233150;
+    --sp-line: #2a2f35;
+    --sp-danger: #e5847c;
+    --sp-danger-soft: #3a1f1d;
+    --sp-warn: #e0a352;
+    --sp-warn-soft: #3a2c17;
+    --sp-good: #5cb583;
+    --sp-good-soft: #1c3324;
+  }
+}
+
+@theme inline {
+  --color-bg: var(--sp-bg);
+  --color-surface: var(--sp-surface);
+  --color-surface-2: var(--sp-surface-2);
+  --color-ink: var(--sp-ink);
+  --color-muted: var(--sp-muted);
+  --color-faint: var(--sp-faint);
+  --color-accent: var(--sp-accent);
+  --color-accent-ink: var(--sp-accent-ink);
+  --color-accent-soft: var(--sp-accent-soft);
+  --color-line: var(--sp-line);
+  --color-danger: var(--sp-danger);
+  --color-danger-soft: var(--sp-danger-soft);
+  --color-warn: var(--sp-warn);
+  --color-warn-soft: var(--sp-warn-soft);
+  --color-good: var(--sp-good);
+  --color-good-soft: var(--sp-good-soft);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--sp-bg);
+  color: var(--sp-ink);
+  font-family:
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    "Segoe UI",
+    Roboto,
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+:focus-visible {
+  outline: 2px solid var(--sp-accent);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Tiptap editor content */
+.sp-editor .ProseMirror {
+  outline: none;
+  min-height: 60vh;
+}
+
+.sp-editor .ProseMirror p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  color: var(--sp-faint);
+  pointer-events: none;
+  height: 0;
+}
+
+.sp-editor .ProseMirror > * + * {
+  margin-top: 0.65em;
+}
+
+.sp-editor .ProseMirror h1 {
+  font-size: 1.9em;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+.sp-editor .ProseMirror h2 {
+  font-size: 1.5em;
+  font-weight: 700;
+}
+.sp-editor .ProseMirror h3 {
+  font-size: 1.2em;
+  font-weight: 600;
+}
+
+.sp-editor .ProseMirror ul,
+.sp-editor .ProseMirror ol {
+  padding-left: 1.4em;
+}
+
+.sp-editor .ProseMirror ul[data-type="taskList"] {
+  list-style: none;
+  padding-left: 0;
+}
+.sp-editor .ProseMirror ul[data-type="taskList"] li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5em;
+}
+.sp-editor .ProseMirror ul[data-type="taskList"] li > label {
+  margin-top: 0.3em;
+}
+.sp-editor .ProseMirror ul[data-type="taskList"] li > div {
+  flex: 1;
+}
+
+.sp-editor .ProseMirror blockquote {
+  border-left: 3px solid var(--sp-line);
+  padding-left: 1em;
+  color: var(--sp-muted);
+}
+
+.sp-editor .ProseMirror .sp-callout {
+  display: flex;
+  gap: 0.6em;
+  background: var(--sp-accent-soft);
+  border-radius: var(--sp-radius-md);
+  padding: 0.75em 0.9em;
+}
+
+.sp-editor .ProseMirror pre {
+  background: var(--sp-ink);
+  color: var(--sp-bg);
+  padding: 0.85em 1em;
+  border-radius: var(--sp-radius-md);
+  overflow-x: auto;
+  font-family: ui-monospace, "IBM Plex Mono", monospace;
+  font-size: 0.85em;
+}
+
+.sp-editor .ProseMirror code {
+  background: var(--sp-surface-2);
+  border-radius: 4px;
+  padding: 0.1em 0.35em;
+  font-family: ui-monospace, "IBM Plex Mono", monospace;
+  font-size: 0.9em;
+}
+
+.sp-editor .ProseMirror pre code {
+  background: none;
+  padding: 0;
+}
+
+.sp-editor .ProseMirror hr {
+  border: none;
+  border-top: 1px solid var(--sp-line);
+  margin: 1.5em 0;
+}
+
+.sp-editor .ProseMirror mark {
+  background: var(--sp-warn-soft);
+  border-radius: 2px;
+  padding: 0 0.1em;
+}
+
+.sp-editor .ProseMirror table {
+  border-collapse: collapse;
+  width: 100%;
+}
+.sp-editor .ProseMirror th,
+.sp-editor .ProseMirror td {
+  border: 1px solid var(--sp-line);
+  padding: 0.4em 0.6em;
+  text-align: left;
+}
+.sp-editor .ProseMirror th {
+  background: var(--sp-surface-2);
+  font-weight: 600;
+}
