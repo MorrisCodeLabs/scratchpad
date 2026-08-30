@@ -61,6 +61,7 @@ import { UpgradeDialog } from "@/components/pro/UpgradeDialog";
 import { EncryptDialog } from "@/components/editor/EncryptDialog";
 import { UnlockNoteView } from "@/components/editor/UnlockNoteView";
 import { StudyModeDialog } from "@/components/editor/StudyModeDialog";
+import { SplitNoteDialog } from "@/components/editor/SplitNoteDialog";
 import { useIsPro } from "@/lib/use-plan";
 import { createNoteVersion } from "@/lib/data/use-note-versions";
 import { useCustomTemplates } from "@/lib/data/use-custom-templates";
@@ -73,7 +74,7 @@ import type { NoteVersion } from "@/lib/types";
 const EMPTY_DOC = { type: "doc", content: [{ type: "paragraph" }] };
 
 export function NoteEditor({ note }: { note: Note }) {
-  const { notes, workspace, focusMode, setFocusMode, navigate, userId } = useWorkspaceContext();
+  const { notes, workspace, focusMode, setFocusMode, navigate, userId, setSplitNoteId } = useWorkspaceContext();
   const isPro = useIsPro();
   const { saveTemplate } = useCustomTemplates(workspace.id);
   const { sources, addSource, deleteSource } = useNoteSources(note.id);
@@ -86,6 +87,7 @@ export function NoteEditor({ note }: { note: Note }) {
   const [encryptUpgradeOpen, setEncryptUpgradeOpen] = useState(false);
   const [studyModeOpen, setStudyModeOpen] = useState(false);
   const [zoomedHeading, setZoomedHeading] = useState<{ text: string; pos: number } | null>(null);
+  const [splitDialogOpen, setSplitDialogOpen] = useState(false);
   const passphraseRef = useRef<string | null>(null);
   const [reminderAt, setReminderAt] = useState<string | null>(note.reminder_at);
   const [expiresAt, setExpiresAt] = useState<string | null>(note.expires_at);
@@ -411,6 +413,7 @@ export function NoteEditor({ note }: { note: Note }) {
             onEncrypt={requestEncrypt}
             onRemoveEncryption={removeEncryption}
             onOpenStudyMode={() => setStudyModeOpen(true)}
+            onSplitRight={() => setSplitDialogOpen(true)}
           />
         </div>
       </div>
@@ -519,6 +522,13 @@ export function NoteEditor({ note }: { note: Note }) {
         onOpenChange={setStudyModeOpen}
         noteId={note.id}
         content={(editor?.getJSON() ?? note.content) as Record<string, unknown>}
+      />
+      <SplitNoteDialog
+        open={splitDialogOpen}
+        onOpenChange={setSplitDialogOpen}
+        notes={notes.notes}
+        excludeNoteId={note.id}
+        onSelect={setSplitNoteId}
       />
     </div>
   );

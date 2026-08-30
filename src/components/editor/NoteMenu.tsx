@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { MoreHorizontal, Pin, Star, Copy, Archive, Trash2, History, Download, FileDown, FileText, Lock, Unlock, BookmarkPlus, Globe, ShieldOff, ShieldCheck, GraduationCap } from "lucide-react";
+import { MoreHorizontal, Pin, Star, Copy, Archive, Trash2, History, Download, FileDown, FileText, Lock, Unlock, BookmarkPlus, Globe, ShieldOff, ShieldCheck, GraduationCap, Columns2 } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -30,6 +30,7 @@ export function NoteMenu({
   onEncrypt,
   onRemoveEncryption,
   onOpenStudyMode,
+  onSplitRight,
 }: {
   note: Note;
   onOpenVersionHistory: () => void;
@@ -43,6 +44,7 @@ export function NoteMenu({
   onEncrypt: () => void;
   onRemoveEncryption: () => void;
   onOpenStudyMode: () => void;
+  onSplitRight: () => void;
 }) {
   const { notes, navigate } = useWorkspaceContext();
   const isPro = useIsPro();
@@ -109,6 +111,10 @@ export function NoteMenu({
           </DropdownMenuItem>
           <DropdownMenuItem onSelect={gated("Share to web", onOpenShare)}>
             <Globe size={14} /> Share to web
+            {!isPro && <ProBadge className="ml-auto" />}
+          </DropdownMenuItem>
+          <DropdownMenuItem onSelect={gated("Split right", onSplitRight)}>
+            <Columns2 size={14} /> Split right
             {!isPro && <ProBadge className="ml-auto" />}
           </DropdownMenuItem>
           {isEncrypted ? (

@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { X } from "lucide-react";
 import { Sidebar } from "@/components/sidebar/Sidebar";
 import { CommandMenu } from "@/components/CommandMenu";
 import { AllNotesView } from "@/components/views/AllNotesView";
@@ -14,7 +15,7 @@ import { useShortcutsDialog } from "@/lib/use-shortcuts-dialog";
 import { applyBrandAccent } from "@/lib/brand-color";
 
 export function AppShell() {
-  const { route, workspace, focusMode } = useWorkspaceContext();
+  const { route, workspace, focusMode, splitNoteId, setSplitNoteId } = useWorkspaceContext();
   const { open: openShortcuts } = useShortcutsDialog();
   useTheme(); // applies the persisted theme preference to <html> on mount
 
@@ -45,7 +46,29 @@ export function AppShell() {
       {!focusMode && <Sidebar />}
       <main className="min-w-0 flex-1">
         {route.name === "all-notes" && <AllNotesView />}
-        {route.name === "note" && <NoteView noteId={route.id} />}
+        {route.name === "note" && (
+          <div className="flex h-full">
+            <div className="min-w-0 flex-1">
+              <NoteView noteId={route.id} />
+            </div>
+            {splitNoteId && splitNoteId !== route.id && (
+              <>
+                <div className="w-px shrink-0 bg-line" />
+                <div className="relative min-w-0 flex-1">
+                  <button
+                    type="button"
+                    title="Close split"
+                    onClick={() => setSplitNoteId(null)}
+                    className="absolute right-2 top-2.5 z-10 flex h-6 w-6 items-center justify-center rounded-md text-faint transition-colors hover:bg-surface-2 hover:text-ink"
+                  >
+                    <X size={14} />
+                  </button>
+                  <NoteView noteId={splitNoteId} />
+                </div>
+              </>
+            )}
+          </div>
+        )}
         {route.name === "calendar" && <CalendarView />}
         {route.name === "trash" && <TrashView />}
         {route.name === "settings" && <SettingsView />}

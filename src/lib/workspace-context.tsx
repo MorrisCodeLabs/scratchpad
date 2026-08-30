@@ -18,6 +18,8 @@ interface WorkspaceContextValue {
   refreshWorkspace: () => Promise<void>;
   focusMode: boolean;
   setFocusMode: (on: boolean) => void;
+  splitNoteId: string | null;
+  setSplitNoteId: (id: string | null) => void;
 }
 
 const WorkspaceContext = createContext<WorkspaceContextValue | null>(null);
@@ -39,6 +41,11 @@ export function WorkspaceProvider({
   const { route, navigate } = useRouter();
   const [commandMenuOpen, setCommandMenuOpen] = useState(false);
   const [focusMode, setFocusMode] = useState(false);
+  const [splitNoteId, setSplitNoteId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (route.name !== "note") setSplitNoteId(null);
+  }, [route]);
 
   // Expiration (Pro): sweep for notes past their expires_at and archive them
   // client-side. Not a server cron — it only fires while someone has the app
@@ -92,8 +99,22 @@ export function WorkspaceProvider({
       refreshWorkspace,
       focusMode,
       setFocusMode,
+      splitNoteId,
+      setSplitNoteId,
     }),
-    [workspace, userId, folders, notes, trashedNotes, route, navigate, commandMenuOpen, refreshWorkspace, focusMode],
+    [
+      workspace,
+      userId,
+      folders,
+      notes,
+      trashedNotes,
+      route,
+      navigate,
+      commandMenuOpen,
+      refreshWorkspace,
+      focusMode,
+      splitNoteId,
+    ],
   );
 
   return <WorkspaceContext.Provider value={value}>{children}</WorkspaceContext.Provider>;
