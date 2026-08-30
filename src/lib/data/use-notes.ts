@@ -200,30 +200,3 @@ export function useNotes(workspaceId: string | undefined, options: UseNotesOptio
     reload,
   };
 }
-
-export function useNote(noteId: string | undefined) {
-  const [note, setNote] = useState<Note | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    if (!noteId) return;
-    let cancelled = false;
-    setLoading(true);
-    supabase
-      .from("notes")
-      .select("*")
-      .eq("id", noteId)
-      .maybeSingle()
-      .then(({ data, error }) => {
-        if (cancelled) return;
-        if (error) console.error(error);
-        setNote((data as Note) ?? null);
-        setLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [noteId]);
-
-  return { note, setNote, loading };
-}

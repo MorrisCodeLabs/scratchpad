@@ -1,10 +1,8 @@
 import { FileText, RotateCcw, Trash2 } from "lucide-react";
-import { useNotes } from "@/lib/data/use-notes";
 import { useWorkspaceContext } from "@/lib/workspace-context";
 
 export function TrashView() {
-  const { workspace } = useWorkspaceContext();
-  const trashed = useNotes(workspace.id, { includeDeleted: true });
+  const { trashedNotes: trashed } = useWorkspaceContext();
 
   return (
     <div className="mx-auto h-full max-w-4xl overflow-y-auto px-10 py-10">

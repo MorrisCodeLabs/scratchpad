@@ -10,6 +10,7 @@ interface WorkspaceContextValue {
   userId: string;
   folders: ReturnType<typeof useFolders>;
   notes: ReturnType<typeof useNotes>;
+  trashedNotes: ReturnType<typeof useNotes>;
   route: Route;
   navigate: (r: Route) => void;
   commandMenuOpen: boolean;
@@ -83,6 +84,7 @@ export function WorkspaceProvider({
       userId,
       folders,
       notes,
+      trashedNotes,
       route,
       navigate,
       commandMenuOpen,
@@ -91,7 +93,7 @@ export function WorkspaceProvider({
       focusMode,
       setFocusMode,
     }),
-    [workspace, userId, folders, notes, route, navigate, commandMenuOpen, refreshWorkspace, focusMode],
+    [workspace, userId, folders, notes, trashedNotes, route, navigate, commandMenuOpen, refreshWorkspace, focusMode],
   );
 
   return <WorkspaceContext.Provider value={value}>{children}</WorkspaceContext.Provider>;

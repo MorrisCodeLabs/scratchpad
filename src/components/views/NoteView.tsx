@@ -1,10 +1,11 @@
-import { useNote } from "@/lib/data/use-notes";
+import { useWorkspaceContext } from "@/lib/workspace-context";
 import { NoteEditor } from "@/components/editor/NoteEditor";
 
 export function NoteView({ noteId }: { noteId: string }) {
-  const { note, loading } = useNote(noteId);
+  const { notes } = useWorkspaceContext();
+  const note = notes.notes.find((n) => n.id === noteId);
 
-  if (loading) {
+  if (notes.loading) {
     return <div className="flex h-full items-center justify-center text-sm text-faint">Loading note…</div>;
   }
 
