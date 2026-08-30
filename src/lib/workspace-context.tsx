@@ -14,6 +14,7 @@ interface WorkspaceContextValue {
   navigate: (r: Route) => void;
   commandMenuOpen: boolean;
   setCommandMenuOpen: (open: boolean) => void;
+  refreshWorkspace: () => Promise<void>;
 }
 
 const WorkspaceContext = createContext<WorkspaceContextValue | null>(null);
@@ -21,10 +22,12 @@ const WorkspaceContext = createContext<WorkspaceContextValue | null>(null);
 export function WorkspaceProvider({
   workspace,
   userId,
+  refreshWorkspace,
   children,
 }: {
   workspace: Workspace;
   userId: string;
+  refreshWorkspace: () => Promise<void>;
   children: React.ReactNode;
 }) {
   const folders = useFolders(workspace.id);
@@ -33,8 +36,8 @@ export function WorkspaceProvider({
   const [commandMenuOpen, setCommandMenuOpen] = useState(false);
 
   const value = useMemo(
-    () => ({ workspace, userId, folders, notes, route, navigate, commandMenuOpen, setCommandMenuOpen }),
-    [workspace, userId, folders, notes, route, navigate, commandMenuOpen],
+    () => ({ workspace, userId, folders, notes, route, navigate, commandMenuOpen, setCommandMenuOpen, refreshWorkspace }),
+    [workspace, userId, folders, notes, route, navigate, commandMenuOpen, refreshWorkspace],
   );
 
   return <WorkspaceContext.Provider value={value}>{children}</WorkspaceContext.Provider>;

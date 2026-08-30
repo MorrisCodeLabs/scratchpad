@@ -1,13 +1,15 @@
 import * as React from "react";
 import { useEffect, useMemo } from "react";
 import { Command } from "cmdk";
-import { FileText, Plus, Calendar, Trash2, Settings, Moon, Sun, Star, Pin } from "lucide-react";
+import { FileText, Plus, Calendar, Trash2, Settings, Moon, Sun, Star, Pin, Keyboard } from "lucide-react";
 import { useWorkspaceContext } from "@/lib/workspace-context";
 import { useTheme } from "@/lib/use-theme";
+import { useShortcutsDialog } from "@/lib/use-shortcuts-dialog";
 
 export function CommandMenu() {
   const { workspace, notes, commandMenuOpen, setCommandMenuOpen, navigate } = useWorkspaceContext();
   const { theme, toggleTheme } = useTheme();
+  const { open: openShortcuts } = useShortcutsDialog();
 
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
@@ -66,6 +68,9 @@ export function CommandMenu() {
           <Item onSelect={() => run(toggleTheme)}>
             {theme === "dark" ? <Sun size={14} /> : <Moon size={14} />}
             Toggle theme
+          </Item>
+          <Item onSelect={() => run(openShortcuts)}>
+            <Keyboard size={14} /> Keyboard shortcuts
           </Item>
         </Command.Group>
 

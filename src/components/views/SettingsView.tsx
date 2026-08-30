@@ -1,5 +1,6 @@
 import * as React from "react";
 import { useState } from "react";
+import { Keyboard } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
@@ -9,6 +10,8 @@ import { useSession } from "@/lib/data/use-session";
 import { useTheme, type ThemePreference } from "@/lib/use-theme";
 import { supabase } from "@/lib/supabase";
 import { cn } from "@/lib/cn";
+import { BillingSettings } from "@/components/views/BillingSettings";
+import { useShortcutsDialog } from "@/lib/use-shortcuts-dialog";
 
 export function SettingsView() {
   const { route, navigate } = useWorkspaceContext();
@@ -27,6 +30,7 @@ export function SettingsView() {
           <TabsTrigger value="appearance">Appearance</TabsTrigger>
           <TabsTrigger value="editor">Editor</TabsTrigger>
           <TabsTrigger value="workspace">Workspace</TabsTrigger>
+          <TabsTrigger value="billing">Billing</TabsTrigger>
         </TabsList>
 
         <TabsContent value="account">
@@ -40,6 +44,9 @@ export function SettingsView() {
         </TabsContent>
         <TabsContent value="workspace">
           <WorkspaceSettings />
+        </TabsContent>
+        <TabsContent value="billing">
+          <BillingSettings />
         </TabsContent>
       </Tabs>
     </div>
@@ -107,6 +114,7 @@ function AppearanceSettings() {
 function EditorSettings() {
   const [autosave, setAutosave] = useState(true);
   const [defaultFont, setDefaultFont] = useState("System UI");
+  const { open: openShortcuts } = useShortcutsDialog();
 
   return (
     <div className="divide-y divide-line">
@@ -124,17 +132,23 @@ function EditorSettings() {
           <option>Monospace</option>
         </select>
       </SettingsRow>
+      <SettingsRow label="Keyboard shortcuts" description="See every shortcut Scratchpad supports.">
+        <Button variant="outline" size="sm" onClick={openShortcuts}>
+          <Keyboard size={14} /> View shortcuts
+        </Button>
+      </SettingsRow>
     </div>
   );
 }
 
 function WorkspaceSettings() {
-  const { workspace, userId } = useWorkspaceContext();
+  const { workspace, userId, refreshWorkspace } = useWorkspaceContext();
   const [name, setName] = useState(workspace.name);
   const [icon, setIcon] = useState(workspace.icon ?? "");
 
   const save = async () => {
     await supabase.from("workspaces").update({ name: name.trim() || "Workspace", icon: icon || null }).eq("id", workspace.id);
+    await refreshWorkspace();
   };
 
   return (

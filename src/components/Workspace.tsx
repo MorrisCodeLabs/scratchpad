@@ -11,7 +11,7 @@ function FullScreenMessage({ children }: { children: React.ReactNode }) {
 
 export default function Workspace() {
   const { session, loading: sessionLoading } = useSession();
-  const { workspace, loading: workspaceLoading } = useWorkspace(session?.user.id);
+  const { workspace, loading: workspaceLoading, reload: refreshWorkspace } = useWorkspace(session?.user.id);
 
   if (sessionLoading) return <FullScreenMessage>Loading Scratchpad…</FullScreenMessage>;
   if (!session) return <AuthScreen />;
@@ -25,7 +25,7 @@ export default function Workspace() {
   }
 
   return (
-    <WorkspaceProvider workspace={workspace} userId={session.user.id}>
+    <WorkspaceProvider workspace={workspace} userId={session.user.id} refreshWorkspace={refreshWorkspace}>
       <AppShell />
     </WorkspaceProvider>
   );

@@ -7,16 +7,33 @@ import { CalendarView } from "@/components/views/CalendarView";
 import { TrashView } from "@/components/views/TrashView";
 import { SettingsView } from "@/components/views/SettingsView";
 import { Toaster } from "@/components/Toaster";
+import { ShortcutsDialog } from "@/components/ShortcutsDialog";
 import { useWorkspaceContext } from "@/lib/workspace-context";
 import { useTheme } from "@/lib/use-theme";
+import { useShortcutsDialog } from "@/lib/use-shortcuts-dialog";
 
 export function AppShell() {
   const { route } = useWorkspaceContext();
+  const { open: openShortcuts } = useShortcutsDialog();
   useTheme(); // applies the persisted theme preference to <html> on mount
 
   useEffect(() => {
     document.title = route.name === "note" ? "Note · Scratchpad" : "Scratchpad";
   }, [route]);
+
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key !== "?" || e.metaKey || e.ctrlKey || e.altKey) return;
+      const target = e.target as HTMLElement | null;
+      const tag = target?.tagName;
+      const isTyping = tag === "INPUT" || tag === "TEXTAREA" || target?.isContentEditable;
+      if (isTyping) return;
+      e.preventDefault();
+      openShortcuts();
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [openShortcuts]);
 
   return (
     <div className="flex h-screen w-screen overflow-hidden bg-bg text-ink">
@@ -30,6 +47,7 @@ export function AppShell() {
       </main>
       <CommandMenu />
       <Toaster />
+      <ShortcutsDialog />
     </div>
   );
 }

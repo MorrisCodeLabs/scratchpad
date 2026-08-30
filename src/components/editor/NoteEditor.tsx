@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Underline from "@tiptap/extension-underline";
@@ -36,10 +36,21 @@ import type { Note } from "@/lib/types";
 import { SaveIndicator } from "@/components/editor/SaveIndicator";
 import { NoteMenu } from "@/components/editor/NoteMenu";
 import { StatusPicker } from "@/components/editor/StatusPicker";
+import { WordGoalControl, WordGoalBar } from "@/components/editor/WordGoalControl";
+import { VersionHistoryDialog } from "@/components/editor/VersionHistoryDialog";
+import { useIsPro } from "@/lib/use-plan";
+import { createNoteVersion } from "@/lib/data/use-note-versions";
+import { tiptapToMarkdown } from "@/lib/markdown-export";
+import { downloadTextFile, printNoteAsPdf } from "@/lib/download";
+import type { NoteVersion } from "@/lib/types";
 
 export function NoteEditor({ note }: { note: Note }) {
-  const { notes } = useWorkspaceContext();
+  const { notes, workspace } = useWorkspaceContext();
+  const isPro = useIsPro();
   const [title, setTitle] = useState(note.title);
+  const [wordGoal, setWordGoal] = useState<number | null>(note.word_goal);
+  const [versionHistoryOpen, setVersionHistoryOpen] = useState(false);
+  const lastSnapshotAt = useRef(0);
 
   const editor = useEditor({
     extensions: [
@@ -84,6 +95,8 @@ export function NoteEditor({ note }: { note: Note }) {
   // Reset local state when navigating between notes.
   useEffect(() => {
     setTitle(note.title);
+    setWordGoal(note.word_goal);
+    lastSnapshotAt.current = 0;
     editor?.commands.setContent(note.content as any, false);
   }, [note.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -114,6 +127,17 @@ export function NoteEditor({ note }: { note: Note }) {
         word_count: stats.wordCount,
         char_count: stats.charCount,
       });
+
+      // Pro: snapshot a version, throttled so every autosave tick doesn't
+      // spam the table — one snapshot per 3 minutes of active editing is
+      // enough to give restore points without flooding note_versions.
+      if (isPro) {
+        const now = Date.now();
+        if (now - lastSnapshotAt.current > 3 * 60 * 1000) {
+          lastSnapshotAt.current = now;
+          createNoteVersion(workspace.id, note.id, data.title || "Untitled", data.content as any, stats.wordCount);
+        }
+      }
     },
   });
 
@@ -122,13 +146,32 @@ export function NoteEditor({ note }: { note: Note }) {
     // eslint-disable-line react-hooks/exhaustive-deps
   }, [note.id]);
 
+  const restoreVersion = (version: NoteVersion) => {
+    setTitle(version.title);
+    editor?.commands.setContent(version.content as any, false);
+  };
+
+  const exportMarkdown = () => {
+    const markdown = tiptapToMarkdown(editor?.getJSON() ?? note.content, title || "Untitled");
+    downloadTextFile(`${(title || "untitled").replace(/[^a-z0-9]+/gi, "-").toLowerCase()}.md`, markdown, "text/markdown");
+  };
+
+  const exportPdf = () => {
+    printNoteAsPdf(title || "Untitled", editor?.getHTML() ?? "");
+  };
+
   return (
     <div className="flex h-full flex-col">
       <div className="flex items-center justify-between gap-3 border-b border-line px-6 py-2.5">
         <StatusPicker note={note} />
         <div className="flex items-center gap-3">
           <SaveIndicator state={saveState} onSaveNow={saveNow} />
-          <NoteMenu note={note} />
+          <NoteMenu
+            note={note}
+            onOpenVersionHistory={() => setVersionHistoryOpen(true)}
+            onExportMarkdown={exportMarkdown}
+            onExportPdf={exportPdf}
+          />
         </div>
       </div>
 
@@ -150,13 +193,31 @@ export function NoteEditor({ note }: { note: Note }) {
       </div>
 
       <div className="flex items-center gap-4 border-t border-line px-6 py-1.5 text-xs text-faint">
-        <span>{stats.wordCount} words</span>
+        <WordGoalControl
+          wordCount={stats.wordCount}
+          goal={wordGoal}
+          onSetGoal={(goal) => {
+            setWordGoal(goal);
+            notes.updateNote(note.id, { word_goal: goal });
+          }}
+        />
+        {wordGoal && <WordGoalBar wordCount={stats.wordCount} goal={wordGoal} />}
         <span>{stats.charCount} characters</span>
         <span>{stats.readingTimeMinutes} min read</span>
         <span className="ml-auto">
           Updated {new Date(note.updated_at).toLocaleString()}
         </span>
       </div>
+
+      <VersionHistoryDialog
+        open={versionHistoryOpen}
+        onOpenChange={setVersionHistoryOpen}
+        note={note}
+        currentTitle={title}
+        currentContent={(editor?.getJSON() ?? note.content) as Record<string, unknown>}
+        currentWordCount={stats.wordCount}
+        onRestore={restoreVersion}
+      />
     </div>
   );
 }

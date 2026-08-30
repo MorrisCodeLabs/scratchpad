@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import type { Workspace } from "@/lib/types";
 
@@ -9,27 +9,26 @@ export function useWorkspace(userId: string | undefined) {
   const [workspace, setWorkspace] = useState<Workspace | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
+  const reload = useCallback(async () => {
     if (!userId) return;
-    let cancelled = false;
-
-    supabase
+    const { data, error } = await supabase
       .from("workspaces")
       .select("*")
       .order("created_at", { ascending: true })
       .limit(1)
-      .maybeSingle()
-      .then(({ data, error }) => {
-        if (cancelled) return;
-        if (error) console.error(error);
-        setWorkspace((data as Workspace) ?? null);
-        setLoading(false);
-      });
-
-    return () => {
-      cancelled = true;
-    };
+      .maybeSingle();
+    if (error) {
+      console.error(error);
+      return;
+    }
+    setWorkspace((data as Workspace) ?? null);
   }, [userId]);
 
-  return { workspace, loading };
+  useEffect(() => {
+    if (!userId) return;
+    setLoading(true);
+    reload().then(() => setLoading(false));
+  }, [userId, reload]);
+
+  return { workspace, loading, reload };
 }
