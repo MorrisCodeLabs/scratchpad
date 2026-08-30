@@ -58,6 +58,7 @@ import { FindReplaceBar } from "@/components/editor/FindReplaceBar";
 import { UpgradeDialog } from "@/components/pro/UpgradeDialog";
 import { EncryptDialog } from "@/components/editor/EncryptDialog";
 import { UnlockNoteView } from "@/components/editor/UnlockNoteView";
+import { StudyModeDialog } from "@/components/editor/StudyModeDialog";
 import { useIsPro } from "@/lib/use-plan";
 import { createNoteVersion } from "@/lib/data/use-note-versions";
 import { useCustomTemplates } from "@/lib/data/use-custom-templates";
@@ -81,6 +82,7 @@ export function NoteEditor({ note }: { note: Note }) {
   const [unlocked, setUnlocked] = useState(!note.is_encrypted);
   const [encryptDialogOpen, setEncryptDialogOpen] = useState(false);
   const [encryptUpgradeOpen, setEncryptUpgradeOpen] = useState(false);
+  const [studyModeOpen, setStudyModeOpen] = useState(false);
   const passphraseRef = useRef<string | null>(null);
   const [reminderAt, setReminderAt] = useState<string | null>(note.reminder_at);
   const [expiresAt, setExpiresAt] = useState<string | null>(note.expires_at);
@@ -397,6 +399,7 @@ export function NoteEditor({ note }: { note: Note }) {
             unlocked={unlocked}
             onEncrypt={requestEncrypt}
             onRemoveEncryption={removeEncryption}
+            onOpenStudyMode={() => setStudyModeOpen(true)}
           />
         </div>
       </div>
@@ -489,6 +492,12 @@ export function NoteEditor({ note }: { note: Note }) {
       />
       <EncryptDialog open={encryptDialogOpen} onOpenChange={setEncryptDialogOpen} onConfirm={handleEncrypt} />
       <UpgradeDialog open={encryptUpgradeOpen} onOpenChange={setEncryptUpgradeOpen} feature="Encrypted notes" />
+      <StudyModeDialog
+        open={studyModeOpen}
+        onOpenChange={setStudyModeOpen}
+        noteId={note.id}
+        content={(editor?.getJSON() ?? note.content) as Record<string, unknown>}
+      />
     </div>
   );
 }

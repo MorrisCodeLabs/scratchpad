@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { MoreHorizontal, Pin, Star, Copy, Archive, Trash2, History, Download, FileDown, FileText, Lock, Unlock, BookmarkPlus, Globe, ShieldOff, ShieldCheck } from "lucide-react";
+import { MoreHorizontal, Pin, Star, Copy, Archive, Trash2, History, Download, FileDown, FileText, Lock, Unlock, BookmarkPlus, Globe, ShieldOff, ShieldCheck, GraduationCap } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -29,6 +29,7 @@ export function NoteMenu({
   unlocked,
   onEncrypt,
   onRemoveEncryption,
+  onOpenStudyMode,
 }: {
   note: Note;
   onOpenVersionHistory: () => void;
@@ -41,6 +42,7 @@ export function NoteMenu({
   unlocked: boolean;
   onEncrypt: () => void;
   onRemoveEncryption: () => void;
+  onOpenStudyMode: () => void;
 }) {
   const { notes, navigate } = useWorkspaceContext();
   const isPro = useIsPro();
@@ -99,6 +101,10 @@ export function NoteMenu({
           </DropdownMenuSub>
           <DropdownMenuItem onSelect={gated("Custom templates", onSaveAsTemplate)}>
             <BookmarkPlus size={14} /> Save as template
+            {!isPro && <ProBadge className="ml-auto" />}
+          </DropdownMenuItem>
+          <DropdownMenuItem onSelect={gated("Study flashcards", onOpenStudyMode)}>
+            <GraduationCap size={14} /> Study flashcards
             {!isPro && <ProBadge className="ml-auto" />}
           </DropdownMenuItem>
           <DropdownMenuItem onSelect={gated("Share to web", onOpenShare)}>
