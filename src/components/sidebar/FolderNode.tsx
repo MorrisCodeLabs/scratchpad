@@ -35,15 +35,15 @@ export function FolderNode({ folder, depth }: { folder: FolderType; depth: numbe
 
   return (
     <div style={{ opacity: isDragging ? 0.4 : 1 }}>
-      <DropZone id={`folder:${folder.id}`} className="group relative rounded-md">
+      <DropZone id={`folder:${folder.id}`} className="group relative rounded-lg">
         <div
           ref={setNodeRef}
           {...attributes}
           {...listeners}
           style={{ paddingLeft: `${depth * 14}px` }}
-          className="flex items-center gap-1 rounded-md pr-1 text-sm text-muted hover:bg-surface-2 hover:text-ink"
+          className="flex items-center gap-1 rounded-lg pr-1.5 text-[13px] text-muted transition-colors hover:bg-surface-2 hover:text-ink"
         >
-          <button type="button" onClick={() => setOpen((v) => !v)} className="p-1">
+          <button type="button" onClick={() => setOpen((v) => !v)} className="p-1.5">
             <ChevronRight size={13} className={cn("transition-transform", open && "rotate-90")} />
           </button>
           <span className="mr-2 flex shrink-0 items-center">
@@ -56,10 +56,10 @@ export function FolderNode({ folder, depth }: { folder: FolderType; depth: numbe
               onChange={(e) => setName(e.target.value)}
               onBlur={commitRename}
               onKeyDown={(e) => e.key === "Enter" && commitRename()}
-              className="min-w-0 flex-1 rounded border border-line bg-surface px-1 py-0.5 text-sm outline-none"
+              className="min-w-0 flex-1 rounded-md border border-line bg-surface px-1.5 py-0.5 text-[13px] outline-none"
             />
           ) : (
-            <button type="button" onClick={() => setOpen((v) => !v)} className="flex-1 truncate py-1.5 text-left">
+            <button type="button" onClick={() => setOpen((v) => !v)} className="flex-1 truncate py-2 text-left">
               {folder.name}
             </button>
           )}
@@ -67,13 +67,13 @@ export function FolderNode({ folder, depth }: { folder: FolderType; depth: numbe
 
           <div className="hidden items-center gap-0.5 group-hover:flex">
             <NewNoteMenu folderId={folder.id}>
-              <button type="button" title="New note in folder" className="text-faint hover:text-ink">
+              <button type="button" title="New note in folder" className="text-faint transition-colors hover:text-ink">
                 <Plus size={13} />
               </button>
             </NewNoteMenu>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button type="button" className="text-faint hover:text-ink">
+                <button type="button" className="text-faint transition-colors hover:text-ink">
                   <MoreHorizontal size={13} />
                 </button>
               </DropdownMenuTrigger>

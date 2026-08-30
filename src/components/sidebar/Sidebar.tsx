@@ -9,6 +9,7 @@ import { WorkspaceMenu } from "@/components/sidebar/WorkspaceMenu";
 import { NewNoteMenu } from "@/components/NewNoteMenu";
 import { ProBadge } from "@/components/pro/ProBadge";
 import { useIsPro } from "@/lib/use-plan";
+import { cn } from "@/lib/cn";
 
 export function Sidebar() {
   const { folders, notes, route, navigate, setCommandMenuOpen } = useWorkspaceContext();
@@ -47,36 +48,38 @@ export function Sidebar() {
 
   return (
     <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
-      <aside className="flex h-full w-64 shrink-0 flex-col border-r border-line bg-surface">
-        <div className="flex items-center justify-between px-3 pt-3 pb-2">
+      <aside className="flex h-full w-72 shrink-0 flex-col border-r border-line bg-surface">
+        <div className="flex items-center justify-between px-4 pb-3 pt-4">
           <WorkspaceMenu />
         </div>
 
-        <div className="flex flex-col gap-1 px-2">
+        <div className="flex flex-col gap-0.5 px-3">
           <button
             type="button"
             onClick={() => setCommandMenuOpen(true)}
-            className="flex items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm text-muted hover:bg-surface-2"
+            className="flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-[13px] text-muted transition-colors hover:bg-surface-2 hover:text-ink"
           >
-            <Search size={15} />
+            <Search size={15} className="shrink-0 text-faint" />
             Search
-            <kbd className="ml-auto rounded border border-line px-1.5 py-0.5 text-[10px] text-faint">⌘K</kbd>
+            <kbd className="ml-auto rounded-md border border-line bg-surface px-1.5 py-0.5 text-[10px] font-medium text-faint">
+              ⌘K
+            </kbd>
           </button>
           <NewNoteMenu>
             <button
               type="button"
-              className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm text-muted hover:bg-surface-2"
+              className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-[13px] text-muted transition-colors hover:bg-surface-2 hover:text-ink"
             >
-              <Plus size={15} />
+              <Plus size={15} className="shrink-0 text-faint" />
               New note
             </button>
           </NewNoteMenu>
         </div>
 
-        <nav className="mt-2 flex-1 overflow-y-auto px-2 pb-2">
+        <nav className="mt-3 flex-1 overflow-y-auto px-3 pb-3">
           {pinned.length > 0 && (
-            <div className="mb-3">
-              <p className="flex items-center gap-1.5 px-2 pb-1 text-[11px] font-medium uppercase tracking-wide text-faint">
+            <div className="mb-4">
+              <p className="flex items-center gap-1.5 px-2.5 pb-1.5 text-[10.5px] font-semibold uppercase tracking-wider text-faint">
                 <Pin size={11} /> Pinned
               </p>
               {pinned.map((n) => (
@@ -86,13 +89,13 @@ export function Sidebar() {
           )}
 
           {(favoriteNotes.length > 0 || favoriteFolders.length > 0) && (
-            <div className="mb-3">
+            <div className="mb-4">
               <button
                 onClick={() => setFavoritesOpen((v) => !v)}
-                className="flex w-full items-center gap-1.5 px-2 pb-1 text-[11px] font-medium uppercase tracking-wide text-faint"
+                className="flex w-full items-center gap-1.5 px-2.5 pb-1.5 text-[10.5px] font-semibold uppercase tracking-wider text-faint"
               >
                 <Star size={11} /> Favorites
-                <ChevronDown size={12} className={favoritesOpen ? "" : "-rotate-90"} />
+                <ChevronDown size={12} className={cn("transition-transform", favoritesOpen ? "" : "-rotate-90")} />
               </button>
               {favoritesOpen && (
                 <>
@@ -107,26 +110,26 @@ export function Sidebar() {
             </div>
           )}
 
-          <div className="mb-1 flex items-center justify-between px-2">
+          <div className="mb-1.5 flex items-center justify-between px-2.5">
             <button
               onClick={() => setFoldersOpen((v) => !v)}
-              className="flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-wide text-faint"
+              className="flex items-center gap-1.5 text-[10.5px] font-semibold uppercase tracking-wider text-faint"
             >
               Notes
-              <ChevronDown size={12} className={foldersOpen ? "" : "-rotate-90"} />
+              <ChevronDown size={12} className={cn("transition-transform", foldersOpen ? "" : "-rotate-90")} />
             </button>
             <button
               type="button"
               title="New folder"
               onClick={() => folders.createFolder("New Folder", null)}
-              className="text-faint hover:text-ink"
+              className="text-faint transition-colors hover:text-ink"
             >
               <FolderPlus size={13} />
             </button>
           </div>
 
           {foldersOpen && (
-            <DropZone id="root:root" className="min-h-[1rem] rounded-md">
+            <DropZone id="root:root" className="min-h-[1rem] rounded-lg">
               {rootFolders.map((f) => (
                 <FolderNode key={f.id} folder={f} depth={0} />
               ))}
@@ -137,7 +140,7 @@ export function Sidebar() {
           )}
         </nav>
 
-        <div className="flex flex-col gap-0.5 border-t border-line px-2 py-2">
+        <div className="flex flex-col gap-0.5 border-t border-line px-3 py-3">
           <SidebarLink
             icon={Calendar}
             label="Calendar"
@@ -186,11 +189,12 @@ function SidebarLink({
     <button
       type="button"
       onClick={onClick}
-      className={`flex items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm ${
-        active ? "bg-accent-soft text-accent-ink" : "text-muted hover:bg-surface-2 hover:text-ink"
-      }`}
+      className={cn(
+        "flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-[13px] transition-colors",
+        active ? "bg-accent-soft font-medium text-accent-ink" : "text-muted hover:bg-surface-2 hover:text-ink",
+      )}
     >
-      <Icon size={15} />
+      <Icon size={15} className="shrink-0" />
       {label}
       {badge && <ProBadge className="ml-auto" />}
     </button>

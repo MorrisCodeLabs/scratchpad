@@ -62,7 +62,7 @@ function ToolbarButton({
       aria-label={label}
       onClick={onClick}
       className={cn(
-        "flex h-7 w-7 items-center justify-center rounded-md text-muted hover:bg-surface-2 hover:text-ink",
+        "flex h-7 w-7 items-center justify-center rounded-md text-muted transition-colors hover:bg-surface hover:text-ink",
         active && "bg-accent-soft text-accent-ink",
       )}
     >
@@ -80,7 +80,7 @@ function currentHeadingValue(editor: Editor) {
 
 export function EditorToolbar({ editor }: { editor: Editor }) {
   return (
-    <div className="flex flex-wrap items-center gap-0.5 border-b border-line px-6 py-1.5">
+    <div className="flex flex-wrap items-center gap-0.5 border-b border-line bg-surface-2/40 px-8 py-2">
       <ToolbarButton label="Undo" onClick={() => editor.chain().focus().undo().run()}>
         <Undo2 size={15} />
       </ToolbarButton>

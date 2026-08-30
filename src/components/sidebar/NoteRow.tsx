@@ -13,15 +13,15 @@ export function NoteRow({ note, active, indent }: { note: Note; active: boolean;
       ref={setNodeRef}
       {...attributes}
       {...listeners}
-      style={{ paddingLeft: `${8 + indent * 14}px`, opacity: isDragging ? 0.4 : 1 }}
+      style={{ paddingLeft: `${10 + indent * 14}px`, opacity: isDragging ? 0.4 : 1 }}
       className="group relative"
     >
       <button
         type="button"
         onClick={() => navigate({ name: "note", id: note.id })}
         className={cn(
-          "flex w-full items-center gap-2 rounded-md py-1.5 pr-7 text-left text-sm",
-          active ? "bg-accent-soft text-accent-ink" : "text-muted hover:bg-surface-2 hover:text-ink",
+          "flex w-full items-center gap-2 rounded-lg py-2 pr-8 text-left text-[13px] transition-colors",
+          active ? "bg-accent-soft font-medium text-accent-ink" : "text-muted hover:bg-surface-2 hover:text-ink",
         )}
       >
         <FileText size={14} className="mr-1 shrink-0" />
@@ -37,7 +37,7 @@ export function NoteRow({ note, active, indent }: { note: Note; active: boolean;
           notes.trashNote(note.id);
           if (active) navigate({ name: "all-notes" });
         }}
-        className="absolute right-1.5 top-1/2 hidden -translate-y-1/2 text-faint hover:text-danger group-hover:block"
+        className="absolute right-2 top-1/2 hidden -translate-y-1/2 text-faint transition-colors hover:text-danger group-hover:block"
       >
         <Trash2 size={13} />
       </button>

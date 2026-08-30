@@ -31,7 +31,7 @@ export function NoteCard({
       type="button"
       onClick={selectable ? onToggleSelect : onOpen}
       className={cn(
-        "group relative flex flex-col gap-3 rounded-2xl bg-surface p-4 text-left shadow-[0_1px_2px_rgba(0,0,0,0.04)]",
+        "group relative flex flex-col gap-3.5 rounded-2xl bg-surface p-5 text-left shadow-[0_1px_2px_rgba(0,0,0,0.04)]",
         "outline-none transition-[transform,box-shadow,background-color] duration-150",
         "hover:-translate-y-0.5 hover:bg-surface-2 hover:shadow-[0_8px_20px_rgba(0,0,0,0.08)]",
         "focus-visible:outline-none focus-visible:shadow-[0_0_0_4px_var(--sp-accent-soft)]",
@@ -63,14 +63,14 @@ export function NoteCard({
       </div>
 
       <div className="min-w-0">
-        <p className="flex items-center gap-1.5 line-clamp-2 text-sm font-semibold leading-snug text-ink">
+        <p className="flex items-center gap-1.5 line-clamp-2 text-[15px] font-semibold leading-snug tracking-tight text-ink">
           {note.is_locked && <Lock size={12} className="shrink-0 text-faint" />}
           {note.title || "Untitled"}
         </p>
         {note.description ? (
-          <p className="mt-1 line-clamp-2 text-xs text-muted">{note.description}</p>
+          <p className="mt-1.5 line-clamp-2 text-[13px] leading-snug text-muted">{note.description}</p>
         ) : (
-          <p className="mt-1 text-xs text-faint">{note.word_count} words</p>
+          <p className="mt-1.5 text-xs tabular-nums text-faint">{note.word_count} words</p>
         )}
       </div>
 

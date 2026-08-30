@@ -63,20 +63,20 @@ export function InsightsView() {
   }
 
   return (
-    <div className="mx-auto h-full max-w-4xl overflow-y-auto px-8 py-8">
-      <h1 className="mb-6 flex items-center gap-2 text-2xl font-bold text-ink">
+    <div className="mx-auto h-full max-w-4xl overflow-y-auto px-10 py-10">
+      <h1 className="mb-8 flex items-center gap-2 text-[1.7rem] font-bold tracking-tight text-ink">
         <BarChart3 size={22} /> Insights
       </h1>
 
-      <div className="mb-6 grid grid-cols-3 gap-4">
+      <div className="mb-8 grid grid-cols-3 gap-4">
         <StatTile icon={FileText} label="Notes" value={notes.notes.length} />
         <StatTile icon={Type} label="Total words" value={totalWords.toLocaleString()} />
         <StatTile icon={Hash} label="Avg. words / note" value={avgWords} />
       </div>
 
       <section className="mb-8">
-        <h2 className="mb-3 text-sm font-semibold text-ink">Activity, last 14 days</h2>
-        <div className="flex h-24 items-end gap-1 rounded-lg border border-line bg-surface p-3">
+        <h2 className="mb-3 text-[13px] font-semibold text-ink">Activity, last 14 days</h2>
+        <div className="flex h-24 items-end gap-1 rounded-xl border border-line bg-surface p-3">
           {last14Days.map(({ day, count }) => (
             <div key={day.toISOString()} className="flex flex-1 flex-col items-center justify-end gap-1">
               <div
@@ -91,7 +91,7 @@ export function InsightsView() {
       </section>
 
       <section className="mb-8">
-        <h2 className="mb-3 text-sm font-semibold text-ink">By status</h2>
+        <h2 className="mb-3 text-[13px] font-semibold text-ink">By status</h2>
         <div className="flex flex-col gap-2">
           {Object.entries(byStatus).map(([status, count]) => (
             <div key={status} className="flex items-center gap-3">
@@ -110,7 +110,7 @@ export function InsightsView() {
 
       {topTags.length > 0 && (
         <section>
-          <h2 className="mb-3 flex items-center gap-1.5 text-sm font-semibold text-ink">
+          <h2 className="mb-3 flex items-center gap-1.5 text-[13px] font-semibold text-ink">
             <Sparkles size={14} /> Top tags
           </h2>
           <div className="flex flex-wrap gap-1.5">
@@ -128,12 +128,12 @@ export function InsightsView() {
 
 function StatTile({ icon: Icon, label, value }: { icon: typeof FileText; label: string; value: string | number }) {
   return (
-    <div className="rounded-lg border border-line bg-surface p-4">
-      <div className="mb-1 flex items-center gap-1.5 text-faint">
+    <div className="rounded-xl border border-line bg-surface p-4">
+      <div className="mb-1.5 flex items-center gap-1.5 text-faint">
         <Icon size={14} />
         <span className="text-xs">{label}</span>
       </div>
-      <p className="text-2xl font-bold tabular-nums text-ink">{value}</p>
+      <p className="text-2xl font-bold tabular-nums tracking-tight text-ink">{value}</p>
     </div>
   );
 }

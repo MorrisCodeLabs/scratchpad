@@ -37,13 +37,13 @@ export function CommandMenu() {
       open={commandMenuOpen}
       onOpenChange={setCommandMenuOpen}
       label="Command menu"
-      className="fixed left-1/2 top-[15%] z-50 w-full max-w-xl -translate-x-1/2 overflow-hidden rounded-xl border border-line bg-surface shadow-2xl"
+      className="fixed left-1/2 top-[15%] z-50 w-full max-w-xl -translate-x-1/2 overflow-hidden rounded-2xl border border-line bg-surface shadow-[0_1px_2px_rgba(0,0,0,0.04),0_24px_48px_rgba(0,0,0,0.16)]"
     >
-      <div className="flex items-center border-b border-line px-3">
+      <div className="flex items-center border-b border-line px-4">
         <Command.Input
           autoFocus
           placeholder="Search notes, or run a command…"
-          className="h-11 w-full bg-transparent text-sm text-ink outline-none placeholder:text-faint"
+          className="h-12 w-full bg-transparent text-[14.5px] text-ink outline-none placeholder:text-faint"
         />
       </div>
       <Command.List className="max-h-96 overflow-y-auto p-2">
@@ -93,7 +93,7 @@ function Item({ children, onSelect }: { children: React.ReactNode; onSelect: () 
   return (
     <Command.Item
       onSelect={onSelect}
-      className="flex cursor-pointer items-center gap-2 rounded-md px-2 py-2 text-sm text-ink data-[selected=true]:bg-accent-soft data-[selected=true]:text-accent-ink"
+      className="flex cursor-pointer items-center gap-2 rounded-lg px-2.5 py-2 text-[13px] text-ink transition-colors data-[selected=true]:bg-accent-soft data-[selected=true]:text-accent-ink"
     >
       {children}
     </Command.Item>

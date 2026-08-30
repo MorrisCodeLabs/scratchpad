@@ -207,8 +207,8 @@ export function NoteEditor({ note }: { note: Note }) {
 
   return (
     <div className="flex h-full flex-col">
-      <div className="flex items-center justify-between gap-3 border-b border-line px-6 py-2.5">
-        <div className="flex flex-wrap items-center gap-1">
+      <div className="flex items-center justify-between gap-3 border-b border-line px-8 py-3">
+        <div className="flex flex-wrap items-center gap-0.5">
           <StatusPicker note={note} />
           <NoteDetailsPanel
             color={color}
@@ -249,7 +249,7 @@ export function NoteEditor({ note }: { note: Note }) {
             type="button"
             title={focusMode ? "Exit focus mode" : "Focus mode"}
             onClick={toggleFocusMode}
-            className="flex h-7 w-7 items-center justify-center rounded-md text-muted hover:bg-surface-2 hover:text-ink"
+            className="flex h-7 w-7 items-center justify-center rounded-md text-muted transition-colors hover:bg-surface-2 hover:text-ink"
           >
             {focusMode ? <Minimize2 size={15} /> : <Maximize2 size={15} />}
           </button>
@@ -267,30 +267,30 @@ export function NoteEditor({ note }: { note: Note }) {
       </div>
 
       {isLocked && (
-        <div className="flex items-center gap-2 bg-warn-soft px-6 py-1.5 text-xs font-medium text-warn">
+        <div className="flex items-center gap-2 bg-warn-soft px-8 py-2 text-[13px] font-medium text-warn">
           <Lock size={12} /> This note is locked — unlock it from the menu to edit.
         </div>
       )}
 
-      <div className="mx-auto w-full max-w-3xl px-6 pb-5 pt-6">
+      <div className="mx-auto w-full max-w-[720px] px-8 pb-4 pt-8">
         <input
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           placeholder="Untitled"
           readOnly={isLocked}
-          className="w-full border-none bg-transparent text-3xl font-bold text-ink outline-none placeholder:text-faint"
+          className="w-full border-none bg-transparent text-[2.25rem] font-bold leading-tight tracking-tight text-ink outline-none placeholder:text-faint"
         />
       </div>
 
       {editor && !isLocked && <EditorToolbar editor={editor} />}
 
       <div className="min-h-0 flex-1 overflow-y-auto">
-        <div className="sp-editor mx-auto max-w-3xl px-6 py-6">
+        <div className="sp-editor mx-auto max-w-[720px] px-8 py-8">
           <EditorContent editor={editor} />
         </div>
       </div>
 
-      <div className="flex items-center gap-4 border-t border-line px-6 py-1.5 text-xs text-faint">
+      <div className="flex items-center gap-4 border-t border-line bg-surface px-8 py-2 text-xs text-faint">
         <WordGoalControl
           wordCount={stats.wordCount}
           goal={wordGoal}
@@ -300,9 +300,9 @@ export function NoteEditor({ note }: { note: Note }) {
           }}
         />
         {wordGoal && <WordGoalBar wordCount={stats.wordCount} goal={wordGoal} />}
-        <span>{stats.charCount} characters</span>
-        <span>{stats.readingTimeMinutes} min read</span>
-        <span className="ml-auto">
+        <span className="tabular-nums">{stats.charCount} characters</span>
+        <span className="tabular-nums">{stats.readingTimeMinutes} min read</span>
+        <span className="ml-auto tabular-nums">
           Updated {new Date(note.updated_at).toLocaleString()}
         </span>
       </div>

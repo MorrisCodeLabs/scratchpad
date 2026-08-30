@@ -34,25 +34,25 @@ export function AuthScreen() {
 
   return (
     <div className="flex h-screen w-screen items-center justify-center bg-bg px-4">
-      <div className="w-full max-w-sm rounded-xl border border-line bg-surface p-7 shadow-sm">
-        <div className="mb-6 flex items-center gap-2">
-          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent-soft text-lg">📝</span>
-          <span className="text-lg font-bold text-ink">Scratchpad</span>
+      <div className="w-full max-w-[380px] rounded-2xl border border-line bg-surface p-8 shadow-[0_1px_2px_rgba(0,0,0,0.04),0_16px_40px_rgba(0,0,0,0.06)]">
+        <div className="mb-8 flex items-center gap-2.5">
+          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-accent-soft text-lg">📝</span>
+          <span className="text-lg font-bold tracking-tight text-ink">Scratchpad</span>
         </div>
 
         {checkEmail ? (
-          <p className="text-sm text-muted">
+          <p className="text-[13px] leading-relaxed text-muted">
             Check <span className="font-medium text-ink">{email}</span> for a confirmation link to finish creating your
             account.
           </p>
         ) : (
-          <form onSubmit={submit} className="flex flex-col gap-3">
+          <form onSubmit={submit} className="flex flex-col gap-4">
             <div>
-              <label className="mb-1 block text-xs font-medium text-muted">Email</label>
+              <label className="mb-1.5 block text-xs font-medium text-muted">Email</label>
               <Input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@company.com" />
             </div>
             <div>
-              <label className="mb-1 block text-xs font-medium text-muted">Password</label>
+              <label className="mb-1.5 block text-xs font-medium text-muted">Password</label>
               <Input
                 type="password"
                 required
@@ -62,7 +62,7 @@ export function AuthScreen() {
                 placeholder="••••••••"
               />
             </div>
-            {error && <p className="text-sm text-danger">{error}</p>}
+            {error && <p className="text-[13px] text-danger">{error}</p>}
             <Button type="submit" disabled={loading} className="mt-1 w-full">
               {loading ? "Please wait…" : mode === "sign-in" ? "Sign in" : "Create account"}
             </Button>
@@ -73,7 +73,7 @@ export function AuthScreen() {
           <button
             type="button"
             onClick={() => setMode(mode === "sign-in" ? "sign-up" : "sign-in")}
-            className="mt-4 w-full text-center text-xs text-muted hover:text-ink"
+            className="mt-5 w-full text-center text-xs text-muted transition-colors hover:text-ink"
           >
             {mode === "sign-in" ? "Need an account? Sign up" : "Already have an account? Sign in"}
           </button>

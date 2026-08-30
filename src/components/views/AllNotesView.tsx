@@ -77,15 +77,15 @@ export function AllNotesView() {
   };
 
   return (
-    <div className="mx-auto h-full max-w-6xl overflow-y-auto px-8 py-8">
-      <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-ink">All notes</h1>
+    <div className="mx-auto h-full max-w-6xl overflow-y-auto px-10 py-10">
+      <div className="mb-8 flex items-center justify-between">
+        <h1 className="text-[1.7rem] font-bold text-ink">All notes</h1>
         <div className="flex items-center gap-2">
           <button
             type="button"
             onClick={toggleSelectMode}
             className={cn(
-              "flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-sm font-medium",
+              "flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-[13px] font-medium transition-colors",
               selectMode ? "border-accent bg-accent-soft text-accent-ink" : "border-line text-muted hover:bg-surface-2",
             )}
           >
@@ -95,7 +95,7 @@ export function AllNotesView() {
           <NewNoteMenu>
             <button
               type="button"
-              className="flex items-center gap-1.5 rounded-md bg-accent px-3 py-1.5 text-sm font-medium text-white hover:opacity-90"
+              className="flex items-center gap-1.5 rounded-lg bg-accent px-3.5 py-1.5 text-[13px] font-medium text-white transition-opacity hover:opacity-90"
             >
               <Plus size={15} /> New note
             </button>
@@ -104,22 +104,22 @@ export function AllNotesView() {
       </div>
 
       {selectMode && selected.size > 0 && (
-        <div className="mb-4 flex items-center gap-3 rounded-md bg-accent-soft px-3 py-2 text-sm text-accent-ink">
+        <div className="mb-4 flex items-center gap-4 rounded-lg bg-accent-soft px-4 py-2.5 text-[13px] text-accent-ink">
           <span className="font-medium">{selected.size} selected</span>
-          <button type="button" onClick={bulkArchive} className="flex items-center gap-1 hover:underline">
+          <button type="button" onClick={bulkArchive} className="flex items-center gap-1.5 hover:underline">
             <Archive size={13} /> Archive
           </button>
-          <button type="button" onClick={bulkTrash} className="flex items-center gap-1 hover:underline">
+          <button type="button" onClick={bulkTrash} className="flex items-center gap-1.5 hover:underline">
             <Trash2 size={13} /> Trash
           </button>
-          <button type="button" onClick={() => setSelected(new Set())} className="ml-auto flex items-center gap-1 hover:underline">
+          <button type="button" onClick={() => setSelected(new Set())} className="ml-auto flex items-center gap-1.5 hover:underline">
             <X size={13} /> Clear
           </button>
         </div>
       )}
 
-      <div className="mb-3 flex items-center gap-2">
-        <div className="flex flex-1 items-center gap-2 rounded-md border border-line bg-surface px-3 py-2">
+      <div className="mb-4 flex items-center gap-2">
+        <div className="flex flex-1 items-center gap-2.5 rounded-lg border border-line bg-surface px-3.5 py-2.5">
           <Search size={15} className="text-faint" />
           <input
             value={query}
@@ -132,7 +132,7 @@ export function AllNotesView() {
           type="button"
           onClick={() => (isPro ? setAdvancedOpen(true) : setUpgradeFeature("Advanced search"))}
           className={cn(
-            "flex items-center gap-1.5 rounded-md border px-3 py-2 text-sm",
+            "flex items-center gap-1.5 rounded-lg border px-3 py-2.5 text-sm transition-colors",
             filtersActive ? "border-accent bg-accent-soft text-accent-ink" : "border-line text-muted hover:bg-surface-2",
           )}
         >
@@ -142,7 +142,7 @@ export function AllNotesView() {
       </div>
 
       {allTags.length > 0 && (
-        <div className="mb-5 flex flex-wrap items-center gap-1.5">
+        <div className="mb-6 flex flex-wrap items-center gap-1.5">
           <TagIcon size={13} className="text-faint" />
           {allTags.map((tag) => (
             <button
@@ -150,7 +150,7 @@ export function AllNotesView() {
               type="button"
               onClick={() => setActiveTag(activeTag === tag ? null : tag)}
               className={cn(
-                "rounded-full px-2.5 py-1 text-xs",
+                "rounded-full px-2.5 py-1 text-xs font-medium transition-colors",
                 activeTag === tag ? "bg-accent text-white" : "bg-surface-2 text-muted hover:bg-line",
               )}
             >
@@ -165,7 +165,7 @@ export function AllNotesView() {
           {query || activeTag || filtersActive ? "No notes match your filters." : "No notes yet — create your first one."}
         </p>
       ) : (
-        <div className="grid grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-3">
+        <div className="grid grid-cols-[repeat(auto-fill,minmax(230px,1fr))] gap-4">
           {filtered.map((note) => (
             <NoteCard
               key={note.id}

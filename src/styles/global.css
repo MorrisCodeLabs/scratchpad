@@ -1,3 +1,4 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&family=IBM+Plex+Mono:wght@400;500&display=swap");
 @import "tailwindcss";
 @import "katex/dist/katex.min.css";
 
@@ -29,6 +30,11 @@
   --sp-radius-sm: 6px;
   --sp-radius-md: 8px;
   --sp-radius-lg: 12px;
+
+  --sp-font-sans:
+    "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --sp-font-mono:
+    "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
 }
 
 :root[data-theme="dark"] {
@@ -103,14 +109,53 @@ body {
   margin: 0;
   background: var(--sp-bg);
   color: var(--sp-ink);
-  font-family:
-    ui-sans-serif,
-    system-ui,
-    -apple-system,
-    "Segoe UI",
-    Roboto,
-    sans-serif;
+  font-family: var(--sp-font-sans);
+  font-size: 14.5px;
+  line-height: 1.55;
+  letter-spacing: -0.005em;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* Headings across the app (All Notes, Calendar, Settings, Insights, the
+   note title) share one typographic voice: tighter tracking and a touch
+   of weight beyond what Tailwind's font-bold alone gives at display sizes. */
+h1,
+h2,
+h3 {
+  letter-spacing: -0.015em;
+  text-wrap: balance;
+}
+
+::selection {
+  background: var(--sp-accent-soft);
+  color: var(--sp-ink);
+}
+
+/* Slim, unobtrusive scrollbars — most of this app's chrome (sidebar, note
+   list, editor) scrolls inside its own pane, and the default fat OS
+   scrollbar reads as unpolished against that. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--sp-line) transparent;
+}
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+*::-webkit-scrollbar-thumb {
+  background: var(--sp-line);
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background: var(--sp-faint);
+  background-clip: padding-box;
 }
 
 /* Layered (not a bare global rule) so a component's own `outline-none` /
@@ -140,6 +185,9 @@ body {
 .sp-editor .ProseMirror {
   outline: none;
   min-height: 60vh;
+  font-size: 16px;
+  line-height: 1.7;
+  color: var(--sp-ink);
 }
 
 .sp-editor .ProseMirror p.is-editor-empty:first-child::before {
@@ -151,26 +199,44 @@ body {
 }
 
 .sp-editor .ProseMirror > * + * {
-  margin-top: 0.65em;
+  margin-top: 0.85em;
 }
 
 .sp-editor .ProseMirror h1 {
-  font-size: 1.9em;
+  font-size: 1.75em;
   font-weight: 700;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.015em;
+  line-height: 1.3;
+  margin-top: 1.4em;
 }
 .sp-editor .ProseMirror h2 {
-  font-size: 1.5em;
-  font-weight: 700;
+  font-size: 1.4em;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.35;
+  margin-top: 1.3em;
 }
 .sp-editor .ProseMirror h3 {
-  font-size: 1.2em;
+  font-size: 1.15em;
   font-weight: 600;
+  line-height: 1.4;
+  margin-top: 1.2em;
+}
+.sp-editor .ProseMirror h1:first-child,
+.sp-editor .ProseMirror h2:first-child,
+.sp-editor .ProseMirror h3:first-child {
+  margin-top: 0;
 }
 
 .sp-editor .ProseMirror ul,
 .sp-editor .ProseMirror ol {
   padding-left: 1.4em;
+}
+.sp-editor .ProseMirror li + li {
+  margin-top: 0.3em;
+}
+.sp-editor .ProseMirror li > p {
+  margin: 0;
 }
 
 .sp-editor .ProseMirror ul[data-type="taskList"] {
@@ -206,19 +272,20 @@ body {
 .sp-editor .ProseMirror pre {
   background: var(--sp-ink);
   color: var(--sp-bg);
-  padding: 0.85em 1em;
-  border-radius: var(--sp-radius-md);
+  padding: 0.9em 1.1em;
+  border-radius: var(--sp-radius-lg);
   overflow-x: auto;
-  font-family: ui-monospace, "IBM Plex Mono", monospace;
+  font-family: var(--sp-font-mono);
   font-size: 0.85em;
+  line-height: 1.6;
 }
 
 .sp-editor .ProseMirror code {
   background: var(--sp-surface-2);
   border-radius: 4px;
-  padding: 0.1em 0.35em;
-  font-family: ui-monospace, "IBM Plex Mono", monospace;
-  font-size: 0.9em;
+  padding: 0.15em 0.4em;
+  font-family: var(--sp-font-mono);
+  font-size: 0.87em;
 }
 
 .sp-editor .ProseMirror pre code {
@@ -241,11 +308,6 @@ body {
   color: #1a1e22;
   border-radius: 2px;
   padding: 0 0.1em;
-}
-
-.sp-editor ::selection {
-  background: var(--sp-accent-soft);
-  color: var(--sp-ink);
 }
 
 .sp-editor .ProseMirror table {

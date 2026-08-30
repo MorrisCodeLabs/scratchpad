@@ -22,12 +22,12 @@ export function SettingsView() {
   const section = route.name === "settings" ? (route.section ?? "account") : "account";
 
   return (
-    <div className="mx-auto h-full max-w-3xl overflow-y-auto px-8 py-8">
-      <h1 className="mb-6 text-2xl font-bold text-ink">Settings</h1>
+    <div className="mx-auto h-full max-w-3xl overflow-y-auto px-10 py-10">
+      <h1 className="mb-8 text-[1.7rem] font-bold tracking-tight text-ink">Settings</h1>
       <Tabs
         value={section}
         onValueChange={(v) => navigate({ name: "settings", section: v })}
-        className="flex gap-8"
+        className="flex gap-10"
       >
         <TabsList>
           <TabsTrigger value="account">Account</TabsTrigger>
@@ -67,10 +67,10 @@ function SettingsRow({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex items-center justify-between gap-4 py-3">
+    <div className="flex items-center justify-between gap-4 py-3.5">
       <div>
-        <p className="text-sm font-medium text-ink">{label}</p>
-        {description && <p className="text-xs text-faint">{description}</p>}
+        <p className="text-[13px] font-medium text-ink">{label}</p>
+        {description && <p className="mt-0.5 text-xs leading-relaxed text-faint">{description}</p>}
       </div>
       {children}
     </div>
@@ -121,13 +121,13 @@ function AppearanceSettings() {
   return (
     <div className="divide-y divide-line">
       <SettingsRow label="Theme" description="Controls light/dark appearance across Scratchpad.">
-        <div className="flex gap-1 rounded-md border border-line p-0.5">
+        <div className="flex gap-1 rounded-lg border border-line p-0.5">
           {options.map((opt) => (
             <button
               key={opt.value}
               onClick={() => setPreference(opt.value)}
               className={cn(
-                "rounded px-2.5 py-1 text-xs font-medium",
+                "rounded-md px-2.5 py-1 text-xs font-medium transition-colors",
                 preference === opt.value ? "bg-accent text-white" : "text-muted hover:bg-surface-2",
               )}
             >
@@ -153,14 +153,14 @@ function AppearanceSettings() {
               title={preset.name}
               onClick={() => setAccent(preset.value)}
               className={cn(
-                "h-6 w-6 rounded-full border-2",
+                "h-6 w-6 rounded-full border-2 transition-transform hover:scale-110",
                 currentAccent === preset.value ? "border-ink" : "border-transparent",
               )}
               style={{ background: preset.value }}
             />
           ))}
           {currentAccent && (
-            <button type="button" onClick={() => setAccent(null)} className="ml-1 text-xs text-faint hover:text-ink">
+            <button type="button" onClick={() => setAccent(null)} className="ml-1 text-xs text-faint transition-colors hover:text-ink">
               Reset
             </button>
           )}
@@ -186,7 +186,7 @@ function EditorSettings() {
         <select
           value={defaultFont}
           onChange={(e) => setDefaultFont(e.target.value)}
-          className="h-9 rounded-md border border-line bg-surface px-2 text-sm text-ink"
+          className="h-9 rounded-lg border border-line bg-surface px-2.5 text-[13px] text-ink"
         >
           <option>System UI</option>
           <option>Serif</option>
