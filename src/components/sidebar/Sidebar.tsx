@@ -3,6 +3,7 @@ import { DndContext, type DragEndEvent, PointerSensor, useSensor, useSensors } f
 import {
   Pin,
   Star,
+  Clock,
   Trash2,
   Settings,
   Plus,
@@ -46,6 +47,14 @@ export function Sidebar() {
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 4 } }));
 
   const pinned = useMemo(() => notes.notes.filter((n) => n.is_pinned), [notes.notes]);
+  const recent = useMemo(
+    () =>
+      [...notes.notes]
+        .filter((n) => n.last_viewed_at)
+        .sort((a, b) => new Date(b.last_viewed_at!).getTime() - new Date(a.last_viewed_at!).getTime())
+        .slice(0, 5),
+    [notes.notes],
+  );
   const favoriteNotes = useMemo(() => notes.notes.filter((n) => n.is_favorite), [notes.notes]);
   const favoriteFolders = useMemo(() => folders.folders.filter((f) => f.is_favorite), [folders.folders]);
   const rootFolders = useMemo(() => folders.folders.filter((f) => f.parent_id === null), [folders.folders]);
@@ -154,6 +163,17 @@ export function Sidebar() {
         </div>
 
         <nav className="mt-3 flex-1 overflow-y-auto px-3 pb-3">
+          {recent.length > 0 && (
+            <div className="mb-4">
+              <p className="flex items-center gap-1.5 px-2.5 pb-1.5 text-[10.5px] font-semibold uppercase tracking-wider text-faint">
+                <Clock size={11} /> Recent
+              </p>
+              {recent.map((n) => (
+                <NoteRow key={n.id} note={n} active={route.name === "note" && route.id === n.id} indent={0} reorderable={false} />
+              ))}
+            </div>
+          )}
+
           {pinned.length > 0 && (
             <div className="mb-4">
               <p className="flex items-center gap-1.5 px-2.5 pb-1.5 text-[10.5px] font-semibold uppercase tracking-wider text-faint">

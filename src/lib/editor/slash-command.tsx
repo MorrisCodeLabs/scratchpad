@@ -20,6 +20,11 @@ import {
   Type,
   Image as ImageIcon,
   Paperclip,
+  MessageSquareQuote,
+  Sigma,
+  Link2,
+  Superscript,
+  PenLine,
 } from "lucide-react";
 import { SlashMenu, type SlashMenuHandle, type SlashMenuItem } from "@/components/editor/SlashMenu";
 import { pickFile } from "@/lib/editor/pick-file";
@@ -113,6 +118,12 @@ const ITEMS: SlashMenuItem[] = [
     command: ({ editor, range }) => editor.chain().focus().deleteRange(range).toggleBlockquote().run(),
   },
   {
+    title: "Callout",
+    description: "Make writing stand out.",
+    icon: MessageSquareQuote,
+    command: ({ editor, range }) => editor.chain().focus().deleteRange(range).setCallout().run(),
+  },
+  {
     title: "Code block",
     description: "Capture a code snippet.",
     icon: Code2,
@@ -143,13 +154,37 @@ const ITEMS: SlashMenuItem[] = [
   },
   {
     title: "File",
-    description: "Attach any file for download.",
+    description: "Attach any file for download (PDFs, docs, anything).",
     icon: Paperclip,
     command: async ({ editor, range }) => {
       editor.chain().focus().deleteRange(range).run();
       const uploaded = await uploadFromEditor(editor, "*/*");
       if (uploaded) editor.chain().focus().setFileBlock(uploaded).run();
     },
+  },
+  {
+    title: "Embed",
+    description: "Embed a YouTube/Vimeo video or any link.",
+    icon: Link2,
+    command: ({ editor, range }) => editor.chain().focus().deleteRange(range).setEmbed().run(),
+  },
+  {
+    title: "Math equation",
+    description: "A LaTeX equation, rendered with KaTeX.",
+    icon: Sigma,
+    command: ({ editor, range }) => editor.chain().focus().deleteRange(range).setMathBlock().run(),
+  },
+  {
+    title: "Footnote",
+    description: "Insert a numbered footnote reference.",
+    icon: Superscript,
+    command: ({ editor, range }) => editor.chain().focus().deleteRange(range).setFootnote().run(),
+  },
+  {
+    title: "Sketch",
+    description: "Freeform drawing canvas.",
+    icon: PenLine,
+    command: ({ editor, range }) => editor.chain().focus().deleteRange(range).setSketchBlock().run(),
   },
 ];
 

@@ -18,8 +18,16 @@ import Color from "@tiptap/extension-color";
 import FontFamily from "@tiptap/extension-font-family";
 import TextAlign from "@tiptap/extension-text-align";
 import Image from "@tiptap/extension-image";
+import { Callout } from "@/lib/editor/callout";
+import { MathBlock } from "@/lib/editor/math-block";
+import { Embed } from "@/lib/editor/embed";
+import { Footnote } from "@/lib/editor/footnote";
+import { SketchBlock } from "@/lib/editor/sketch-block";
 import { FileBlock } from "@/lib/editor/file-block";
 import { NoteContext } from "@/lib/editor/note-context";
+import { BlockDragHandle } from "@/lib/editor/block-drag-handle";
+import { NoteLink } from "@/lib/editor/note-link";
+import { NoteLinkCommand } from "@/lib/editor/note-link-command";
 import { SlashCommand } from "@/lib/editor/slash-command";
 import { EditorToolbar } from "@/components/editor/EditorToolbar";
 import { useAutosave } from "@/lib/data/use-autosave";
@@ -29,12 +37,16 @@ import { computeStats } from "@/lib/text-stats";
 import type { Note } from "@/lib/types";
 import { SaveIndicator } from "@/components/editor/SaveIndicator";
 import { NoteMenu } from "@/components/editor/NoteMenu";
+import { NoteOutline } from "@/components/editor/NoteOutline";
+import { BacklinksPanel } from "@/components/editor/BacklinksPanel";
+import { NoteTagsPopover } from "@/components/editor/NoteTagsPopover";
 import { Lock, Maximize2, Minimize2, AlertTriangle } from "lucide-react";
 
 export function NoteEditor({ note }: { note: Note }) {
   const { notes, focusMode, setFocusMode, navigate } = useWorkspaceContext();
   const [title, setTitle] = useState(note.title);
   const [isLocked, setIsLocked] = useState(note.is_locked);
+  const [tags, setTags] = useState<string[]>(note.tags);
 
   const editor = useEditor({
     extensions: [
@@ -54,10 +66,18 @@ export function NoteEditor({ note }: { note: Note }) {
       Color,
       FontFamily,
       TextAlign.configure({ types: ["heading", "paragraph"] }),
+      Callout,
+      MathBlock,
+      Embed,
+      Footnote,
+      SketchBlock,
       FileBlock,
       Image.configure({ inline: false, allowBase64: false }),
       NoteContext.configure({ workspaceId: note.workspace_id, noteId: note.id }),
-      Placeholder.configure({ placeholder: "Write, or press '/' for commands…" }),
+      BlockDragHandle,
+      NoteLink,
+      NoteLinkCommand,
+      Placeholder.configure({ placeholder: "Write, or press '/' for commands, '[[' to link a note…" }),
       SlashCommand,
     ],
     content: note.content,
@@ -70,12 +90,19 @@ export function NoteEditor({ note }: { note: Note }) {
   useEffect(() => {
     setTitle(note.title);
     setIsLocked(note.is_locked);
+    setTags(note.tags);
     editor?.commands.setContent(note.content as any, false);
   }, [note.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     editor?.setEditable(!isLocked);
   }, [editor, isLocked]);
+
+  useEffect(() => {
+    if (!editor) return;
+    editor.storage.noteLink.notes = notes.notes.map((n) => ({ id: n.id, title: n.title }));
+    editor.storage.noteLink.onNavigate = (id: string) => navigate({ name: "note", id });
+  }, [editor, notes.notes, navigate]);
 
   const [contentTick, setContentTick] = useState(0);
   useEffect(() => {
@@ -142,6 +169,11 @@ export function NoteEditor({ note }: { note: Note }) {
     setFocusMode(!focusMode);
   };
 
+  const updateTags = (next: string[]) => {
+    setTags(next);
+    notes.updateNote(note.id, { tags: next });
+  };
+
   return (
     <div className="flex h-full flex-col">
       <div className="flex items-center justify-between gap-3 border-b border-line px-8 py-3">
@@ -153,6 +185,13 @@ export function NoteEditor({ note }: { note: Note }) {
           className="min-w-0 flex-1 truncate border-none bg-transparent text-[17px] font-semibold text-ink outline-none placeholder:text-faint"
         />
         <div className="flex items-center gap-1">
+          {!focusMode && (
+            <>
+              <NoteTagsPopover tags={tags} onChange={updateTags} />
+              <BacklinksPanel note={note} allNotes={notes.notes} onNavigate={(id) => navigate({ name: "note", id })} />
+              <div className="mx-0.5 h-4 w-px shrink-0 bg-line" />
+            </>
+          )}
           <button
             type="button"
             title={focusMode ? "Exit focus mode" : "Focus mode"}
@@ -161,6 +200,7 @@ export function NoteEditor({ note }: { note: Note }) {
           >
             {focusMode ? <Minimize2 size={15} /> : <Maximize2 size={15} />}
           </button>
+          {editor && <NoteOutline editor={editor} contentTick={contentTick} />}
           <SaveIndicator state={saveState} onSaveNow={saveNow} />
           <NoteMenu note={note} onToggleLock={toggleLock} />
         </div>

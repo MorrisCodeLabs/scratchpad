@@ -4,12 +4,23 @@ import { useWorkspaceContext } from "@/lib/workspace-context";
 import { docToText } from "@/lib/text-stats";
 import { NewNoteMenu } from "@/components/NewNoteMenu";
 import { NoteCard } from "@/components/views/NoteCard";
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { cn } from "@/lib/cn";
+
+type SortBy = "updated" | "created" | "viewed" | "title";
+
+const SORT_OPTIONS: { value: SortBy; label: string }[] = [
+  { value: "updated", label: "Last updated" },
+  { value: "viewed", label: "Recently viewed" },
+  { value: "created", label: "Date created" },
+  { value: "title", label: "Title A–Z" },
+];
 
 export function AllNotesView() {
   const { notes, navigate } = useWorkspaceContext();
   const [query, setQuery] = useState("");
   const [activeTag, setActiveTag] = useState<string | null>(null);
+  const [sortBy, setSortBy] = useState<SortBy>("updated");
   const [selectMode, setSelectMode] = useState(false);
   const [selected, setSelected] = useState<Set<string>>(new Set());
 
@@ -21,12 +32,28 @@ export function AllNotesView() {
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    return notes.notes.filter((n) => {
+    const matches = notes.notes.filter((n) => {
       if (q && !n.title.toLowerCase().includes(q) && !docToText(n.content).toLowerCase().includes(q)) return false;
-      if (activeTag && !n.tags?.includes(activeTag)) return false;
+      // Selecting a parent tag ("Work") also matches its nested children ("Work/ProjectX").
+      if (activeTag && !n.tags?.some((t) => t === activeTag || t.startsWith(`${activeTag}/`))) return false;
       return true;
     });
-  }, [notes.notes, query, activeTag]);
+    const sorted = [...matches];
+    switch (sortBy) {
+      case "created":
+        sorted.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+        break;
+      case "viewed":
+        sorted.sort((a, b) => new Date(b.last_viewed_at ?? 0).getTime() - new Date(a.last_viewed_at ?? 0).getTime());
+        break;
+      case "title":
+        sorted.sort((a, b) => a.title.localeCompare(b.title));
+        break;
+      default:
+        sorted.sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime());
+    }
+    return sorted;
+  }, [notes.notes, query, activeTag, sortBy]);
 
   const toggleSelectMode = () => {
     setSelectMode((v) => !v);
@@ -103,6 +130,18 @@ export function AllNotesView() {
             className="w-full bg-transparent text-sm text-ink outline-none placeholder:text-faint"
           />
         </div>
+        <Select value={sortBy} onValueChange={(v) => setSortBy(v as SortBy)}>
+          <SelectTrigger className="w-44 shrink-0">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {SORT_OPTIONS.map((opt) => (
+              <SelectItem key={opt.value} value={opt.value}>
+                {opt.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
       {allTags.length > 0 && (
@@ -118,7 +157,7 @@ export function AllNotesView() {
                 activeTag === tag ? "bg-accent text-white" : "bg-surface-2 text-muted hover:bg-line",
               )}
             >
-              {tag}
+              {tag.replace(/\//g, " › ")}
             </button>
           ))}
         </div>
