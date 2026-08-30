@@ -43,12 +43,13 @@ import { ExpirationControl } from "@/components/editor/ExpirationControl";
 import { NoteDetailsPanel } from "@/components/editor/NoteDetailsPanel";
 import { NoteOutline } from "@/components/editor/NoteOutline";
 import { SaveTemplateDialog } from "@/components/editor/SaveTemplateDialog";
+import { FindReplaceBar } from "@/components/editor/FindReplaceBar";
 import { useIsPro } from "@/lib/use-plan";
 import { createNoteVersion } from "@/lib/data/use-note-versions";
 import { useCustomTemplates } from "@/lib/data/use-custom-templates";
 import { tiptapToMarkdown } from "@/lib/markdown-export";
 import { downloadTextFile, printNoteAsPdf } from "@/lib/download";
-import { Lock, Maximize2, Minimize2 } from "lucide-react";
+import { Lock, Maximize2, Minimize2, Search } from "lucide-react";
 import type { NoteVersion } from "@/lib/types";
 
 export function NoteEditor({ note }: { note: Note }) {
@@ -65,6 +66,7 @@ export function NoteEditor({ note }: { note: Note }) {
   const [tags, setTags] = useState<string[]>(note.tags);
   const [versionHistoryOpen, setVersionHistoryOpen] = useState(false);
   const [saveTemplateOpen, setSaveTemplateOpen] = useState(false);
+  const [findOpen, setFindOpen] = useState(false);
   const lastSnapshotAt = useRef(0);
 
   const editor = useEditor({
@@ -118,8 +120,20 @@ export function NoteEditor({ note }: { note: Note }) {
     setDescription(note.description);
     setTags(note.tags);
     lastSnapshotAt.current = 0;
+    setFindOpen(false);
     editor?.commands.setContent(note.content as any, false);
   }, [note.id]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "f" && !isLocked) {
+        e.preventDefault();
+        setFindOpen(true);
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [isLocked]);
 
   useEffect(() => {
     editor?.setEditable(!isLocked);
@@ -247,6 +261,16 @@ export function NoteEditor({ note }: { note: Note }) {
           >
             {focusMode ? <Minimize2 size={15} /> : <Maximize2 size={15} />}
           </button>
+          {editor && !isLocked && (
+            <button
+              type="button"
+              title="Find and replace (⌘F)"
+              onClick={() => setFindOpen((v) => !v)}
+              className="flex h-7 w-7 items-center justify-center rounded-md text-muted transition-colors hover:bg-surface-2 hover:text-ink"
+            >
+              <Search size={15} />
+            </button>
+          )}
           {editor && <NoteOutline editor={editor} contentTick={contentTick} />}
           <SaveIndicator state={saveState} onSaveNow={saveNow} />
           <NoteMenu
@@ -277,6 +301,9 @@ export function NoteEditor({ note }: { note: Note }) {
       </div>
 
       {editor && !isLocked && <EditorToolbar editor={editor} />}
+      {editor && findOpen && !isLocked && (
+        <FindReplaceBar editor={editor} contentTick={contentTick} onClose={() => setFindOpen(false)} />
+      )}
 
       <div className="min-h-0 flex-1 overflow-y-auto">
         <div className="sp-editor mx-auto max-w-[720px] px-8 py-8">

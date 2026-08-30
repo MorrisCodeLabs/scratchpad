@@ -1,15 +1,22 @@
 import * as React from "react";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Command } from "cmdk";
-import { FileText, Plus, Calendar, Trash2, Settings, Moon, Sun, Star, Pin, Keyboard } from "lucide-react";
+import { FileText, Plus, Calendar, Trash2, Settings, Moon, Sun, Star, Pin, Keyboard, Replace } from "lucide-react";
 import { useWorkspaceContext } from "@/lib/workspace-context";
 import { useTheme } from "@/lib/use-theme";
 import { useShortcutsDialog } from "@/lib/use-shortcuts-dialog";
+import { useIsPro } from "@/lib/use-plan";
+import { UpgradeDialog } from "@/components/pro/UpgradeDialog";
+import { ProBadge } from "@/components/pro/ProBadge";
+import { GlobalFindReplaceDialog } from "@/components/GlobalFindReplaceDialog";
 
 export function CommandMenu() {
   const { workspace, notes, commandMenuOpen, setCommandMenuOpen, navigate } = useWorkspaceContext();
   const { theme, toggleTheme } = useTheme();
   const { open: openShortcuts } = useShortcutsDialog();
+  const isPro = useIsPro();
+  const [upgradeOpen, setUpgradeOpen] = useState(false);
+  const [globalFindOpen, setGlobalFindOpen] = useState(false);
 
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
@@ -33,6 +40,7 @@ export function CommandMenu() {
   );
 
   return (
+    <>
     <Command.Dialog
       open={commandMenuOpen}
       onOpenChange={setCommandMenuOpen}
@@ -72,6 +80,18 @@ export function CommandMenu() {
           <Item onSelect={() => run(openShortcuts)}>
             <Keyboard size={14} /> Keyboard shortcuts
           </Item>
+          <Item
+            onSelect={() =>
+              run(() => {
+                if (isPro) setGlobalFindOpen(true);
+                else setUpgradeOpen(true);
+              })
+            }
+          >
+            <Replace size={14} />
+            <span className="flex-1">Find and replace across notes</span>
+            {!isPro && <ProBadge />}
+          </Item>
         </Command.Group>
 
         <Command.Group heading="Notes" className="[&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:pb-1 [&_[cmdk-group-heading]]:pt-2 [&_[cmdk-group-heading]]:text-[11px] [&_[cmdk-group-heading]]:font-medium [&_[cmdk-group-heading]]:uppercase [&_[cmdk-group-heading]]:tracking-wide [&_[cmdk-group-heading]]:text-faint">
@@ -86,6 +106,9 @@ export function CommandMenu() {
         </Command.Group>
       </Command.List>
     </Command.Dialog>
+    <UpgradeDialog open={upgradeOpen} onOpenChange={setUpgradeOpen} feature="Find and replace across notes" />
+    <GlobalFindReplaceDialog open={globalFindOpen} onOpenChange={setGlobalFindOpen} />
+    </>
   );
 }
 
