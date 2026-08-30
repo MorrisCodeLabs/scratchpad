@@ -24,7 +24,7 @@ export function NoteRow({ note, active, indent }: { note: Note; active: boolean;
           active ? "bg-accent-soft text-accent-ink" : "text-muted hover:bg-surface-2 hover:text-ink",
         )}
       >
-        <FileText size={14} className="shrink-0" />
+        <FileText size={14} className="mr-1 shrink-0" />
         <span className="truncate">{note.title || "Untitled"}</span>
       </button>
       <button

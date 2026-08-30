@@ -17,9 +17,17 @@ import {
   AlignCenter,
   AlignRight,
   AlignJustify,
+  Undo2,
+  Redo2,
+  RemoveFormatting,
+  Code2,
+  Minus,
+  IndentIncrease,
+  IndentDecrease,
 } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { TextColorPicker, HighlightColorPicker } from "@/components/editor/ColorPicker";
+import { LinkPicker } from "@/components/editor/LinkPicker";
 
 const FONT_FAMILIES = [
   { label: "Default", value: "" },
@@ -73,6 +81,15 @@ function currentHeadingValue(editor: Editor) {
 export function EditorToolbar({ editor }: { editor: Editor }) {
   return (
     <div className="flex flex-wrap items-center gap-0.5 border-b border-line px-6 py-1.5">
+      <ToolbarButton label="Undo" onClick={() => editor.chain().focus().undo().run()}>
+        <Undo2 size={15} />
+      </ToolbarButton>
+      <ToolbarButton label="Redo" onClick={() => editor.chain().focus().redo().run()}>
+        <Redo2 size={15} />
+      </ToolbarButton>
+
+      <div className="mx-1.5 h-4 w-px bg-line" />
+
       <select
         title="Text style"
         value={currentHeadingValue(editor)}
@@ -157,6 +174,13 @@ export function EditorToolbar({ editor }: { editor: Editor }) {
       </ToolbarButton>
       <TextColorPicker editor={editor} />
       <HighlightColorPicker editor={editor} />
+      <LinkPicker editor={editor} />
+      <ToolbarButton
+        label="Clear formatting"
+        onClick={() => editor.chain().focus().unsetAllMarks().clearNodes().run()}
+      >
+        <RemoveFormatting size={15} />
+      </ToolbarButton>
 
       <div className="mx-1.5 h-4 w-px bg-line" />
 
@@ -202,6 +226,27 @@ export function EditorToolbar({ editor }: { editor: Editor }) {
       </ToolbarButton>
       <ToolbarButton label="Quote" active={editor.isActive("blockquote")} onClick={() => editor.chain().focus().toggleBlockquote().run()}>
         <Quote size={15} />
+      </ToolbarButton>
+      <ToolbarButton
+        label="Decrease indent"
+        onClick={() => editor.chain().focus().liftListItem("listItem").run()}
+      >
+        <IndentDecrease size={15} />
+      </ToolbarButton>
+      <ToolbarButton
+        label="Increase indent"
+        onClick={() => editor.chain().focus().sinkListItem("listItem").run()}
+      >
+        <IndentIncrease size={15} />
+      </ToolbarButton>
+
+      <div className="mx-1.5 h-4 w-px bg-line" />
+
+      <ToolbarButton label="Code block" active={editor.isActive("codeBlock")} onClick={() => editor.chain().focus().toggleCodeBlock().run()}>
+        <Code2 size={15} />
+      </ToolbarButton>
+      <ToolbarButton label="Divider" onClick={() => editor.chain().focus().setHorizontalRule().run()}>
+        <Minus size={15} />
       </ToolbarButton>
     </div>
   );

@@ -124,7 +124,7 @@ export function NoteEditor({ note }: { note: Note }) {
         </div>
       </div>
 
-      <div className="mx-auto w-full max-w-3xl px-6 pt-6">
+      <div className="mx-auto w-full max-w-3xl px-6 pb-5 pt-6">
         <input
           value={title}
           onChange={(e) => setTitle(e.target.value)}

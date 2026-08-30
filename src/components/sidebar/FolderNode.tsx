@@ -45,7 +45,9 @@ export function FolderNode({ folder, depth }: { folder: FolderType; depth: numbe
           <button type="button" onClick={() => setOpen((v) => !v)} className="p-1">
             <ChevronRight size={13} className={cn("transition-transform", open && "rotate-90")} />
           </button>
-          {open ? <FolderOpen size={14} /> : <Folder size={14} />}
+          <span className="mr-2 flex shrink-0 items-center">
+            {open ? <FolderOpen size={14} /> : <Folder size={14} />}
+          </span>
           {renaming ? (
             <input
               autoFocus
