@@ -212,6 +212,20 @@ export function NoteEditor({ note }: { note: Note }) {
     };
   }, [editor]);
 
+  // The toolbar reads editor.isActive()/getAttributes() during render, which
+  // only reflects the current selection — moving the cursor without editing
+  // (arrow keys, clicking elsewhere) doesn't fire "update", so without this
+  // the toolbar's active/disabled states go stale until the next edit.
+  const [, forceToolbarRerender] = useState(0);
+  useEffect(() => {
+    if (!editor) return;
+    const rerender = () => forceToolbarRerender((t) => t + 1);
+    editor.on("transaction", rerender);
+    return () => {
+      editor.off("transaction", rerender);
+    };
+  }, [editor]);
+
   const stats = useMemo(() => computeStats(editor?.getJSON() as any), [editor, contentTick]);
 
   const duplicateTitleNote = useMemo(() => {

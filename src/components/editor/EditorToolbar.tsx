@@ -48,11 +48,13 @@ const FONT_SIZES = [
 
 function ToolbarButton({
   active,
+  disabled,
   onClick,
   label,
   children,
 }: {
   active?: boolean;
+  disabled?: boolean;
   onClick: () => void;
   label: string;
   children: React.ReactNode;
@@ -62,10 +64,13 @@ function ToolbarButton({
       type="button"
       title={label}
       aria-label={label}
+      aria-pressed={active}
+      disabled={disabled}
       onClick={onClick}
       className={cn(
-        "flex h-7 w-7 items-center justify-center rounded-md text-muted transition-colors hover:bg-surface hover:text-ink",
-        active && "bg-accent-soft text-accent-ink",
+        "flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-muted transition-colors",
+        "hover:bg-surface hover:text-ink disabled:pointer-events-none disabled:opacity-35 disabled:hover:bg-transparent",
+        active && "bg-accent-soft text-accent-ink hover:bg-accent-soft hover:text-accent-ink",
       )}
     >
       {children}
@@ -73,14 +78,43 @@ function ToolbarButton({
   );
 }
 
+function ToolbarSelect({
+  title,
+  value,
+  onChange,
+  className,
+  children,
+}: {
+  title: string;
+  value?: string;
+  onChange: (value: string) => void;
+  className?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <select
+      title={title}
+      aria-label={title}
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      className={cn(
+        "h-8 shrink-0 rounded-md border border-line bg-surface px-2 text-xs text-ink outline-none transition-colors hover:border-faint focus-visible:border-accent",
+        className,
+      )}
+    >
+      {children}
+    </select>
+  );
+}
+
 function ToolbarDivider() {
-  return <div className="mx-1.5 h-4 w-px shrink-0 bg-line" />;
+  return <div role="separator" aria-orientation="vertical" className="mx-1 h-5 w-px shrink-0 bg-line" />;
 }
 
 function ToolbarSection({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div>
-      <p className="mb-1.5 text-[11px] font-medium uppercase tracking-wide text-faint">{label}</p>
+      <p className="mb-1.5 text-[10.5px] font-semibold uppercase tracking-wide text-faint">{label}</p>
       <div className="flex flex-wrap items-center gap-0.5">{children}</div>
     </div>
   );
@@ -95,25 +129,25 @@ function currentHeadingValue(editor: Editor) {
 
 export function EditorToolbar({ editor }: { editor: Editor }) {
   return (
-    <div className="flex items-center gap-0.5 overflow-x-auto border-b border-line bg-surface-2/40 px-8 py-2">
-      <ToolbarButton label="Undo" onClick={() => editor.chain().focus().undo().run()}>
+    <div className="flex items-center gap-1 overflow-x-auto border-b border-line bg-surface px-8 py-2">
+      <ToolbarButton label="Undo" disabled={!editor.can().undo()} onClick={() => editor.chain().focus().undo().run()}>
         <Undo2 size={15} />
       </ToolbarButton>
-      <ToolbarButton label="Redo" onClick={() => editor.chain().focus().redo().run()}>
+      <ToolbarButton label="Redo" disabled={!editor.can().redo()} onClick={() => editor.chain().focus().redo().run()}>
         <Redo2 size={15} />
       </ToolbarButton>
 
       <ToolbarDivider />
 
-      <select
+      <ToolbarSelect
         title="Text style"
         value={currentHeadingValue(editor)}
-        onChange={(e) => {
-          const level = Number(e.target.value);
+        onChange={(value) => {
+          const level = Number(value);
           if (level === 0) editor.chain().focus().setParagraph().run();
           else editor.chain().focus().toggleHeading({ level: level as Level }).run();
         }}
-        className="h-7 shrink-0 rounded-md border border-line bg-surface px-1.5 text-xs text-ink"
+        className="w-[7.5rem]"
       >
         <option value="0">Paragraph</option>
         <option value="1">Heading 1</option>
@@ -122,7 +156,7 @@ export function EditorToolbar({ editor }: { editor: Editor }) {
         <option value="4">Heading 4</option>
         <option value="5">Heading 5</option>
         <option value="6">Heading 6</option>
-      </select>
+      </ToolbarSelect>
 
       <ToolbarDivider />
 
@@ -160,43 +194,41 @@ export function EditorToolbar({ editor }: { editor: Editor }) {
             type="button"
             title="More formatting"
             aria-label="More formatting"
-            className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-muted transition-colors hover:bg-surface hover:text-ink"
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-muted transition-colors hover:bg-surface hover:text-ink"
           >
             <MoreHorizontal size={15} />
           </button>
         </PopoverTrigger>
-        <PopoverContent align="start" className="flex w-72 flex-col gap-3.5">
+        <PopoverContent align="start" className="flex w-72 flex-col gap-4">
           <ToolbarSection label="Font">
-            <select
+            <ToolbarSelect
               title="Font family"
-              onChange={(e) =>
-                e.target.value
-                  ? editor.chain().focus().setFontFamily(e.target.value).run()
-                  : editor.chain().focus().unsetFontFamily().run()
+              value={editor.getAttributes("textStyle").fontFamily ?? ""}
+              onChange={(value) =>
+                value ? editor.chain().focus().setFontFamily(value).run() : editor.chain().focus().unsetFontFamily().run()
               }
-              className="h-7 flex-1 rounded-md border border-line bg-surface px-1.5 text-xs text-ink"
-              defaultValue=""
+              className="flex-1"
             >
               {FONT_FAMILIES.map((f) => (
                 <option key={f.label} value={f.value}>
                   {f.label}
                 </option>
               ))}
-            </select>
-            <select
+            </ToolbarSelect>
+            <ToolbarSelect
               title="Font size"
-              onChange={(e) =>
-                e.target.value ? editor.chain().focus().setFontSize(e.target.value).run() : editor.chain().focus().unsetFontSize().run()
+              value={editor.getAttributes("textStyle").fontSize ?? ""}
+              onChange={(value) =>
+                value ? editor.chain().focus().setFontSize(value).run() : editor.chain().focus().unsetFontSize().run()
               }
-              className="h-7 flex-1 rounded-md border border-line bg-surface px-1.5 text-xs text-ink"
-              defaultValue=""
+              className="flex-1"
             >
               {FONT_SIZES.map((f) => (
                 <option key={f.label} value={f.value}>
                   {f.label}
                 </option>
               ))}
-            </select>
+            </ToolbarSelect>
           </ToolbarSection>
 
           <ToolbarSection label="Marks">
@@ -265,10 +297,18 @@ export function EditorToolbar({ editor }: { editor: Editor }) {
             <ToolbarButton label="Divider" onClick={() => editor.chain().focus().setHorizontalRule().run()}>
               <Minus size={15} />
             </ToolbarButton>
-            <ToolbarButton label="Decrease indent" onClick={() => editor.chain().focus().liftListItem("listItem").run()}>
+            <ToolbarButton
+              label="Decrease indent"
+              disabled={!editor.can().liftListItem("listItem")}
+              onClick={() => editor.chain().focus().liftListItem("listItem").run()}
+            >
               <IndentDecrease size={15} />
             </ToolbarButton>
-            <ToolbarButton label="Increase indent" onClick={() => editor.chain().focus().sinkListItem("listItem").run()}>
+            <ToolbarButton
+              label="Increase indent"
+              disabled={!editor.can().sinkListItem("listItem")}
+              onClick={() => editor.chain().focus().sinkListItem("listItem").run()}
+            >
               <IndentIncrease size={15} />
             </ToolbarButton>
           </ToolbarSection>
