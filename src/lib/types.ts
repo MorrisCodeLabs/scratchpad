@@ -42,6 +42,7 @@ export interface Note {
   description: string | null;
   tags: string[];
   expires_at: string | null;
+  share_token: string | null;
   created_by: string;
   created_at: string;
   updated_at: string;

@@ -1,0 +1,23 @@
+---
+export const prerender = false;
+import Base from "@/layouts/Base.astro";
+import { SharedNoteView } from "@/components/SharedNoteView.tsx";
+import { supabase } from "@/lib/supabase";
+
+const { token } = Astro.params;
+
+const { data: note } = await supabase
+  .from("notes")
+  .select("title, content, updated_at")
+  .eq("share_token", token)
+  .is("deleted_at", null)
+  .maybeSingle();
+
+if (!note) {
+  return new Response(null, { status: 404 });
+}
+---
+
+<Base>
+  <SharedNoteView client:load title={note.title} content={note.content} updatedAt={note.updated_at} />
+</Base>

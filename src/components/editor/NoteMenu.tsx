@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { MoreHorizontal, Pin, Star, Copy, Archive, Trash2, History, Download, FileDown, FileText, Lock, Unlock, BookmarkPlus } from "lucide-react";
+import { MoreHorizontal, Pin, Star, Copy, Archive, Trash2, History, Download, FileDown, FileText, Lock, Unlock, BookmarkPlus, Globe } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -24,6 +24,7 @@ export function NoteMenu({
   onExportPdf,
   onToggleLock,
   onSaveAsTemplate,
+  onOpenShare,
 }: {
   note: Note;
   onOpenVersionHistory: () => void;
@@ -31,6 +32,7 @@ export function NoteMenu({
   onExportPdf: () => void;
   onToggleLock: () => void;
   onSaveAsTemplate: () => void;
+  onOpenShare: () => void;
 }) {
   const { notes, navigate } = useWorkspaceContext();
   const isPro = useIsPro();
@@ -89,6 +91,10 @@ export function NoteMenu({
           </DropdownMenuSub>
           <DropdownMenuItem onSelect={gated("Custom templates", onSaveAsTemplate)}>
             <BookmarkPlus size={14} /> Save as template
+            {!isPro && <ProBadge className="ml-auto" />}
+          </DropdownMenuItem>
+          <DropdownMenuItem onSelect={gated("Share to web", onOpenShare)}>
+            <Globe size={14} /> Share to web
             {!isPro && <ProBadge className="ml-auto" />}
           </DropdownMenuItem>
           <DropdownMenuSeparator />

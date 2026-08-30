@@ -46,6 +46,7 @@ import { NoteDetailsPanel } from "@/components/editor/NoteDetailsPanel";
 import { NoteOutline } from "@/components/editor/NoteOutline";
 import { BacklinksPanel } from "@/components/editor/BacklinksPanel";
 import { SaveTemplateDialog } from "@/components/editor/SaveTemplateDialog";
+import { ShareDialog } from "@/components/editor/ShareDialog";
 import { FindReplaceBar } from "@/components/editor/FindReplaceBar";
 import { useIsPro } from "@/lib/use-plan";
 import { createNoteVersion } from "@/lib/data/use-note-versions";
@@ -70,6 +71,7 @@ export function NoteEditor({ note }: { note: Note }) {
   const [versionHistoryOpen, setVersionHistoryOpen] = useState(false);
   const [saveTemplateOpen, setSaveTemplateOpen] = useState(false);
   const [findOpen, setFindOpen] = useState(false);
+  const [shareOpen, setShareOpen] = useState(false);
   const lastSnapshotAt = useRef(0);
 
   const editor = useEditor({
@@ -292,6 +294,7 @@ export function NoteEditor({ note }: { note: Note }) {
             onExportPdf={exportPdf}
             onToggleLock={toggleLock}
             onSaveAsTemplate={() => setSaveTemplateOpen(true)}
+            onOpenShare={() => setShareOpen(true)}
           />
         </div>
       </div>
@@ -354,6 +357,12 @@ export function NoteEditor({ note }: { note: Note }) {
         onOpenChange={setSaveTemplateOpen}
         defaultName={title || "Untitled template"}
         onSave={saveAsTemplate}
+      />
+      <ShareDialog
+        open={shareOpen}
+        onOpenChange={setShareOpen}
+        note={note}
+        onSetShareToken={(token) => notes.updateNote(note.id, { share_token: token })}
       />
     </div>
   );
