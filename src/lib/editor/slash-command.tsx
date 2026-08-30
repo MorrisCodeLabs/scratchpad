@@ -192,12 +192,8 @@ const ITEMS: SlashMenuItem[] = [
     title: "Database",
     description: "A sortable, filterable table with typed columns.",
     icon: Table2,
+    proOnly: true,
     command: ({ editor, range }) => {
-      const pro = editor.storage.proContext;
-      if (pro && !pro.isPro) {
-        pro.requestUpgrade("Database block");
-        return;
-      }
       editor.chain().focus().deleteRange(range).setDatabaseBlock().run();
     },
   },
@@ -205,12 +201,8 @@ const ITEMS: SlashMenuItem[] = [
     title: "Bibliography",
     description: "Auto-generated reference list from this note's saved sources.",
     icon: BookOpen,
+    proOnly: true,
     command: ({ editor, range }) => {
-      const pro = editor.storage.proContext;
-      if (pro && !pro.isPro) {
-        pro.requestUpgrade("Citation manager");
-        return;
-      }
       editor.chain().focus().deleteRange(range).setBibliographyBlock().run();
     },
   },
@@ -220,8 +212,12 @@ const suggestion: Omit<SuggestionOptions, "editor"> = {
   pluginKey: new PluginKey("slashCommandSuggestion"),
   char: "/",
   startOfLine: false,
-  items: ({ query }) =>
-    ITEMS.filter((item) => item.title.toLowerCase().includes(query.toLowerCase())).slice(0, 10),
+  items: ({ query, editor }) => {
+    const isPro = Boolean(editor.storage.proContext?.isPro);
+    return ITEMS.filter(
+      (item) => (isPro || !item.proOnly) && item.title.toLowerCase().includes(query.toLowerCase()),
+    ).slice(0, 10);
+  },
   command: ({ editor, range, props }: any) => {
     props.command({ editor, range });
   },

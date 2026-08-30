@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { DndContext, type DragEndEvent, PointerSensor, useSensor, useSensors } from "@dnd-kit/core";
-import { Pin, Star, Calendar, Trash2, Settings, Plus, Search, FolderPlus, ChevronDown, type LucideIcon } from "lucide-react";
+import { Pin, Star, Calendar, Trash2, Settings, Plus, Search, FolderPlus, ChevronDown, Sparkles, type LucideIcon } from "lucide-react";
 import { useWorkspaceContext } from "@/lib/workspace-context";
 import { FolderNode } from "@/components/sidebar/FolderNode";
 import { NoteRow } from "@/components/sidebar/NoteRow";
@@ -165,6 +165,14 @@ export function Sidebar() {
             active={route.name === "trash"}
             onClick={() => navigate({ name: "trash" })}
           />
+          {!isPro && (
+            <SidebarLink
+              icon={Sparkles}
+              label="Upgrade"
+              active={route.name === "settings" && route.section === "billing"}
+              onClick={() => navigate({ name: "settings", section: "billing" })}
+            />
+          )}
           <SidebarLink
             icon={Settings}
             label="Settings"

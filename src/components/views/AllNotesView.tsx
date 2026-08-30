@@ -8,8 +8,6 @@ import { NoteCard } from "@/components/views/NoteCard";
 import { AdvancedSearchDialog, EMPTY_FILTERS, type AdvancedFilters } from "@/components/views/AdvancedSearchDialog";
 import { BulkMetadataPopover } from "@/components/views/BulkMetadataPopover";
 import { useIsPro } from "@/lib/use-plan";
-import { UpgradeDialog } from "@/components/pro/UpgradeDialog";
-import { ProBadge } from "@/components/pro/ProBadge";
 import type { NoteStatus } from "@/lib/types";
 import { cn } from "@/lib/cn";
 
@@ -22,7 +20,6 @@ export function AllNotesView() {
   const [filters, setFilters] = useState<AdvancedFilters>(EMPTY_FILTERS);
   const [selectMode, setSelectMode] = useState(false);
   const [selected, setSelected] = useState<Set<string>>(new Set());
-  const [upgradeFeature, setUpgradeFeature] = useState<string | null>(null);
 
   const allTags = useMemo(() => {
     const set = new Set<string>();
@@ -70,10 +67,6 @@ export function AllNotesView() {
   };
 
   const bulkTrash = async () => {
-    if (!isPro) {
-      setUpgradeFeature("Bulk trash");
-      return;
-    }
     await Promise.all([...selected].map((id) => notes.trashNote(id)));
     setSelected(new Set());
   };
@@ -134,10 +127,11 @@ export function AllNotesView() {
           <button type="button" onClick={bulkArchive} className="flex items-center gap-1.5 hover:underline">
             <Archive size={13} /> Archive
           </button>
-          <button type="button" onClick={bulkTrash} className="flex items-center gap-1.5 hover:underline">
-            <Trash2 size={13} /> Trash
-            {!isPro && <ProBadge />}
-          </button>
+          {isPro && (
+            <button type="button" onClick={bulkTrash} className="flex items-center gap-1.5 hover:underline">
+              <Trash2 size={13} /> Trash
+            </button>
+          )}
           <button type="button" onClick={() => setSelected(new Set())} className="ml-auto flex items-center gap-1.5 hover:underline">
             <X size={13} /> Clear
           </button>
@@ -205,11 +199,6 @@ export function AllNotesView() {
       )}
 
       <AdvancedSearchDialog open={advancedOpen} onOpenChange={setAdvancedOpen} filters={filters} onChange={setFilters} />
-      <UpgradeDialog
-        open={upgradeFeature !== null}
-        onOpenChange={(open) => !open && setUpgradeFeature(null)}
-        feature={upgradeFeature ?? undefined}
-      />
     </div>
   );
 }

@@ -7,6 +7,7 @@ export interface SlashMenuItem {
   title: string;
   description: string;
   icon: LucideIcon;
+  proOnly?: boolean;
   command: (props: { editor: Editor; range: Range }) => void;
 }
 

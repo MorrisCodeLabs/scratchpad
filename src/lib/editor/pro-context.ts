@@ -2,16 +2,15 @@ import { Extension } from "@tiptap/core";
 
 export interface ProContextStorage {
   isPro: boolean;
-  requestUpgrade: (feature: string) => void;
 }
 
-// Threads Pro-plan status into the editor instance so slash-menu commands
-// (which only receive `editor` and `range`) can gate Pro-only block
-// insertion without needing React props.
+// Threads Pro-plan status into the editor instance so the slash-menu
+// (which only receives `editor` and `query`) can filter out Pro-only
+// blocks without needing React props.
 export const ProContext = Extension.create<Record<string, never>, ProContextStorage>({
   name: "proContext",
 
   addStorage() {
-    return { isPro: false, requestUpgrade: () => {} };
+    return { isPro: false };
   },
 });

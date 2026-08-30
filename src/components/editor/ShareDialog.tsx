@@ -3,9 +3,6 @@ import { Check, Copy, Globe, Flame } from "lucide-react";
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
-import { useIsPro } from "@/lib/use-plan";
-import { UpgradeDialog } from "@/components/pro/UpgradeDialog";
-import { ProBadge } from "@/components/pro/ProBadge";
 import type { Note } from "@/lib/types";
 
 export function ShareDialog({
@@ -19,9 +16,7 @@ export function ShareDialog({
   note: Note;
   onUpdateShare: (patch: Pick<Note, "share_token" | "share_view_once" | "share_viewed_at">) => void;
 }) {
-  const isPro = useIsPro();
   const [copied, setCopied] = useState(false);
-  const [viewOnceUpgradeOpen, setViewOnceUpgradeOpen] = useState(false);
   const shared = Boolean(note.share_token);
   const url = shared && typeof window !== "undefined" ? `${window.location.origin}/s/${note.share_token}` : "";
   const alreadyConsumed = note.share_view_once && Boolean(note.share_viewed_at);
@@ -36,10 +31,6 @@ export function ShareDialog({
   };
 
   const toggleViewOnce = (next: boolean) => {
-    if (next && !isPro) {
-      setViewOnceUpgradeOpen(true);
-      return;
-    }
     onUpdateShare({ share_token: note.share_token, share_view_once: next, share_viewed_at: null });
   };
 
@@ -79,7 +70,6 @@ export function ShareDialog({
               <div className="flex items-center justify-between border-t border-line pt-3">
                 <span className="flex items-center gap-1.5 text-[13px] text-ink">
                   <Flame size={13} /> Burn after reading
-                  {!isPro && <ProBadge />}
                 </span>
                 <Switch checked={note.share_view_once} onCheckedChange={toggleViewOnce} />
               </div>
@@ -94,7 +84,6 @@ export function ShareDialog({
           )}
         </div>
       </DialogContent>
-      <UpgradeDialog open={viewOnceUpgradeOpen} onOpenChange={setViewOnceUpgradeOpen} feature="Burn-after-reading share links" />
     </Dialog>
   );
 }

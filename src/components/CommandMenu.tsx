@@ -6,8 +6,6 @@ import { useWorkspaceContext } from "@/lib/workspace-context";
 import { useTheme } from "@/lib/use-theme";
 import { useShortcutsDialog } from "@/lib/use-shortcuts-dialog";
 import { useIsPro } from "@/lib/use-plan";
-import { UpgradeDialog } from "@/components/pro/UpgradeDialog";
-import { ProBadge } from "@/components/pro/ProBadge";
 import { GlobalFindReplaceDialog } from "@/components/GlobalFindReplaceDialog";
 import { pickFiles } from "@/lib/editor/pick-files";
 import { importedFileToTiptapJSON, titleFromFilename } from "@/lib/import-markdown";
@@ -18,7 +16,6 @@ export function CommandMenu() {
   const { theme, toggleTheme } = useTheme();
   const { open: openShortcuts } = useShortcutsDialog();
   const isPro = useIsPro();
-  const [upgradeFeature, setUpgradeFeature] = useState<string | null>(null);
   const [globalFindOpen, setGlobalFindOpen] = useState(false);
 
   const importNotes = async () => {
@@ -37,9 +34,6 @@ export function CommandMenu() {
         word_count: stats.wordCount,
         char_count: stats.charCount,
       });
-    }
-    if (!isPro && files.length > 1) {
-      setUpgradeFeature("Bulk import (multiple files at once)");
     }
   };
 
@@ -105,18 +99,12 @@ export function CommandMenu() {
           <Item onSelect={() => run(openShortcuts)}>
             <Keyboard size={14} /> Keyboard shortcuts
           </Item>
-          <Item
-            onSelect={() =>
-              run(() => {
-                if (isPro) setGlobalFindOpen(true);
-                else setUpgradeFeature("Find and replace across notes");
-              })
-            }
-          >
-            <Replace size={14} />
-            <span className="flex-1">Find and replace across notes</span>
-            {!isPro && <ProBadge />}
-          </Item>
+          {isPro && (
+            <Item onSelect={() => run(() => setGlobalFindOpen(true))}>
+              <Replace size={14} />
+              <span className="flex-1">Find and replace across notes</span>
+            </Item>
+          )}
           <Item onSelect={() => run(importNotes)}>
             <Upload size={14} />
             <span className="flex-1">Import notes from Markdown/text</span>
@@ -135,11 +123,6 @@ export function CommandMenu() {
         </Command.Group>
       </Command.List>
     </Command.Dialog>
-    <UpgradeDialog
-      open={upgradeFeature !== null}
-      onOpenChange={(open) => !open && setUpgradeFeature(null)}
-      feature={upgradeFeature ?? undefined}
-    />
     <GlobalFindReplaceDialog open={globalFindOpen} onOpenChange={setGlobalFindOpen} />
     </>
   );

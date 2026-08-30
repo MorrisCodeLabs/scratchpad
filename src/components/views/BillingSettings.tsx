@@ -10,18 +10,28 @@ const FREE_FEATURES = [
   "Unlimited notes and folders",
   "Full block editor with formatting, uploads, and math",
   "Note locking, reminders, color/tags/description",
-  "Bulk select and archive, Markdown export",
-  "Note outline, focus mode",
+  "Bulk select, archive, and edit metadata",
+  "Note outline, focus mode, section zoom",
+  "Note linking and in-note find & replace",
+  "Folder colors, Markdown export",
 ];
 const PRO_FEATURES = [
   "Everything in Free",
   "Version history with restore",
-  "PDF export",
+  "PDF export with title page",
   "Custom note templates",
-  "Note expiration",
-  "Bulk trash",
+  "Note expiration and custom trash retention",
+  "Bulk trash and bulk note import",
   "Date-range search filtering",
+  "Custom sidebar note ordering",
   "Custom brand color",
+  "Public share links, including burn-after-read",
+  "Note comments and linked mentions",
+  "Citation manager and bibliography",
+  "Flashcard study mode",
+  "Database/table blocks",
+  "Encrypted notes",
+  "Split-screen editing",
 ];
 
 export function BillingSettings() {

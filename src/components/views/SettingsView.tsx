@@ -13,8 +13,6 @@ import { cn } from "@/lib/cn";
 import { BillingSettings } from "@/components/views/BillingSettings";
 import { useShortcutsDialog } from "@/lib/use-shortcuts-dialog";
 import { useIsPro } from "@/lib/use-plan";
-import { ProBadge } from "@/components/pro/ProBadge";
-import { UpgradeDialog } from "@/components/pro/UpgradeDialog";
 import { BRAND_PRESETS } from "@/lib/brand-color";
 
 export function SettingsView() {
@@ -97,7 +95,6 @@ function AppearanceSettings() {
   const { preference, setPreference } = useTheme();
   const { workspace, refreshWorkspace } = useWorkspaceContext();
   const isPro = useIsPro();
-  const [upgradeOpen, setUpgradeOpen] = useState(false);
   const currentAccent = workspace.theme?.accent ?? null;
 
   const options: { value: ThemePreference; label: string }[] = [
@@ -107,10 +104,7 @@ function AppearanceSettings() {
   ];
 
   const setAccent = async (hex: string | null) => {
-    if (!isPro) {
-      setUpgradeOpen(true);
-      return;
-    }
+    if (!isPro) return;
     const nextTheme = { ...workspace.theme };
     if (hex) nextTheme.accent = hex;
     else delete nextTheme.accent;
@@ -136,38 +130,33 @@ function AppearanceSettings() {
           ))}
         </div>
       </SettingsRow>
-      <SettingsRow
-        label={
-          <span className="flex items-center gap-1.5">
-            Brand color
-            {!isPro && <ProBadge />}
-          </span>
-        }
-        description="Replaces Scratchpad's accent color across the whole workspace — buttons, active states, highlights."
-      >
-        <div className="flex items-center gap-1.5">
-          {BRAND_PRESETS.map((preset) => (
-            <button
-              key={preset.value}
-              type="button"
-              title={preset.name}
-              onClick={() => setAccent(preset.value)}
-              className={cn(
-                "h-6 w-6 rounded-full border-2 transition-transform hover:scale-110",
-                currentAccent === preset.value ? "border-ink" : "border-transparent",
-              )}
-              style={{ background: preset.value }}
-            />
-          ))}
-          {currentAccent && (
-            <button type="button" onClick={() => setAccent(null)} className="ml-1 text-xs text-faint transition-colors hover:text-ink">
-              Reset
-            </button>
-          )}
-        </div>
-      </SettingsRow>
-
-      <UpgradeDialog open={upgradeOpen} onOpenChange={setUpgradeOpen} feature="Custom brand color" />
+      {isPro && (
+        <SettingsRow
+          label="Brand color"
+          description="Replaces Scratchpad's accent color across the whole workspace — buttons, active states, highlights."
+        >
+          <div className="flex items-center gap-1.5">
+            {BRAND_PRESETS.map((preset) => (
+              <button
+                key={preset.value}
+                type="button"
+                title={preset.name}
+                onClick={() => setAccent(preset.value)}
+                className={cn(
+                  "h-6 w-6 rounded-full border-2 transition-transform hover:scale-110",
+                  currentAccent === preset.value ? "border-ink" : "border-transparent",
+                )}
+                style={{ background: preset.value }}
+              />
+            ))}
+            {currentAccent && (
+              <button type="button" onClick={() => setAccent(null)} className="ml-1 text-xs text-faint transition-colors hover:text-ink">
+                Reset
+              </button>
+            )}
+          </div>
+        </SettingsRow>
+      )}
     </div>
   );
 }
@@ -209,7 +198,6 @@ function WorkspaceSettings() {
   const isPro = useIsPro();
   const [name, setName] = useState(workspace.name);
   const [icon, setIcon] = useState(workspace.icon ?? "");
-  const [upgradeOpen, setUpgradeOpen] = useState(false);
 
   const save = async () => {
     await supabase.from("workspaces").update({ name: name.trim() || "Workspace", icon: icon || null }).eq("id", workspace.id);
@@ -229,20 +217,11 @@ function WorkspaceSettings() {
       <SettingsRow label="Icon" description="An emoji shown next to the workspace name.">
         <Input value={icon} onChange={(e) => setIcon(e.target.value)} className="w-20 text-center" maxLength={4} />
       </SettingsRow>
-      <SettingsRow
-        label={
-          <span className="flex items-center gap-1.5">
-            Trash auto-empty
-            {!isPro && <ProBadge />}
-          </span>
-        }
-        description={
-          isPro
-            ? "Notes are permanently deleted this many days after being trashed."
-            : `Trashed notes are permanently deleted after ${workspace.trash_retention_days} days.`
-        }
-      >
-        {isPro ? (
+      {isPro ? (
+        <SettingsRow
+          label="Trash auto-empty"
+          description="Notes are permanently deleted this many days after being trashed."
+        >
           <select
             value={workspace.trash_retention_days}
             onChange={(e) => setRetention(Number(e.target.value))}
@@ -254,19 +233,21 @@ function WorkspaceSettings() {
               </option>
             ))}
           </select>
-        ) : (
-          <Button variant="outline" size="sm" onClick={() => setUpgradeOpen(true)}>
-            Customize
-          </Button>
-        )}
-      </SettingsRow>
+        </SettingsRow>
+      ) : (
+        <SettingsRow
+          label="Trash auto-empty"
+          description={`Trashed notes are permanently deleted after ${workspace.trash_retention_days} days.`}
+        >
+          <span />
+        </SettingsRow>
+      )}
       <div className="flex justify-end py-3">
         <Button size="sm" onClick={save}>
           Save changes
         </Button>
       </div>
       <p className="pt-3 text-xs text-faint">Owner: {userId}</p>
-      <UpgradeDialog open={upgradeOpen} onOpenChange={setUpgradeOpen} feature="Custom trash retention" />
     </div>
   );
 }

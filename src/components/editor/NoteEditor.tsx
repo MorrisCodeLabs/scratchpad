@@ -57,7 +57,6 @@ import { useNoteSources } from "@/lib/data/use-note-sources";
 import { SaveTemplateDialog } from "@/components/editor/SaveTemplateDialog";
 import { ShareDialog } from "@/components/editor/ShareDialog";
 import { FindReplaceBar } from "@/components/editor/FindReplaceBar";
-import { UpgradeDialog } from "@/components/pro/UpgradeDialog";
 import { EncryptDialog } from "@/components/editor/EncryptDialog";
 import { UnlockNoteView } from "@/components/editor/UnlockNoteView";
 import { StudyModeDialog } from "@/components/editor/StudyModeDialog";
@@ -84,7 +83,6 @@ export function NoteEditor({ note }: { note: Note }) {
   const [isEncrypted, setIsEncrypted] = useState(note.is_encrypted);
   const [unlocked, setUnlocked] = useState(!note.is_encrypted);
   const [encryptDialogOpen, setEncryptDialogOpen] = useState(false);
-  const [encryptUpgradeOpen, setEncryptUpgradeOpen] = useState(false);
   const [studyModeOpen, setStudyModeOpen] = useState(false);
   const [zoomedHeading, setZoomedHeading] = useState<{ text: string; pos: number } | null>(null);
   const [splitDialogOpen, setSplitDialogOpen] = useState(false);
@@ -98,7 +96,6 @@ export function NoteEditor({ note }: { note: Note }) {
   const [saveTemplateOpen, setSaveTemplateOpen] = useState(false);
   const [findOpen, setFindOpen] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
-  const [proBlockUpgradeFeature, setProBlockUpgradeFeature] = useState<string | null>(null);
   const lastSnapshotAt = useRef(0);
 
   const editor = useEditor({
@@ -198,7 +195,6 @@ export function NoteEditor({ note }: { note: Note }) {
   useEffect(() => {
     if (!editor) return;
     editor.storage.proContext.isPro = isPro;
-    editor.storage.proContext.requestUpgrade = (feature: string) => setProBlockUpgradeFeature(feature);
   }, [editor, isPro]);
 
   useEffect(() => {
@@ -293,10 +289,6 @@ export function NoteEditor({ note }: { note: Note }) {
   };
 
   const requestEncrypt = () => {
-    if (!isPro) {
-      setEncryptUpgradeOpen(true);
-      return;
-    }
     setEncryptDialogOpen(true);
   };
 
@@ -510,13 +502,7 @@ export function NoteEditor({ note }: { note: Note }) {
         note={note}
         onUpdateShare={(patch) => notes.updateNote(note.id, patch)}
       />
-      <UpgradeDialog
-        open={proBlockUpgradeFeature !== null}
-        onOpenChange={(open) => !open && setProBlockUpgradeFeature(null)}
-        feature={proBlockUpgradeFeature ?? undefined}
-      />
       <EncryptDialog open={encryptDialogOpen} onOpenChange={setEncryptDialogOpen} onConfirm={handleEncrypt} />
-      <UpgradeDialog open={encryptUpgradeOpen} onOpenChange={setEncryptUpgradeOpen} feature="Encrypted notes" />
       <StudyModeDialog
         open={studyModeOpen}
         onOpenChange={setStudyModeOpen}
