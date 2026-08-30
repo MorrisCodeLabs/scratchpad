@@ -42,6 +42,7 @@ import { SlashCommand } from "@/lib/editor/slash-command";
 import { EditorToolbar } from "@/components/editor/EditorToolbar";
 import { useAutosave } from "@/lib/data/use-autosave";
 import { readOfflineSave, clearOfflineSave } from "@/lib/data/offline-queue";
+import { SelectionToolbar } from "@/components/editor/SelectionToolbar";
 import { useWorkspaceContext } from "@/lib/workspace-context";
 import { computeStats } from "@/lib/text-stats";
 import type { Note } from "@/lib/types";
@@ -507,6 +508,8 @@ export function NoteEditor({ note }: { note: Note }) {
                   </button>
                 </div>
               )}
+
+              {editor && !isLocked && <SelectionToolbar editor={editor} />}
 
               <div className="min-h-0 flex-1 overflow-y-auto">
                 <div className="sp-editor mx-auto max-w-[720px] px-8 py-8">
