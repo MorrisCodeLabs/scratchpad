@@ -30,9 +30,6 @@ import { ProContext } from "@/lib/editor/pro-context";
 import { DatabaseBlock } from "@/lib/editor/database-block";
 import { Citation } from "@/lib/editor/citation";
 import { BibliographyBlock } from "@/lib/editor/bibliography-block";
-import { RecipeBlock } from "@/lib/editor/recipe-block";
-import { QrBlock } from "@/lib/editor/qr-block";
-import { SketchBlock } from "@/lib/editor/sketch-block";
 import { OutlineZoom } from "@/lib/editor/outline-zoom";
 import { BlockDragHandle } from "@/lib/editor/block-drag-handle";
 import { NoteLink } from "@/lib/editor/note-link";
@@ -137,9 +134,6 @@ export function NoteEditor({ note }: { note: Note }) {
       DatabaseBlock,
       Citation,
       BibliographyBlock,
-      RecipeBlock,
-      QrBlock,
-      SketchBlock,
       OutlineZoom,
       BlockDragHandle,
       Image.configure({ inline: false, allowBase64: false }),
