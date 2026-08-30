@@ -11,7 +11,18 @@ import Table from "@tiptap/extension-table";
 import TableRow from "@tiptap/extension-table-row";
 import TableHeader from "@tiptap/extension-table-header";
 import TableCell from "@tiptap/extension-table-cell";
+import Subscript from "@tiptap/extension-subscript";
+import Superscript from "@tiptap/extension-superscript";
+import TextStyle from "@tiptap/extension-text-style";
+import Color from "@tiptap/extension-color";
+import FontFamily from "@tiptap/extension-font-family";
+import TextAlign from "@tiptap/extension-text-align";
 import { Callout } from "@/lib/editor/callout";
+import { FontSize } from "@/lib/editor/font-size";
+import { Toggle } from "@/lib/editor/toggle";
+import { DefinitionList, DefinitionItem, DefinitionTerm, DefinitionDescription } from "@/lib/editor/definition-list";
+import { ProgressBar } from "@/lib/editor/progress-bar";
+import { EmojiCommand } from "@/lib/editor/emoji-command";
 import { SlashCommand } from "@/lib/editor/slash-command";
 import { EditorToolbar } from "@/components/editor/EditorToolbar";
 import { useAutosave } from "@/lib/data/use-autosave";
@@ -30,7 +41,7 @@ export function NoteEditor({ note }: { note: Note }) {
     extensions: [
       StarterKit.configure({ heading: { levels: [1, 2, 3, 4, 5, 6] } }),
       Underline,
-      Highlight,
+      Highlight.configure({ multicolor: true }),
       Link.configure({ openOnClick: false }),
       TaskList,
       TaskItem.configure({ nested: true }),
@@ -38,9 +49,23 @@ export function NoteEditor({ note }: { note: Note }) {
       TableRow,
       TableHeader,
       TableCell,
+      Subscript,
+      Superscript,
+      TextStyle,
+      Color,
+      FontFamily,
+      FontSize,
+      TextAlign.configure({ types: ["heading", "paragraph"] }),
       Callout,
+      Toggle,
+      DefinitionList,
+      DefinitionItem,
+      DefinitionTerm,
+      DefinitionDescription,
+      ProgressBar,
       Placeholder.configure({ placeholder: "Write, or press '/' for commands…" }),
       SlashCommand,
+      EmojiCommand,
     ],
     content: note.content,
     editorProps: {

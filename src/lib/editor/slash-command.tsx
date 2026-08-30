@@ -6,6 +6,9 @@ import {
   Heading1,
   Heading2,
   Heading3,
+  Heading4,
+  Heading5,
+  Heading6,
   List,
   ListOrdered,
   ListChecks,
@@ -15,6 +18,9 @@ import {
   Table as TableIcon,
   MessageSquareQuote,
   Type,
+  ChevronRight,
+  ListTree,
+  BarChart3,
 } from "lucide-react";
 import { SlashMenu, type SlashMenuHandle, type SlashMenuItem } from "@/components/editor/SlashMenu";
 
@@ -45,6 +51,27 @@ const ITEMS: SlashMenuItem[] = [
     icon: Heading3,
     command: ({ editor, range }) =>
       editor.chain().focus().deleteRange(range).setNode("heading", { level: 3 }).run(),
+  },
+  {
+    title: "Heading 4",
+    description: "Small section heading.",
+    icon: Heading4,
+    command: ({ editor, range }) =>
+      editor.chain().focus().deleteRange(range).setNode("heading", { level: 4 }).run(),
+  },
+  {
+    title: "Heading 5",
+    description: "Smaller section heading.",
+    icon: Heading5,
+    command: ({ editor, range }) =>
+      editor.chain().focus().deleteRange(range).setNode("heading", { level: 5 }).run(),
+  },
+  {
+    title: "Heading 6",
+    description: "Smallest section heading.",
+    icon: Heading6,
+    command: ({ editor, range }) =>
+      editor.chain().focus().deleteRange(range).setNode("heading", { level: 6 }).run(),
   },
   {
     title: "Bulleted list",
@@ -94,6 +121,24 @@ const ITEMS: SlashMenuItem[] = [
     description: "Visually divide sections.",
     icon: Minus,
     command: ({ editor, range }) => editor.chain().focus().deleteRange(range).setHorizontalRule().run(),
+  },
+  {
+    title: "Toggle",
+    description: "A collapsible block that hides content.",
+    icon: ChevronRight,
+    command: ({ editor, range }) => editor.chain().focus().deleteRange(range).setToggle().run(),
+  },
+  {
+    title: "Definition list",
+    description: "Pair terms with their descriptions.",
+    icon: ListTree,
+    command: ({ editor, range }) => editor.chain().focus().deleteRange(range).setDefinitionList().run(),
+  },
+  {
+    title: "Progress bar",
+    description: "Track completion with a slider.",
+    icon: BarChart3,
+    command: ({ editor, range }) => editor.chain().focus().deleteRange(range).setProgressBar().run(),
   },
 ];
 
