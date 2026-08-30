@@ -17,7 +17,7 @@ import TextStyle from "@tiptap/extension-text-style";
 import Color from "@tiptap/extension-color";
 import FontFamily from "@tiptap/extension-font-family";
 import TextAlign from "@tiptap/extension-text-align";
-import Image from "@tiptap/extension-image";
+import { Image } from "@/lib/editor/image";
 import { Callout } from "@/lib/editor/callout";
 import { MathBlock } from "@/lib/editor/math-block";
 import { Embed } from "@/lib/editor/embed";

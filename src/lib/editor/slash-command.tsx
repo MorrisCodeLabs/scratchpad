@@ -29,6 +29,7 @@ import {
 import { SlashMenu, type SlashMenuHandle, type SlashMenuItem } from "@/components/editor/SlashMenu";
 import { pickFile } from "@/lib/editor/pick-file";
 import { uploadAttachment } from "@/lib/storage";
+import { extractTextFromFile } from "@/lib/ocr";
 import { notifyError } from "@/lib/toast";
 
 async function uploadFromEditor(editor: any, accept: string) {
@@ -37,7 +38,14 @@ async function uploadFromEditor(editor: any, accept: string) {
   const { workspaceId, noteId } = editor.storage.noteContext ?? {};
   if (!workspaceId || !noteId) return null;
   try {
-    return await uploadAttachment(workspaceId, noteId, file);
+    // Pro: OCR runs alongside the upload rather than after it, so
+    // attaching a scanned PDF or a photo of a document doesn't take any
+    // longer than a plain upload would.
+    const [uploaded, ocrText] = await Promise.all([
+      uploadAttachment(workspaceId, noteId, file),
+      extractTextFromFile(file),
+    ]);
+    return { ...uploaded, ocrText };
   } catch (err) {
     notifyError(err instanceof Error ? `Upload failed: ${err.message}` : "Upload failed.");
     return null;
@@ -149,7 +157,7 @@ const ITEMS: SlashMenuItem[] = [
     command: async ({ editor, range }) => {
       editor.chain().focus().deleteRange(range).run();
       const uploaded = await uploadFromEditor(editor, "image/*");
-      if (uploaded) editor.chain().focus().setImage({ src: uploaded.url, alt: uploaded.name }).run();
+      if (uploaded) editor.chain().focus().setImage({ src: uploaded.url, alt: uploaded.name, ocrText: uploaded.ocrText } as any).run();
     },
   },
   {

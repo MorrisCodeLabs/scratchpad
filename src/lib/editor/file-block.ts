@@ -5,7 +5,7 @@ import { FileBlockView } from "@/components/editor/FileBlockView";
 declare module "@tiptap/core" {
   interface Commands<ReturnType> {
     fileBlock: {
-      setFileBlock: (attrs: { url: string; name: string; size: number; contentType: string }) => ReturnType;
+      setFileBlock: (attrs: { url: string; name: string; size: number; contentType: string; ocrText?: string }) => ReturnType;
     };
   }
 }
@@ -24,6 +24,10 @@ export const FileBlock = Node.create({
       name: { default: "file" },
       size: { default: 0 },
       contentType: { default: "" },
+      // Pro: OCR'd text from the file (PDFs, images), extracted at upload
+      // time — folded into search via docToText() so "search inside PDFs"
+      // just falls out of the normal note search.
+      ocrText: { default: "" },
     };
   },
 
