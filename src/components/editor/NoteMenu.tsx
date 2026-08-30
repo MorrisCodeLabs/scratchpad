@@ -68,7 +68,7 @@ export function NoteMenu({
         >
           <Copy size={14} /> Duplicate
         </DropdownMenuItem>
-        <DropdownMenuItem onSelect={onToggleLock}>
+        <DropdownMenuItem onSelect={() => setTimeout(onToggleLock, 0)}>
           {note.is_locked ? <Unlock size={14} /> : <Lock size={14} />}
           {note.is_locked ? "Unlock note" : "Lock note (read-only)"}
         </DropdownMenuItem>
