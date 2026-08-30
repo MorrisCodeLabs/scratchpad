@@ -2,7 +2,7 @@ export interface NoteTemplate {
   id: string;
   title: string;
   description: string;
-  iconName: "blank" | "meeting" | "project" | "journal";
+  iconName: "meeting" | "project" | "journal";
   content: Record<string, unknown>;
 }
 
@@ -36,13 +36,6 @@ function taskList(items: string[]) {
 }
 
 export const NOTE_TEMPLATES: NoteTemplate[] = [
-  {
-    id: "blank",
-    title: "Blank",
-    description: "Start with nothing.",
-    iconName: "blank",
-    content: doc(paragraph()),
-  },
   {
     id: "meeting",
     title: "Meeting notes",

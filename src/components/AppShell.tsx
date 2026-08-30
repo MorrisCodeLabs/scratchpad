@@ -6,7 +6,6 @@ import { NoteView } from "@/components/views/NoteView";
 import { CalendarView } from "@/components/views/CalendarView";
 import { TrashView } from "@/components/views/TrashView";
 import { SettingsView } from "@/components/views/SettingsView";
-import { InsightsView } from "@/components/views/InsightsView";
 import { Toaster } from "@/components/Toaster";
 import { ShortcutsDialog } from "@/components/ShortcutsDialog";
 import { useWorkspaceContext } from "@/lib/workspace-context";
@@ -50,7 +49,6 @@ export function AppShell() {
         {route.name === "calendar" && <CalendarView />}
         {route.name === "trash" && <TrashView />}
         {route.name === "settings" && <SettingsView />}
-        {route.name === "insights" && <InsightsView />}
       </main>
       <CommandMenu />
       <Toaster />

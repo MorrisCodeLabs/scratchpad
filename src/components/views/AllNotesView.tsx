@@ -49,10 +49,6 @@ export function AllNotesView() {
   const filtersActive = filters.statuses.length > 0 || filters.pinnedOnly || filters.favoriteOnly || filters.dateFrom || filters.dateTo;
 
   const toggleSelectMode = () => {
-    if (!isPro) {
-      setUpgradeFeature("Bulk actions");
-      return;
-    }
     setSelectMode((v) => !v);
     setSelected(new Set());
   };
@@ -72,6 +68,10 @@ export function AllNotesView() {
   };
 
   const bulkTrash = async () => {
+    if (!isPro) {
+      setUpgradeFeature("Bulk trash");
+      return;
+    }
     await Promise.all([...selected].map((id) => notes.trashNote(id)));
     setSelected(new Set());
   };
@@ -90,7 +90,6 @@ export function AllNotesView() {
             )}
           >
             <CheckSquare size={15} /> Select
-            {!isPro && <ProBadge />}
           </button>
           <NewNoteMenu>
             <button
@@ -111,6 +110,7 @@ export function AllNotesView() {
           </button>
           <button type="button" onClick={bulkTrash} className="flex items-center gap-1.5 hover:underline">
             <Trash2 size={13} /> Trash
+            {!isPro && <ProBadge />}
           </button>
           <button type="button" onClick={() => setSelected(new Set())} className="ml-auto flex items-center gap-1.5 hover:underline">
             <X size={13} /> Clear
@@ -130,14 +130,13 @@ export function AllNotesView() {
         </div>
         <button
           type="button"
-          onClick={() => (isPro ? setAdvancedOpen(true) : setUpgradeFeature("Advanced search"))}
+          onClick={() => setAdvancedOpen(true)}
           className={cn(
             "flex items-center gap-1.5 rounded-lg border px-3 py-2.5 text-sm transition-colors",
             filtersActive ? "border-accent bg-accent-soft text-accent-ink" : "border-line text-muted hover:bg-surface-2",
           )}
         >
           <SlidersHorizontal size={15} />
-          {!isPro && <ProBadge />}
         </button>
       </div>
 

@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { FileText, Users, Rocket, BookOpen, Sparkles, Trash2, type LucideIcon } from "lucide-react";
+import { Users, Rocket, BookOpen, Sparkles, Trash2, type LucideIcon } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,7 +13,6 @@ import { useCustomTemplates } from "@/lib/data/use-custom-templates";
 import type { CustomNoteTemplate } from "@/lib/types";
 
 const ICONS: Record<NoteTemplate["iconName"], LucideIcon> = {
-  blank: FileText,
   meeting: Users,
   project: Rocket,
   journal: BookOpen,
@@ -32,9 +31,7 @@ export function NewNoteMenu({
   const create = async (template: NoteTemplate) => {
     const note = await notes.createNote(workspace.id, folderId);
     if (!note) return;
-    if (template.id !== "blank") {
-      await notes.updateNote(note.id, { content: template.content as never, title: template.title });
-    }
+    await notes.updateNote(note.id, { content: template.content as never, title: template.title });
     navigate({ name: "note", id: note.id });
   };
 

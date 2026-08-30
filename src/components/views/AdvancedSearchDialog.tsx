@@ -1,5 +1,9 @@
+import { useState } from "react";
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { useIsPro } from "@/lib/use-plan";
+import { UpgradeDialog } from "@/components/pro/UpgradeDialog";
+import { ProBadge } from "@/components/pro/ProBadge";
 import type { NoteStatus } from "@/lib/types";
 import { cn } from "@/lib/cn";
 
@@ -32,6 +36,9 @@ export function AdvancedSearchDialog({
   filters: AdvancedFilters;
   onChange: (filters: AdvancedFilters) => void;
 }) {
+  const isPro = useIsPro();
+  const [upgradeOpen, setUpgradeOpen] = useState(false);
+
   const toggleStatus = (status: NoteStatus) => {
     onChange({
       ...filters,
@@ -89,11 +96,19 @@ export function AdvancedSearchDialog({
           </div>
 
           <div>
-            <p className="mb-1.5 text-[11px] font-medium uppercase tracking-wide text-faint">Created between</p>
-            <div className="flex items-center gap-2">
+            <p className="mb-1.5 flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-wide text-faint">
+              Created between
+              {!isPro && (
+                <button type="button" onClick={() => setUpgradeOpen(true)}>
+                  <ProBadge />
+                </button>
+              )}
+            </p>
+            <div className={cn("flex items-center gap-2", !isPro && "pointer-events-none opacity-50")}>
               <input
                 type="date"
                 value={filters.dateFrom}
+                disabled={!isPro}
                 onChange={(e) => onChange({ ...filters, dateFrom: e.target.value })}
                 className="h-8 flex-1 rounded-md border border-line bg-surface px-2 text-xs text-ink outline-none"
               />
@@ -101,6 +116,7 @@ export function AdvancedSearchDialog({
               <input
                 type="date"
                 value={filters.dateTo}
+                disabled={!isPro}
                 onChange={(e) => onChange({ ...filters, dateTo: e.target.value })}
                 className="h-8 flex-1 rounded-md border border-line bg-surface px-2 text-xs text-ink outline-none"
               />
@@ -117,6 +133,7 @@ export function AdvancedSearchDialog({
           </div>
         </div>
       </DialogContent>
+      <UpgradeDialog open={upgradeOpen} onOpenChange={setUpgradeOpen} feature="Filtering by date range" />
     </Dialog>
   );
 }

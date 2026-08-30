@@ -6,8 +6,23 @@ import { useIsPro, useIsOwnerAccount } from "@/lib/use-plan";
 import { setWorkspacePlan } from "@/lib/plan-actions";
 import { cn } from "@/lib/cn";
 
-const FREE_FEATURES = ["Unlimited notes and folders", "Slash-command block editor", "Calendar view and search", "Keyboard shortcuts, word-count goals"];
-const PRO_FEATURES = ["Everything in Free", "Automatic version history with restore", "Export to Markdown and PDF"];
+const FREE_FEATURES = [
+  "Unlimited notes and folders",
+  "Full block editor with formatting, uploads, and math",
+  "Note locking, reminders, color/tags/description",
+  "Bulk select and archive, Markdown export",
+  "Note outline, focus mode",
+];
+const PRO_FEATURES = [
+  "Everything in Free",
+  "Version history with restore",
+  "PDF export",
+  "Custom note templates",
+  "Note expiration",
+  "Bulk trash",
+  "Date-range search filtering",
+  "Custom brand color",
+];
 
 export function BillingSettings() {
   const { workspace, refreshWorkspace } = useWorkspaceContext();

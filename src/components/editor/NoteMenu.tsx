@@ -64,10 +64,9 @@ export function NoteMenu({
           >
             <Copy size={14} /> Duplicate
           </DropdownMenuItem>
-          <DropdownMenuItem onSelect={gated("Note locking", onToggleLock)}>
+          <DropdownMenuItem onSelect={onToggleLock}>
             {note.is_locked ? <Unlock size={14} /> : <Lock size={14} />}
             {note.is_locked ? "Unlock note" : "Lock note (read-only)"}
-            {!isPro && <ProBadge className="ml-auto" />}
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem onSelect={gated("Version history", onOpenVersionHistory)}>
@@ -77,14 +76,14 @@ export function NoteMenu({
           <DropdownMenuSub>
             <DropdownMenuSubTrigger className="flex cursor-pointer select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm text-ink outline-none data-[highlighted]:bg-surface-2">
               <Download size={14} /> Export
-              {!isPro && <ProBadge className="ml-auto" />}
             </DropdownMenuSubTrigger>
             <DropdownMenuSubContent>
-              <DropdownMenuItem onSelect={gated("Export", onExportMarkdown)}>
+              <DropdownMenuItem onSelect={onExportMarkdown}>
                 <FileText size={14} /> Markdown (.md)
               </DropdownMenuItem>
-              <DropdownMenuItem onSelect={gated("Export", onExportPdf)}>
+              <DropdownMenuItem onSelect={gated("PDF export", onExportPdf)}>
                 <FileDown size={14} /> PDF
+                {!isPro && <ProBadge className="ml-auto" />}
               </DropdownMenuItem>
             </DropdownMenuSubContent>
           </DropdownMenuSub>

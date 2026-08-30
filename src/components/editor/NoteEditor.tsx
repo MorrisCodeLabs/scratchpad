@@ -49,7 +49,6 @@ import { useCustomTemplates } from "@/lib/data/use-custom-templates";
 import { tiptapToMarkdown } from "@/lib/markdown-export";
 import { downloadTextFile, printNoteAsPdf } from "@/lib/download";
 import { Lock, Maximize2, Minimize2 } from "lucide-react";
-import { UpgradeDialog } from "@/components/pro/UpgradeDialog";
 import type { NoteVersion } from "@/lib/types";
 
 export function NoteEditor({ note }: { note: Note }) {
@@ -66,7 +65,6 @@ export function NoteEditor({ note }: { note: Note }) {
   const [tags, setTags] = useState<string[]>(note.tags);
   const [versionHistoryOpen, setVersionHistoryOpen] = useState(false);
   const [saveTemplateOpen, setSaveTemplateOpen] = useState(false);
-  const [focusUpgradeOpen, setFocusUpgradeOpen] = useState(false);
   const lastSnapshotAt = useRef(0);
 
   const editor = useEditor({
@@ -194,10 +192,6 @@ export function NoteEditor({ note }: { note: Note }) {
   };
 
   const toggleFocusMode = () => {
-    if (!isPro) {
-      setFocusUpgradeOpen(true);
-      return;
-    }
     setFocusMode(!focusMode);
   };
 
@@ -322,7 +316,6 @@ export function NoteEditor({ note }: { note: Note }) {
         defaultName={title || "Untitled template"}
         onSave={saveAsTemplate}
       />
-      <UpgradeDialog open={focusUpgradeOpen} onOpenChange={setFocusUpgradeOpen} feature="Focus mode" />
     </div>
   );
 }
