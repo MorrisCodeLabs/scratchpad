@@ -337,7 +337,13 @@ export function NoteEditor({ note }: { note: Note }) {
   return (
     <div className="flex h-full flex-col">
       <div className="flex items-center justify-between gap-3 border-b border-line px-8 py-3">
-        <p className="min-w-0 flex-1 truncate text-[13px] font-medium text-ink">{title.trim() || "Untitled"}</p>
+        <input
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          placeholder="Untitled"
+          readOnly={isLocked}
+          className="min-w-0 flex-1 truncate border-none bg-transparent text-[13px] font-medium text-ink outline-none placeholder:text-faint"
+        />
         <div className="flex items-center gap-1">
           <button
             type="button"
@@ -383,32 +389,23 @@ export function NoteEditor({ note }: { note: Note }) {
         </div>
       )}
 
+      {duplicateTitleNote && (
+        <button
+          type="button"
+          onClick={() => navigate({ name: "note", id: duplicateTitleNote.id })}
+          className="flex items-center gap-1.5 bg-warn-soft px-8 py-2 text-left text-[13px] font-medium text-warn hover:underline"
+        >
+          <AlertTriangle size={12} />
+          Another note is already titled “{duplicateTitleNote.title}” — open it?
+        </button>
+      )}
+
       <div className="flex min-h-0 flex-1">
         <div className="flex min-w-0 flex-1 flex-col">
           {isEncrypted && !unlocked ? (
             <UnlockNoteView content={note.content} onUnlock={handleUnlock} />
           ) : (
             <>
-              <div className="mx-auto w-full max-w-[720px] px-8 pb-4 pt-8">
-                <input
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  placeholder="Untitled"
-                  readOnly={isLocked}
-                  className="w-full border-none bg-transparent text-[2.25rem] font-bold leading-tight tracking-tight text-ink outline-none placeholder:text-faint"
-                />
-                {duplicateTitleNote && (
-                  <button
-                    type="button"
-                    onClick={() => navigate({ name: "note", id: duplicateTitleNote.id })}
-                    className="mt-1.5 flex items-center gap-1.5 text-xs text-warn hover:underline"
-                  >
-                    <AlertTriangle size={12} />
-                    Another note is already titled “{duplicateTitleNote.title}” — open it?
-                  </button>
-                )}
-              </div>
-
               {editor && findOpen && !isLocked && (
                 <FindReplaceBar editor={editor} contentTick={contentTick} onClose={() => setFindOpen(false)} />
               )}

@@ -26,6 +26,7 @@ import {
   IndentDecrease,
 } from "lucide-react";
 import { cn } from "@/lib/cn";
+import { CollapsibleSection } from "@/components/editor/CollapsibleSection";
 import { TextColorPicker, HighlightColorPicker } from "@/components/editor/ColorPicker";
 import { LinkPicker } from "@/components/editor/LinkPicker";
 
@@ -100,13 +101,8 @@ function ToolbarSelect({
   );
 }
 
-function PropertyField({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <div className="flex items-center justify-between gap-2 px-3 py-2.5">
-      <span className="shrink-0 text-xs text-faint">{label}</span>
-      <div className="flex flex-wrap items-center justify-end gap-0.5">{children}</div>
-    </div>
-  );
+function ButtonRow({ children }: { children: React.ReactNode }) {
+  return <div className="flex flex-wrap items-center gap-0.5 px-3">{children}</div>;
 }
 
 function currentHeadingValue(editor: Editor) {
@@ -118,23 +114,20 @@ function currentHeadingValue(editor: Editor) {
 
 export function EditorToolbar({ editor }: { editor: Editor }) {
   return (
-    <div>
-      <p className="px-3 pb-1 pt-2 text-[10.5px] font-semibold uppercase tracking-wide text-faint">Format</p>
-      <div className="flex flex-col divide-y divide-line/60">
-        <div className="flex items-center justify-between gap-2 px-3 py-2.5">
-          <span className="text-xs text-faint">History</span>
-          <div className="flex items-center gap-0.5">
-            <ToolbarButton label="Undo" disabled={!editor.can().undo()} onClick={() => editor.chain().focus().undo().run()}>
-              <Undo2 size={15} />
-            </ToolbarButton>
-            <ToolbarButton label="Redo" disabled={!editor.can().redo()} onClick={() => editor.chain().focus().redo().run()}>
-              <Redo2 size={15} />
-            </ToolbarButton>
-          </div>
-        </div>
+    <CollapsibleSection label="Format">
+      <CollapsibleSection label="History">
+        <ButtonRow>
+          <ToolbarButton label="Undo" disabled={!editor.can().undo()} onClick={() => editor.chain().focus().undo().run()}>
+            <Undo2 size={15} />
+          </ToolbarButton>
+          <ToolbarButton label="Redo" disabled={!editor.can().redo()} onClick={() => editor.chain().focus().redo().run()}>
+            <Redo2 size={15} />
+          </ToolbarButton>
+        </ButtonRow>
+      </CollapsibleSection>
 
-        <div className="px-3 py-2.5">
-          <p className="mb-1.5 text-xs text-faint">Style</p>
+      <CollapsibleSection label="Style">
+        <div className="px-3">
           <ToolbarSelect
             title="Text style"
             value={currentHeadingValue(editor)}
@@ -153,8 +146,10 @@ export function EditorToolbar({ editor }: { editor: Editor }) {
             <option value="6">Heading 6</option>
           </ToolbarSelect>
         </div>
+      </CollapsibleSection>
 
-        <PropertyField label="Text">
+      <CollapsibleSection label="Text">
+        <ButtonRow>
           <ToolbarButton label="Bold" active={editor.isActive("bold")} onClick={() => editor.chain().focus().toggleBold().run()}>
             <Bold size={15} />
           </ToolbarButton>
@@ -171,9 +166,11 @@ export function EditorToolbar({ editor }: { editor: Editor }) {
             <Code size={15} />
           </ToolbarButton>
           <LinkPicker editor={editor} />
-        </PropertyField>
+        </ButtonRow>
+      </CollapsibleSection>
 
-        <PropertyField label="Script">
+      <CollapsibleSection label="Script" defaultOpen={false}>
+        <ButtonRow>
           <ToolbarButton
             label="Superscript"
             active={editor.isActive("superscript")}
@@ -193,41 +190,42 @@ export function EditorToolbar({ editor }: { editor: Editor }) {
           <ToolbarButton label="Clear formatting" onClick={() => editor.chain().focus().unsetAllMarks().clearNodes().run()}>
             <RemoveFormatting size={15} />
           </ToolbarButton>
-        </PropertyField>
+        </ButtonRow>
+      </CollapsibleSection>
 
-        <div className="px-3 py-2.5">
-          <p className="mb-1.5 text-xs text-faint">Font</p>
-          <div className="flex flex-col gap-1.5">
-            <ToolbarSelect
-              title="Font family"
-              value={editor.getAttributes("textStyle").fontFamily ?? ""}
-              onChange={(value) =>
-                value ? editor.chain().focus().setFontFamily(value).run() : editor.chain().focus().unsetFontFamily().run()
-              }
-            >
-              {FONT_FAMILIES.map((f) => (
-                <option key={f.label} value={f.value}>
-                  {f.label}
-                </option>
-              ))}
-            </ToolbarSelect>
-            <ToolbarSelect
-              title="Font size"
-              value={editor.getAttributes("textStyle").fontSize ?? ""}
-              onChange={(value) =>
-                value ? editor.chain().focus().setFontSize(value).run() : editor.chain().focus().unsetFontSize().run()
-              }
-            >
-              {FONT_SIZES.map((f) => (
-                <option key={f.label} value={f.value}>
-                  {f.label}
-                </option>
-              ))}
-            </ToolbarSelect>
-          </div>
+      <CollapsibleSection label="Font" defaultOpen={false}>
+        <div className="flex flex-col gap-1.5 px-3">
+          <ToolbarSelect
+            title="Font family"
+            value={editor.getAttributes("textStyle").fontFamily ?? ""}
+            onChange={(value) =>
+              value ? editor.chain().focus().setFontFamily(value).run() : editor.chain().focus().unsetFontFamily().run()
+            }
+          >
+            {FONT_FAMILIES.map((f) => (
+              <option key={f.label} value={f.value}>
+                {f.label}
+              </option>
+            ))}
+          </ToolbarSelect>
+          <ToolbarSelect
+            title="Font size"
+            value={editor.getAttributes("textStyle").fontSize ?? ""}
+            onChange={(value) =>
+              value ? editor.chain().focus().setFontSize(value).run() : editor.chain().focus().unsetFontSize().run()
+            }
+          >
+            {FONT_SIZES.map((f) => (
+              <option key={f.label} value={f.value}>
+                {f.label}
+              </option>
+            ))}
+          </ToolbarSelect>
         </div>
+      </CollapsibleSection>
 
-        <PropertyField label="List">
+      <CollapsibleSection label="List">
+        <ButtonRow>
           <ToolbarButton label="Bulleted list" active={editor.isActive("bulletList")} onClick={() => editor.chain().focus().toggleBulletList().run()}>
             <List size={15} />
           </ToolbarButton>
@@ -251,9 +249,11 @@ export function EditorToolbar({ editor }: { editor: Editor }) {
           >
             <IndentIncrease size={15} />
           </ToolbarButton>
-        </PropertyField>
+        </ButtonRow>
+      </CollapsibleSection>
 
-        <PropertyField label="Align">
+      <CollapsibleSection label="Align" defaultOpen={false}>
+        <ButtonRow>
           <ToolbarButton
             label="Align left"
             active={editor.isActive({ textAlign: "left" })}
@@ -282,9 +282,11 @@ export function EditorToolbar({ editor }: { editor: Editor }) {
           >
             <AlignJustify size={15} />
           </ToolbarButton>
-        </PropertyField>
+        </ButtonRow>
+      </CollapsibleSection>
 
-        <PropertyField label="Insert">
+      <CollapsibleSection label="Insert" defaultOpen={false}>
+        <ButtonRow>
           <ToolbarButton label="Quote" active={editor.isActive("blockquote")} onClick={() => editor.chain().focus().toggleBlockquote().run()}>
             <Quote size={15} />
           </ToolbarButton>
@@ -294,8 +296,8 @@ export function EditorToolbar({ editor }: { editor: Editor }) {
           <ToolbarButton label="Divider" onClick={() => editor.chain().focus().setHorizontalRule().run()}>
             <Minus size={15} />
           </ToolbarButton>
-        </PropertyField>
-      </div>
-    </div>
+        </ButtonRow>
+      </CollapsibleSection>
+    </CollapsibleSection>
   );
 }

@@ -1,4 +1,3 @@
-import * as React from "react";
 import { StatusPicker } from "@/components/editor/StatusPicker";
 import { NoteDetailsPanel } from "@/components/editor/NoteDetailsPanel";
 import { ReminderControl } from "@/components/editor/ReminderControl";
@@ -6,18 +5,10 @@ import { ExpirationControl } from "@/components/editor/ExpirationControl";
 import { BacklinksPanel } from "@/components/editor/BacklinksPanel";
 import { CommentsPanel } from "@/components/editor/CommentsPanel";
 import { CitationsPanel } from "@/components/editor/CitationsPanel";
+import { CollapsibleSection } from "@/components/editor/CollapsibleSection";
 import type { Editor } from "@tiptap/react";
 import type { Note, NoteSource } from "@/lib/types";
 import type { NoteSourceInput } from "@/lib/data/use-note-sources";
-
-function PanelSection({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <div className="py-2">
-      <p className="px-3 pb-1 text-[10.5px] font-semibold uppercase tracking-wide text-faint">{label}</p>
-      <div className="flex flex-col divide-y divide-line/60">{children}</div>
-    </div>
-  );
-}
 
 export function NotePropertiesPanel({
   note,
@@ -58,17 +49,21 @@ export function NotePropertiesPanel({
 }) {
   return (
     <div className="border-b border-line">
-      <PanelSection label="Properties">
-        <StatusPicker note={note} />
-        <NoteDetailsPanel color={color} description={description} tags={tags} onChange={onDetailsChange} />
-        <ReminderControl reminderAt={reminderAt} onSetReminder={onSetReminder} />
-        <ExpirationControl expiresAt={expiresAt} onSetExpiration={onSetExpiration} />
-      </PanelSection>
-      <PanelSection label="Related">
-        <BacklinksPanel note={note} allNotes={allNotes} onNavigate={onNavigate} />
-        <CommentsPanel noteId={note.id} workspaceId={workspaceId} currentUserId={currentUserId} />
-        <CitationsPanel editor={editor} sources={sources} onAddSource={onAddSource} onDeleteSource={onDeleteSource} />
-      </PanelSection>
+      <CollapsibleSection label="Properties">
+        <div className="flex flex-col divide-y divide-line/60">
+          <StatusPicker note={note} />
+          <NoteDetailsPanel color={color} description={description} tags={tags} onChange={onDetailsChange} />
+          <ReminderControl reminderAt={reminderAt} onSetReminder={onSetReminder} />
+          <ExpirationControl expiresAt={expiresAt} onSetExpiration={onSetExpiration} />
+        </div>
+      </CollapsibleSection>
+      <CollapsibleSection label="Related">
+        <div className="flex flex-col divide-y divide-line/60">
+          <BacklinksPanel note={note} allNotes={allNotes} onNavigate={onNavigate} />
+          <CommentsPanel noteId={note.id} workspaceId={workspaceId} currentUserId={currentUserId} />
+          <CitationsPanel editor={editor} sources={sources} onAddSource={onAddSource} onDeleteSource={onDeleteSource} />
+        </div>
+      </CollapsibleSection>
     </div>
   );
 }
