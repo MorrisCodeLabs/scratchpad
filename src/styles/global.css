@@ -190,6 +190,10 @@ h3 {
   color: var(--sp-ink);
 }
 
+.sp-editor .ProseMirror .sp-zoom-hidden {
+  display: none;
+}
+
 .sp-editor .ProseMirror p.is-editor-empty:first-child::before {
   content: attr(data-placeholder);
   float: left;

@@ -30,6 +30,7 @@ import { ProContext } from "@/lib/editor/pro-context";
 import { DatabaseBlock } from "@/lib/editor/database-block";
 import { Citation } from "@/lib/editor/citation";
 import { BibliographyBlock } from "@/lib/editor/bibliography-block";
+import { OutlineZoom } from "@/lib/editor/outline-zoom";
 import { NoteLink } from "@/lib/editor/note-link";
 import { NoteLinkCommand } from "@/lib/editor/note-link-command";
 import { EmojiCommand } from "@/lib/editor/emoji-command";
@@ -65,7 +66,7 @@ import { useCustomTemplates } from "@/lib/data/use-custom-templates";
 import { tiptapToMarkdown } from "@/lib/markdown-export";
 import { downloadTextFile, printNoteAsPdf } from "@/lib/download";
 import { encryptContent } from "@/lib/note-encryption";
-import { Lock, Maximize2, Minimize2, Search, AlertTriangle } from "lucide-react";
+import { Lock, Maximize2, Minimize2, Search, AlertTriangle, ZoomIn, ZoomOut } from "lucide-react";
 import type { NoteVersion } from "@/lib/types";
 
 const EMPTY_DOC = { type: "doc", content: [{ type: "paragraph" }] };
@@ -83,6 +84,7 @@ export function NoteEditor({ note }: { note: Note }) {
   const [encryptDialogOpen, setEncryptDialogOpen] = useState(false);
   const [encryptUpgradeOpen, setEncryptUpgradeOpen] = useState(false);
   const [studyModeOpen, setStudyModeOpen] = useState(false);
+  const [zoomedHeading, setZoomedHeading] = useState<{ text: string; pos: number } | null>(null);
   const passphraseRef = useRef<string | null>(null);
   const [reminderAt, setReminderAt] = useState<string | null>(note.reminder_at);
   const [expiresAt, setExpiresAt] = useState<string | null>(note.expires_at);
@@ -127,6 +129,7 @@ export function NoteEditor({ note }: { note: Note }) {
       DatabaseBlock,
       Citation,
       BibliographyBlock,
+      OutlineZoom,
       Image.configure({ inline: false, allowBase64: false }),
       NoteContext.configure({ workspaceId: note.workspace_id, noteId: note.id }),
       ProContext,
@@ -157,6 +160,7 @@ export function NoteEditor({ note }: { note: Note }) {
     passphraseRef.current = null;
     lastSnapshotAt.current = 0;
     setFindOpen(false);
+    setZoomedHeading(null);
     editor?.commands.setContent((note.is_encrypted ? EMPTY_DOC : note.content) as any, false);
   }, [note.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -315,6 +319,11 @@ export function NoteEditor({ note }: { note: Note }) {
     setFocusMode(!focusMode);
   };
 
+  const exitZoom = () => {
+    editor?.commands.setOutlineZoom(null);
+    setZoomedHeading(null);
+  };
+
   const saveAsTemplate = async (name: string) => {
     return saveTemplate(workspace.id, name, (editor?.getJSON() ?? note.content) as Record<string, unknown>);
   };
@@ -385,7 +394,7 @@ export function NoteEditor({ note }: { note: Note }) {
               <Search size={15} />
             </button>
           )}
-          {editor && <NoteOutline editor={editor} contentTick={contentTick} />}
+          {editor && <NoteOutline editor={editor} contentTick={contentTick} onZoom={setZoomedHeading} />}
           <SaveIndicator state={saveState} onSaveNow={saveNow} />
           <NoteMenu
             note={note}
@@ -437,6 +446,17 @@ export function NoteEditor({ note }: { note: Note }) {
           {editor && !isLocked && <EditorToolbar editor={editor} />}
           {editor && findOpen && !isLocked && (
             <FindReplaceBar editor={editor} contentTick={contentTick} onClose={() => setFindOpen(false)} />
+          )}
+          {zoomedHeading && (
+            <div className="flex items-center gap-2 border-b border-line bg-accent-soft px-8 py-2 text-[13px] text-accent-ink">
+              <ZoomIn size={13} />
+              <span className="truncate">
+                Zoomed into <span className="font-medium">{zoomedHeading.text}</span>
+              </span>
+              <button type="button" onClick={exitZoom} className="ml-auto flex items-center gap-1 font-medium hover:underline">
+                <ZoomOut size={13} /> Exit zoom
+              </button>
+            </div>
           )}
 
           <div className="min-h-0 flex-1 overflow-y-auto">
