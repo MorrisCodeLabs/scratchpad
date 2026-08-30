@@ -54,7 +54,7 @@ import { createNoteVersion } from "@/lib/data/use-note-versions";
 import { useCustomTemplates } from "@/lib/data/use-custom-templates";
 import { tiptapToMarkdown } from "@/lib/markdown-export";
 import { downloadTextFile, printNoteAsPdf } from "@/lib/download";
-import { Lock, Maximize2, Minimize2, Search } from "lucide-react";
+import { Lock, Maximize2, Minimize2, Search, AlertTriangle } from "lucide-react";
 import type { NoteVersion } from "@/lib/types";
 
 export function NoteEditor({ note }: { note: Note }) {
@@ -164,6 +164,12 @@ export function NoteEditor({ note }: { note: Note }) {
   }, [editor]);
 
   const stats = useMemo(() => computeStats(editor?.getJSON() as any), [editor, contentTick]);
+
+  const duplicateTitleNote = useMemo(() => {
+    const trimmed = title.trim().toLowerCase();
+    if (!trimmed) return null;
+    return notes.notes.find((n) => n.id !== note.id && n.title.trim().toLowerCase() === trimmed) ?? null;
+  }, [notes.notes, note.id, title]);
 
   const saveData = useMemo(
     () => ({ title, content: editor?.getJSON() ?? note.content }),
@@ -315,6 +321,16 @@ export function NoteEditor({ note }: { note: Note }) {
           readOnly={isLocked}
           className="w-full border-none bg-transparent text-[2.25rem] font-bold leading-tight tracking-tight text-ink outline-none placeholder:text-faint"
         />
+        {duplicateTitleNote && (
+          <button
+            type="button"
+            onClick={() => navigate({ name: "note", id: duplicateTitleNote.id })}
+            className="mt-1.5 flex items-center gap-1.5 text-xs text-warn hover:underline"
+          >
+            <AlertTriangle size={12} />
+            Another note is already titled “{duplicateTitleNote.title}” — open it?
+          </button>
+        )}
       </div>
 
       {editor && !isLocked && <EditorToolbar editor={editor} />}
