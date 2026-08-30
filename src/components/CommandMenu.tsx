@@ -1,7 +1,7 @@
 import * as React from "react";
 import { useEffect, useMemo, useState } from "react";
 import { Command } from "cmdk";
-import { FileText, Plus, Calendar, Trash2, Settings, Moon, Sun, Star, Pin, Keyboard, Replace } from "lucide-react";
+import { FileText, Plus, Calendar, Trash2, Settings, Moon, Sun, Star, Pin, Keyboard, Replace, Upload } from "lucide-react";
 import { useWorkspaceContext } from "@/lib/workspace-context";
 import { useTheme } from "@/lib/use-theme";
 import { useShortcutsDialog } from "@/lib/use-shortcuts-dialog";
@@ -9,14 +9,39 @@ import { useIsPro } from "@/lib/use-plan";
 import { UpgradeDialog } from "@/components/pro/UpgradeDialog";
 import { ProBadge } from "@/components/pro/ProBadge";
 import { GlobalFindReplaceDialog } from "@/components/GlobalFindReplaceDialog";
+import { pickFiles } from "@/lib/editor/pick-files";
+import { importedFileToTiptapJSON, titleFromFilename } from "@/lib/import-markdown";
+import { computeStats } from "@/lib/text-stats";
 
 export function CommandMenu() {
   const { workspace, notes, commandMenuOpen, setCommandMenuOpen, navigate } = useWorkspaceContext();
   const { theme, toggleTheme } = useTheme();
   const { open: openShortcuts } = useShortcutsDialog();
   const isPro = useIsPro();
-  const [upgradeOpen, setUpgradeOpen] = useState(false);
+  const [upgradeFeature, setUpgradeFeature] = useState<string | null>(null);
   const [globalFindOpen, setGlobalFindOpen] = useState(false);
+
+  const importNotes = async () => {
+    const files = await pickFiles(".md,.markdown,.txt,text/markdown,text/plain");
+    if (files.length === 0) return;
+    const toImport = isPro ? files : files.slice(0, 1);
+    for (const file of toImport) {
+      const text = await file.text();
+      const content = importedFileToTiptapJSON(file.name, text);
+      const stats = computeStats(content);
+      const note = await notes.createNote(workspace.id, null);
+      if (!note) continue;
+      await notes.updateNote(note.id, {
+        title: titleFromFilename(file.name),
+        content: content as never,
+        word_count: stats.wordCount,
+        char_count: stats.charCount,
+      });
+    }
+    if (!isPro && files.length > 1) {
+      setUpgradeFeature("Bulk import (multiple files at once)");
+    }
+  };
 
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
@@ -84,13 +109,17 @@ export function CommandMenu() {
             onSelect={() =>
               run(() => {
                 if (isPro) setGlobalFindOpen(true);
-                else setUpgradeOpen(true);
+                else setUpgradeFeature("Find and replace across notes");
               })
             }
           >
             <Replace size={14} />
             <span className="flex-1">Find and replace across notes</span>
             {!isPro && <ProBadge />}
+          </Item>
+          <Item onSelect={() => run(importNotes)}>
+            <Upload size={14} />
+            <span className="flex-1">Import notes from Markdown/text</span>
           </Item>
         </Command.Group>
 
@@ -106,7 +135,11 @@ export function CommandMenu() {
         </Command.Group>
       </Command.List>
     </Command.Dialog>
-    <UpgradeDialog open={upgradeOpen} onOpenChange={setUpgradeOpen} feature="Find and replace across notes" />
+    <UpgradeDialog
+      open={upgradeFeature !== null}
+      onOpenChange={(open) => !open && setUpgradeFeature(null)}
+      feature={upgradeFeature ?? undefined}
+    />
     <GlobalFindReplaceDialog open={globalFindOpen} onOpenChange={setGlobalFindOpen} />
     </>
   );
