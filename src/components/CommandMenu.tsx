@@ -1,7 +1,7 @@
 import * as React from "react";
 import { useEffect, useMemo, useState } from "react";
 import { Command } from "cmdk";
-import { FileText, Plus, Calendar, Trash2, Settings, Moon, Sun, Star, Pin, Keyboard, Replace, Upload } from "lucide-react";
+import { FileText, Plus, Trash2, Settings, Moon, Sun, Star, Pin, Keyboard, Replace, Upload } from "lucide-react";
 import { useWorkspaceContext } from "@/lib/workspace-context";
 import { useTheme } from "@/lib/use-theme";
 import { useShortcutsDialog } from "@/lib/use-shortcuts-dialog";
@@ -82,9 +82,6 @@ export function CommandMenu() {
             if (note) navigate({ name: "note", id: note.id });
           })}>
             <Plus size={14} /> New note
-          </Item>
-          <Item onSelect={() => run(() => navigate({ name: "calendar" }))}>
-            <Calendar size={14} /> Open calendar
           </Item>
           <Item onSelect={() => run(() => navigate({ name: "trash" }))}>
             <Trash2 size={14} /> Open trash

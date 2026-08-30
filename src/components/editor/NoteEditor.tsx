@@ -47,6 +47,7 @@ import { WordGoalControl, WordGoalBar } from "@/components/editor/WordGoalContro
 import { VersionHistoryDialog } from "@/components/editor/VersionHistoryDialog";
 import { NoteOutline } from "@/components/editor/NoteOutline";
 import { NotePropertiesPanel } from "@/components/editor/NotePropertiesPanel";
+import { SelectionBubbleMenu } from "@/components/editor/SelectionBubbleMenu";
 import { useNoteSources } from "@/lib/data/use-note-sources";
 import { SaveTemplateDialog } from "@/components/editor/SaveTemplateDialog";
 import { ShareDialog } from "@/components/editor/ShareDialog";
@@ -435,6 +436,8 @@ export function NoteEditor({ note }: { note: Note }) {
                   </button>
                 </div>
               )}
+
+              {editor && !isLocked && <SelectionBubbleMenu editor={editor} />}
 
               <div className="min-h-0 flex-1 overflow-y-auto">
                 <div className="sp-editor mx-auto max-w-[720px] px-8 py-8">

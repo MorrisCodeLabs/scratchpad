@@ -39,7 +39,7 @@ export function LinkPicker({ editor }: { editor: Editor }) {
           <Link2 size={15} />
         </button>
       </PopoverTrigger>
-      <PopoverContent align="start" side="left" sideOffset={10} className="w-64">
+      <PopoverContent align="start" className="w-64">
         <div className="flex items-center gap-1.5">
           <Input
             autoFocus

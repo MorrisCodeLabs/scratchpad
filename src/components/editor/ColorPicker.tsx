@@ -34,7 +34,7 @@ export function TextColorPicker({ editor }: { editor: Editor }) {
           <Palette size={15} />
         </button>
       </PopoverTrigger>
-      <PopoverContent align="start" side="left" sideOffset={10} className="flex w-40 flex-wrap gap-1.5">
+      <PopoverContent align="start" className="flex w-40 flex-wrap gap-1.5">
         {TEXT_COLORS.map((c) => (
           <button
             key={c.name}
@@ -72,7 +72,7 @@ export function HighlightColorPicker({ editor }: { editor: Editor }) {
           <Highlighter size={15} />
         </button>
       </PopoverTrigger>
-      <PopoverContent align="start" side="left" sideOffset={10} className="flex w-40 flex-wrap gap-1.5">
+      <PopoverContent align="start" className="flex w-40 flex-wrap gap-1.5">
         {HIGHLIGHT_COLORS.map((c) => (
           <button
             key={c.name}

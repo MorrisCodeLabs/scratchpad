@@ -3,7 +3,6 @@ import { DndContext, type DragEndEvent, PointerSensor, useSensor, useSensors } f
 import {
   Pin,
   Star,
-  Calendar,
   Trash2,
   Settings,
   Plus,
@@ -15,11 +14,15 @@ import {
   PanelLeftOpen,
   Sun,
   Moon,
+  LogOut,
   type LucideIcon,
 } from "lucide-react";
 import { useWorkspaceContext } from "@/lib/workspace-context";
+import type { Route } from "@/lib/use-router";
 import { useSession } from "@/lib/data/use-session";
 import { useTheme } from "@/lib/use-theme";
+import { supabase } from "@/lib/supabase";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { FolderNode } from "@/components/sidebar/FolderNode";
 import { NoteRow } from "@/components/sidebar/NoteRow";
 import { DropZone } from "@/components/sidebar/DropZone";
@@ -98,9 +101,6 @@ export function Sidebar() {
           </IconRailButton>
         </NewNoteMenu>
         <div className="my-1 h-px w-6 bg-line" />
-        <IconRailButton label="Calendar" active={route.name === "calendar"} onClick={() => navigate({ name: "calendar" })}>
-          <Calendar size={16} />
-        </IconRailButton>
         <IconRailButton label="Trash" active={route.name === "trash"} onClick={() => navigate({ name: "trash" })}>
           <Trash2 size={16} />
         </IconRailButton>
@@ -120,12 +120,15 @@ export function Sidebar() {
           <IconRailButton label="Toggle theme" onClick={toggleTheme}>
             {theme === "dark" ? <Sun size={16} /> : <Moon size={16} />}
           </IconRailButton>
-          <span
-            title={email}
-            className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-accent-soft text-xs font-semibold text-accent-ink"
-          >
-            {initial}
-          </span>
+          <AccountMenu email={email} isPro={isPro} navigate={navigate}>
+            <button
+              type="button"
+              title={email}
+              className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-accent-soft text-xs font-semibold text-accent-ink transition-opacity hover:opacity-80"
+            >
+              {initial}
+            </button>
+          </AccountMenu>
         </div>
       </aside>
     );
@@ -241,12 +244,6 @@ export function Sidebar() {
 
         <div className="flex flex-col gap-0.5 border-t border-line px-3 py-3">
           <SidebarLink
-            icon={Calendar}
-            label="Calendar"
-            active={route.name === "calendar"}
-            onClick={() => navigate({ name: "calendar" })}
-          />
-          <SidebarLink
             icon={Trash2}
             label="Trash"
             active={route.name === "trash"}
@@ -269,20 +266,21 @@ export function Sidebar() {
         </div>
 
         <div className="flex items-center gap-2 border-t border-line px-3 py-2.5">
-          <button
-            type="button"
-            onClick={() => navigate({ name: "settings" })}
-            title="Account"
-            className="flex min-w-0 flex-1 items-center gap-2 rounded-md px-1 py-0.5 text-left transition-colors hover:bg-surface-2"
-          >
-            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-accent-soft text-xs font-semibold text-accent-ink">
-              {initial}
-            </span>
-            <span className="min-w-0 flex-1">
-              <span className="block truncate text-xs font-medium text-ink">{email || "Account"}</span>
-              <span className="block text-[10px] text-faint">{isPro ? "Pro" : "Free"}</span>
-            </span>
-          </button>
+          <AccountMenu email={email} isPro={isPro} navigate={navigate}>
+            <button
+              type="button"
+              title="Account"
+              className="flex min-w-0 flex-1 items-center gap-2 rounded-md px-1 py-0.5 text-left transition-colors hover:bg-surface-2"
+            >
+              <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-accent-soft text-xs font-semibold text-accent-ink">
+                {initial}
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="block truncate text-xs font-medium text-ink">{email || "Account"}</span>
+                <span className="block text-[10px] text-faint">{isPro ? "Pro" : "Free"}</span>
+              </span>
+            </button>
+          </AccountMenu>
           <button
             type="button"
             title="Toggle theme"
@@ -328,6 +326,43 @@ function SidebarLink({
       <Icon size={15} className="shrink-0" />
       {label}
     </button>
+  );
+}
+
+function AccountMenu({
+  email,
+  isPro,
+  navigate,
+  children,
+}: {
+  email: string;
+  isPro: boolean;
+  navigate: (route: Route) => void;
+  children: ReactNode;
+}) {
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>{children}</DropdownMenuTrigger>
+      <DropdownMenuContent align="start" side="top" sideOffset={8} className="w-60">
+        <div className="px-2.5 py-1.5">
+          <p className="truncate text-xs font-medium text-ink">{email || "Account"}</p>
+          <p className="text-[10.5px] text-faint">{isPro ? "Pro plan" : "Free plan"}</p>
+        </div>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem onSelect={() => navigate({ name: "settings" })}>
+          <Settings size={14} /> Settings
+        </DropdownMenuItem>
+        {!isPro && (
+          <DropdownMenuItem onSelect={() => navigate({ name: "settings", section: "billing" })}>
+            <Sparkles size={14} /> Upgrade plan
+          </DropdownMenuItem>
+        )}
+        <DropdownMenuSeparator />
+        <DropdownMenuItem className="text-danger" onSelect={() => supabase.auth.signOut()}>
+          <LogOut size={14} /> Log out
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }
 
