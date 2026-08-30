@@ -14,6 +14,7 @@ import { useTheme, type ThemePreference } from "@/lib/use-theme";
 import { supabase } from "@/lib/supabase";
 import { cn } from "@/lib/cn";
 import { useShortcutsDialog } from "@/lib/use-shortcuts-dialog";
+import { FREE_PLAN_NOTE_LIMIT } from "@/lib/data/use-notes";
 
 export function SettingsView() {
   const { route, navigate } = useWorkspaceContext();
@@ -232,6 +233,7 @@ function UsageCard() {
   const noteCount = notes.notes.length;
   const folderCount = folders.folders.length;
   const wordCount = notes.notes.reduce((sum, n) => sum + (n.word_count ?? 0), 0);
+  const atLimit = noteCount >= FREE_PLAN_NOTE_LIMIT;
 
   return (
     <Card>
@@ -242,7 +244,10 @@ function UsageCard() {
       <CardContent>
         <div className="grid grid-cols-3 gap-3">
           <div className="rounded-lg border border-line bg-surface-2/50 px-3 py-2.5 text-center">
-            <p className="text-lg font-semibold tabular-nums text-ink">{noteCount}</p>
+            <p className="text-lg font-semibold tabular-nums text-ink">
+              {noteCount}
+              <span className="text-xs font-normal text-faint"> / {FREE_PLAN_NOTE_LIMIT}</span>
+            </p>
             <p className="text-[11px] text-faint">Notes</p>
           </div>
           <div className="rounded-lg border border-line bg-surface-2/50 px-3 py-2.5 text-center">
@@ -254,6 +259,11 @@ function UsageCard() {
             <p className="text-[11px] text-faint">Words</p>
           </div>
         </div>
+        {atLimit && (
+          <p className="mt-3 rounded-md bg-warn-soft px-3 py-2 text-[11px] text-warn">
+            You've reached the Free plan's {FREE_PLAN_NOTE_LIMIT}-note limit. Delete or trash a note to create a new one.
+          </p>
+        )}
       </CardContent>
     </Card>
   );

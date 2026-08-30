@@ -1,16 +1,31 @@
-import { MoreHorizontal, Pin, Star, Copy, Archive, Trash2, Lock, Unlock } from "lucide-react";
+import { MoreHorizontal, Pin, Star, Copy, Archive, Trash2, Lock, Unlock, Download, FileText, FileType, Globe } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+  DropdownMenuSub,
+  DropdownMenuSubTrigger,
+  DropdownMenuSubContent,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { useWorkspaceContext } from "@/lib/workspace-context";
 import type { Note } from "@/lib/types";
 
-export function NoteMenu({ note, onToggleLock }: { note: Note; onToggleLock: () => void }) {
+export function NoteMenu({
+  note,
+  onToggleLock,
+  onExportMarkdown,
+  onExportText,
+  onOpenShare,
+}: {
+  note: Note;
+  onToggleLock: () => void;
+  onExportMarkdown: () => void;
+  onExportText: () => void;
+  onOpenShare: () => void;
+}) {
   const { notes, navigate } = useWorkspaceContext();
 
   return (
@@ -38,6 +53,23 @@ export function NoteMenu({ note, onToggleLock }: { note: Note; onToggleLock: () 
         <DropdownMenuItem onSelect={() => setTimeout(onToggleLock, 0)}>
           {note.is_locked ? <Unlock size={14} /> : <Lock size={14} />}
           {note.is_locked ? "Unlock note" : "Lock note (read-only)"}
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuSub>
+          <DropdownMenuSubTrigger className="flex cursor-pointer select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm text-ink outline-none data-[highlighted]:bg-surface-2">
+            <Download size={14} /> Export
+          </DropdownMenuSubTrigger>
+          <DropdownMenuSubContent>
+            <DropdownMenuItem onSelect={onExportMarkdown}>
+              <FileText size={14} /> Markdown (.md)
+            </DropdownMenuItem>
+            <DropdownMenuItem onSelect={onExportText}>
+              <FileType size={14} /> Plain text (.txt)
+            </DropdownMenuItem>
+          </DropdownMenuSubContent>
+        </DropdownMenuSub>
+        <DropdownMenuItem onSelect={onOpenShare}>
+          <Globe size={14} /> Share to web
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem onSelect={() => notes.archiveNote(note.id)}>

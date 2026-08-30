@@ -7,6 +7,9 @@ interface UseNotesOptions {
   includeDeleted?: boolean;
 }
 
+// Free plan: workspaces are capped at 50 active (non-trashed) notes.
+export const FREE_PLAN_NOTE_LIMIT = 50;
+
 export function useNotes(workspaceId: string | undefined, options: UseNotesOptions = {}) {
   const { includeDeleted = false } = options;
   const [notes, setNotes] = useState<Note[]>([]);
@@ -53,6 +56,10 @@ export function useNotes(workspaceId: string | undefined, options: UseNotesOptio
   // sidebar until something else happens to trigger a refetch.
   const createNote = useCallback(
     async (workspace: string, folderId: string | null = null) => {
+      if (!includeDeleted && notes.length >= FREE_PLAN_NOTE_LIMIT) {
+        notifyError(`You've reached the Free plan's limit of ${FREE_PLAN_NOTE_LIMIT} notes.`);
+        return null;
+      }
       const { data, error } = await supabase
         .from("notes")
         .insert({ workspace_id: workspace, folder_id: folderId, title: "Untitled" })
@@ -66,7 +73,7 @@ export function useNotes(workspaceId: string | undefined, options: UseNotesOptio
       await reload();
       return data as Note;
     },
-    [reload],
+    [reload, notes, includeDeleted],
   );
 
   const updateNote = useCallback(
@@ -84,6 +91,10 @@ export function useNotes(workspaceId: string | undefined, options: UseNotesOptio
 
   const duplicateNote = useCallback(
     async (note: Note) => {
+      if (!includeDeleted && notes.length >= FREE_PLAN_NOTE_LIMIT) {
+        notifyError(`You've reached the Free plan's limit of ${FREE_PLAN_NOTE_LIMIT} notes.`);
+        return null;
+      }
       const { data, error } = await supabase
         .from("notes")
         .insert({
@@ -103,7 +114,7 @@ export function useNotes(workspaceId: string | undefined, options: UseNotesOptio
       await reload();
       return data as Note;
     },
-    [reload],
+    [reload, notes, includeDeleted],
   );
 
   const archiveNote = useCallback(

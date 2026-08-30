@@ -8,6 +8,7 @@ import { SettingsView } from "@/components/views/SettingsView";
 import { ChangelogView } from "@/components/views/ChangelogView";
 import { Toaster } from "@/components/Toaster";
 import { ShortcutsDialog } from "@/components/ShortcutsDialog";
+import { WebClipDialog } from "@/components/WebClipDialog";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { useWorkspaceContext } from "@/lib/workspace-context";
 import { useTheme } from "@/lib/use-theme";
@@ -51,6 +52,7 @@ export function AppShell() {
       <CommandMenu />
       <Toaster />
       <ShortcutsDialog />
+      <WebClipDialog />
     </div>
   );
 }

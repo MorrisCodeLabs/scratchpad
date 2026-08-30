@@ -40,6 +40,10 @@ import { NoteMenu } from "@/components/editor/NoteMenu";
 import { NoteOutline } from "@/components/editor/NoteOutline";
 import { BacklinksPanel } from "@/components/editor/BacklinksPanel";
 import { NoteTagsPopover } from "@/components/editor/NoteTagsPopover";
+import { ShareDialog } from "@/components/editor/ShareDialog";
+import { tiptapToMarkdown } from "@/lib/markdown-export";
+import { docToText } from "@/lib/text-stats";
+import { downloadTextFile } from "@/lib/download";
 import { Lock, Maximize2, Minimize2, AlertTriangle } from "lucide-react";
 
 export function NoteEditor({ note }: { note: Note }) {
@@ -47,6 +51,7 @@ export function NoteEditor({ note }: { note: Note }) {
   const [title, setTitle] = useState(note.title);
   const [isLocked, setIsLocked] = useState(note.is_locked);
   const [tags, setTags] = useState<string[]>(note.tags);
+  const [shareOpen, setShareOpen] = useState(false);
 
   const editor = useEditor({
     extensions: [
@@ -174,6 +179,16 @@ export function NoteEditor({ note }: { note: Note }) {
     notes.updateNote(note.id, { tags: next });
   };
 
+  const exportMarkdown = () => {
+    const markdown = tiptapToMarkdown(editor?.getJSON() ?? note.content, title || "Untitled");
+    downloadTextFile(`${(title || "untitled").replace(/[^a-z0-9]+/gi, "-").toLowerCase()}.md`, markdown, "text/markdown");
+  };
+
+  const exportText = () => {
+    const text = docToText(editor?.getJSON() ?? note.content);
+    downloadTextFile(`${(title || "untitled").replace(/[^a-z0-9]+/gi, "-").toLowerCase()}.txt`, `${title || "Untitled"}\n\n${text}`, "text/plain");
+  };
+
   return (
     <div className="flex h-full flex-col">
       <div className="flex items-center justify-between gap-3 border-b border-line px-8 py-3">
@@ -202,7 +217,13 @@ export function NoteEditor({ note }: { note: Note }) {
           </button>
           {editor && <NoteOutline editor={editor} contentTick={contentTick} />}
           <SaveIndicator state={saveState} onSaveNow={saveNow} />
-          <NoteMenu note={note} onToggleLock={toggleLock} />
+          <NoteMenu
+            note={note}
+            onToggleLock={toggleLock}
+            onExportMarkdown={exportMarkdown}
+            onExportText={exportText}
+            onOpenShare={() => setShareOpen(true)}
+          />
         </div>
       </div>
 
@@ -245,6 +266,13 @@ export function NoteEditor({ note }: { note: Note }) {
           <span className="ml-auto tabular-nums">Updated {new Date(note.updated_at).toLocaleString()}</span>
         </div>
       </div>
+
+      <ShareDialog
+        open={shareOpen}
+        onOpenChange={setShareOpen}
+        note={note}
+        onUpdateShare={(patch) => notes.updateNote(note.id, patch)}
+      />
     </div>
   );
 }

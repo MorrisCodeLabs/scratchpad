@@ -1,10 +1,11 @@
 import * as React from "react";
 import { useEffect, useMemo } from "react";
 import { Command } from "cmdk";
-import { FileText, Plus, Trash2, Settings, Moon, Sun, Star, Pin, Keyboard, Upload } from "lucide-react";
+import { FileText, Plus, Trash2, Settings, Moon, Sun, Star, Pin, Keyboard, Upload, Globe2 } from "lucide-react";
 import { useWorkspaceContext } from "@/lib/workspace-context";
 import { useTheme } from "@/lib/use-theme";
 import { useShortcutsDialog } from "@/lib/use-shortcuts-dialog";
+import { useWebClipDialog } from "@/lib/use-web-clip-dialog";
 import { pickFiles } from "@/lib/editor/pick-files";
 import { importedFileToTiptapJSON, titleFromFilename } from "@/lib/import-markdown";
 import { computeStats } from "@/lib/text-stats";
@@ -13,6 +14,7 @@ export function CommandMenu() {
   const { workspace, notes, commandMenuOpen, setCommandMenuOpen, navigate } = useWorkspaceContext();
   const { theme, toggleTheme } = useTheme();
   const { open: openShortcuts } = useShortcutsDialog();
+  const { open: openWebClip } = useWebClipDialog();
 
   const importNotes = async () => {
     const files = await pickFiles(".md,.markdown,.txt,text/markdown,text/plain");
@@ -93,6 +95,10 @@ export function CommandMenu() {
           <Item onSelect={() => run(importNotes)}>
             <Upload size={14} />
             <span className="flex-1">Import notes from Markdown/text</span>
+          </Item>
+          <Item onSelect={() => run(openWebClip)}>
+            <Globe2 size={14} />
+            <span className="flex-1">Clip a web page</span>
           </Item>
         </Command.Group>
 
