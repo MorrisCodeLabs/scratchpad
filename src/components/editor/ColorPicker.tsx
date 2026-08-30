@@ -16,10 +16,15 @@ const TEXT_COLORS = [
 const HIGHLIGHT_COLORS = [
   { name: "None", value: null },
   { name: "Yellow", value: "#f9ecd9" },
-  { name: "Green", value: "#e3f3e8" },
-  { name: "Blue", value: "#e5eaf6" },
-  { name: "Purple", value: "#efe6f8" },
+  { name: "Orange", value: "#fbe6d4" },
+  { name: "Peach", value: "#fce3df" },
   { name: "Red", value: "#fbe9e7" },
+  { name: "Pink", value: "#fbe4f0" },
+  { name: "Purple", value: "#efe6f8" },
+  { name: "Blue", value: "#e5eaf6" },
+  { name: "Teal", value: "#dcf1ee" },
+  { name: "Green", value: "#e3f3e8" },
+  { name: "Gray", value: "#e6e8eb" },
 ];
 
 export function TextColorPicker({ editor }: { editor: Editor }) {

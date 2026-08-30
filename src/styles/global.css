@@ -354,8 +354,11 @@ h3 {
   /* Highlight swatches are fixed light pastels regardless of app theme
      (like a real highlighter pen), so the text on top must stay a fixed
      dark ink too — inheriting the theme's ink color would turn light (and
-     invisible against a light highlight) in dark mode. */
-  color: #1a1e22;
+     invisible against a light highlight) in dark mode. !important is
+     required here: @tiptap/extension-highlight renders each <mark> with
+     an inline `color: inherit`, which otherwise always wins over any
+     external stylesheet rule regardless of selector specificity. */
+  color: #1a1e22 !important;
   border-radius: 2px;
   padding: 0 0.1em;
 }

@@ -335,7 +335,7 @@ export function NoteEditor({ note }: { note: Note }) {
     return saveTemplate(workspace.id, name, (editor?.getJSON() ?? note.content) as Record<string, unknown>);
   };
 
-  const showSidePanel = editor && !isLocked && (!isEncrypted || unlocked);
+  const showEditingControls = editor && !isLocked && (!isEncrypted || unlocked);
 
   return (
     <div className="flex h-full flex-col">
@@ -398,6 +398,8 @@ export function NoteEditor({ note }: { note: Note }) {
           />
         </div>
       </div>
+
+      {showEditingControls && editor && <EditorToolbar editor={editor} />}
 
       {isLocked && (
         <div className="flex items-center gap-2 bg-warn-soft px-8 py-2 text-[13px] font-medium text-warn">
@@ -505,7 +507,6 @@ export function NoteEditor({ note }: { note: Note }) {
               onAddSource={(input) => addSource(workspace.id, input)}
               onDeleteSource={deleteSource}
             />
-            {showSidePanel && <EditorToolbar editor={editor} />}
           </aside>
         )}
       </div>
