@@ -1,4 +1,4 @@
-import { ChevronsUpDown, LogOut, Settings } from "lucide-react";
+import { ChevronsUpDown, LogOut, Settings, History } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useWorkspaceContext } from "@/lib/workspace-context";
 import { supabase } from "@/lib/supabase";
@@ -20,6 +20,9 @@ export function WorkspaceMenu() {
       <DropdownMenuContent align="start" className="w-56">
         <DropdownMenuItem onSelect={() => navigate({ name: "settings" })}>
           <Settings size={14} /> Workspace settings
+        </DropdownMenuItem>
+        <DropdownMenuItem onSelect={() => navigate({ name: "changelog" })}>
+          <History size={14} /> Changelog
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem onSelect={() => supabase.auth.signOut()}>
