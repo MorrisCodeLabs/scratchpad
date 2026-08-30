@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { Check, Sparkles } from "lucide-react";
+import { Check, Sparkles, Crown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useWorkspaceContext } from "@/lib/workspace-context";
-import { useIsPro } from "@/lib/use-plan";
+import { useIsPro, useIsOwnerAccount } from "@/lib/use-plan";
 import { setWorkspacePlan } from "@/lib/plan-actions";
 import { cn } from "@/lib/cn";
 
@@ -12,6 +12,7 @@ const PRO_FEATURES = ["Everything in Free", "Automatic version history with rest
 export function BillingSettings() {
   const { workspace, refreshWorkspace } = useWorkspaceContext();
   const isPro = useIsPro();
+  const isOwner = useIsOwnerAccount();
   const [loading, setLoading] = useState(false);
 
   const setPlan = async (plan: "free" | "pro") => {
@@ -40,17 +41,24 @@ export function BillingSettings() {
         <PlanCard title="Pro" features={PRO_FEATURES} active={isPro} icon={Sparkles} />
       </div>
 
-      <div className="mt-4">
-        {isPro ? (
-          <Button variant="outline" size="sm" disabled={loading} onClick={() => setPlan("free")}>
-            {loading ? "Working…" : "Downgrade to Free"}
-          </Button>
-        ) : (
-          <Button size="sm" disabled={loading} onClick={() => setPlan("pro")}>
-            {loading ? "Working…" : "Upgrade to Pro"}
-          </Button>
-        )}
-      </div>
+      {isOwner ? (
+        <div className="mt-4 flex items-center gap-2 rounded-md bg-accent-soft px-3 py-2 text-xs font-medium text-accent-ink">
+          <Crown size={14} />
+          You have permanent Pro access as the app owner — this doesn't depend on the plan toggle below.
+        </div>
+      ) : (
+        <div className="mt-4">
+          {isPro ? (
+            <Button variant="outline" size="sm" disabled={loading} onClick={() => setPlan("free")}>
+              {loading ? "Working…" : "Downgrade to Free"}
+            </Button>
+          ) : (
+            <Button size="sm" disabled={loading} onClick={() => setPlan("pro")}>
+              {loading ? "Working…" : "Upgrade to Pro"}
+            </Button>
+          )}
+        </div>
+      )}
 
       <p className="mt-3 text-[11px] text-faint">
         Demo build — no payment processor is wired up, so this switch flips the plan directly. In production this is
