@@ -28,14 +28,6 @@ const FONT_FAMILIES = [
   { label: "Rounded", value: "system-ui, sans-serif" },
 ];
 
-const FONT_SIZES = [
-  { label: "Default", value: "" },
-  { label: "Small", value: "13px" },
-  { label: "Normal", value: "16px" },
-  { label: "Large", value: "20px" },
-  { label: "X-Large", value: "26px" },
-];
-
 function ToolbarButton({
   active,
   disabled,
@@ -148,21 +140,6 @@ export function EditorToolbar({ editor }: { editor: Editor }) {
         className="w-24"
       >
         {FONT_FAMILIES.map((f) => (
-          <option key={f.label} value={f.value}>
-            {f.label}
-          </option>
-        ))}
-      </ToolbarSelect>
-
-      <ToolbarSelect
-        title="Font size"
-        value={editor.getAttributes("textStyle").fontSize ?? ""}
-        onChange={(value) =>
-          value ? editor.chain().focus().setFontSize(value).run() : editor.chain().focus().unsetFontSize().run()
-        }
-        className="w-24"
-      >
-        {FONT_SIZES.map((f) => (
           <option key={f.label} value={f.value}>
             {f.label}
           </option>

@@ -1,12 +1,10 @@
 import * as React from "react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo } from "react";
 import { Command } from "cmdk";
-import { FileText, Plus, Trash2, Settings, Moon, Sun, Star, Pin, Keyboard, Replace, Upload } from "lucide-react";
+import { FileText, Plus, Trash2, Settings, Moon, Sun, Star, Pin, Keyboard, Upload } from "lucide-react";
 import { useWorkspaceContext } from "@/lib/workspace-context";
 import { useTheme } from "@/lib/use-theme";
 import { useShortcutsDialog } from "@/lib/use-shortcuts-dialog";
-import { useIsPro } from "@/lib/use-plan";
-import { GlobalFindReplaceDialog } from "@/components/GlobalFindReplaceDialog";
 import { pickFiles } from "@/lib/editor/pick-files";
 import { importedFileToTiptapJSON, titleFromFilename } from "@/lib/import-markdown";
 import { computeStats } from "@/lib/text-stats";
@@ -15,14 +13,11 @@ export function CommandMenu() {
   const { workspace, notes, commandMenuOpen, setCommandMenuOpen, navigate } = useWorkspaceContext();
   const { theme, toggleTheme } = useTheme();
   const { open: openShortcuts } = useShortcutsDialog();
-  const isPro = useIsPro();
-  const [globalFindOpen, setGlobalFindOpen] = useState(false);
 
   const importNotes = async () => {
     const files = await pickFiles(".md,.markdown,.txt,text/markdown,text/plain");
     if (files.length === 0) return;
-    const toImport = isPro ? files : files.slice(0, 1);
-    for (const file of toImport) {
+    for (const file of files) {
       const text = await file.text();
       const content = importedFileToTiptapJSON(file.name, text);
       const stats = computeStats(content);
@@ -59,7 +54,6 @@ export function CommandMenu() {
   );
 
   return (
-    <>
     <Command.Dialog
       open={commandMenuOpen}
       onOpenChange={setCommandMenuOpen}
@@ -96,12 +90,6 @@ export function CommandMenu() {
           <Item onSelect={() => run(openShortcuts)}>
             <Keyboard size={14} /> Keyboard shortcuts
           </Item>
-          {isPro && (
-            <Item onSelect={() => run(() => setGlobalFindOpen(true))}>
-              <Replace size={14} />
-              <span className="flex-1">Find and replace across notes</span>
-            </Item>
-          )}
           <Item onSelect={() => run(importNotes)}>
             <Upload size={14} />
             <span className="flex-1">Import notes from Markdown/text</span>
@@ -120,8 +108,6 @@ export function CommandMenu() {
         </Command.Group>
       </Command.List>
     </Command.Dialog>
-    <GlobalFindReplaceDialog open={globalFindOpen} onOpenChange={setGlobalFindOpen} />
-    </>
   );
 }
 

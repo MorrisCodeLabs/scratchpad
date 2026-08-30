@@ -6,7 +6,6 @@ import { useCallback, useEffect, useState } from "react";
 export type Route =
   | { name: "all-notes" }
   | { name: "note"; id: string }
-  | { name: "calendar" }
   | { name: "trash" }
   | { name: "settings"; section?: string }
   | { name: "changelog" };
@@ -14,7 +13,6 @@ export type Route =
 function parse(pathname: string): Route {
   const parts = pathname.split("/").filter(Boolean);
   if (parts[0] === "note" && parts[1]) return { name: "note", id: parts[1] };
-  if (parts[0] === "calendar") return { name: "calendar" };
   if (parts[0] === "trash") return { name: "trash" };
   if (parts[0] === "settings") return { name: "settings", section: parts[1] };
   if (parts[0] === "changelog") return { name: "changelog" };
@@ -25,8 +23,6 @@ function toPath(route: Route): string {
   switch (route.name) {
     case "note":
       return `/note/${route.id}`;
-    case "calendar":
-      return "/calendar";
     case "trash":
       return "/trash";
     case "settings":

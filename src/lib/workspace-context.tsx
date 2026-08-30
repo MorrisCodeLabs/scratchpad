@@ -18,8 +18,6 @@ interface WorkspaceContextValue {
   refreshWorkspace: () => Promise<void>;
   focusMode: boolean;
   setFocusMode: (on: boolean) => void;
-  splitNoteId: string | null;
-  setSplitNoteId: (id: string | null) => void;
 }
 
 const WorkspaceContext = createContext<WorkspaceContextValue | null>(null);
@@ -41,31 +39,6 @@ export function WorkspaceProvider({
   const { route, navigate } = useRouter();
   const [commandMenuOpen, setCommandMenuOpen] = useState(false);
   const [focusMode, setFocusMode] = useState(false);
-  const [splitNoteId, setSplitNoteId] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (route.name !== "note") setSplitNoteId(null);
-  }, [route]);
-
-  // Expiration (Pro): sweep for notes past their expires_at and archive them
-  // client-side. Not a server cron — it only fires while someone has the app
-  // open — which is a fair trade-off for a demo feature with no background
-  // job infra, and it self-corrects the moment anyone next loads the list.
-  const archivedRef = useRef(new Set<string>());
-  useEffect(() => {
-    const now = Date.now();
-    for (const note of notes.notes) {
-      if (
-        note.expires_at &&
-        new Date(note.expires_at).getTime() < now &&
-        note.status !== "archived" &&
-        !archivedRef.current.has(note.id)
-      ) {
-        archivedRef.current.add(note.id);
-        notes.updateNote(note.id, { status: "archived" });
-      }
-    }
-  }, [notes.notes]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Trash auto-empty: permanently delete notes that have sat in trash past
   // the workspace's retention window. Same client-side sweep trade-off as
@@ -99,8 +72,6 @@ export function WorkspaceProvider({
       refreshWorkspace,
       focusMode,
       setFocusMode,
-      splitNoteId,
-      setSplitNoteId,
     }),
     [
       workspace,
@@ -113,7 +84,6 @@ export function WorkspaceProvider({
       commandMenuOpen,
       refreshWorkspace,
       focusMode,
-      splitNoteId,
     ],
   );
 

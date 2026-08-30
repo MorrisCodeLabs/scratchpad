@@ -56,7 +56,7 @@ export interface Note {
   deleted_at: string | null;
 }
 
-export type SaveState = "idle" | "saving" | "saved" | "error" | "offline";
+export type SaveState = "idle" | "saving" | "saved" | "error";
 
 export interface NoteVersion {
   id: string;

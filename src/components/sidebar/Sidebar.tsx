@@ -9,7 +9,6 @@ import {
   Search,
   FolderPlus,
   ChevronDown,
-  Sparkles,
   PanelLeftClose,
   PanelLeftOpen,
   Sun,
@@ -28,7 +27,6 @@ import { NoteRow } from "@/components/sidebar/NoteRow";
 import { DropZone } from "@/components/sidebar/DropZone";
 import { WorkspaceMenu } from "@/components/sidebar/WorkspaceMenu";
 import { NewNoteMenu } from "@/components/NewNoteMenu";
-import { useIsPro, useIsTeam } from "@/lib/use-plan";
 import { cn } from "@/lib/cn";
 
 const COLLAPSED_KEY = "scratchpad:sidebar-collapsed";
@@ -37,9 +35,6 @@ export function Sidebar() {
   const { folders, notes, route, navigate, setCommandMenuOpen } = useWorkspaceContext();
   const { session } = useSession();
   const { theme, toggleTheme } = useTheme();
-  const isPro = useIsPro();
-  const isTeam = useIsTeam();
-  const planLabel = isTeam ? "Team" : isPro ? "Pro" : "Free";
   const [favoritesOpen, setFavoritesOpen] = useState(true);
   const [foldersOpen, setFoldersOpen] = useState(true);
   const [collapsed, setCollapsed] = useState(() => typeof window !== "undefined" && localStorage.getItem(COLLAPSED_KEY) === "1");
@@ -69,7 +64,7 @@ export function Sidebar() {
     const [overType, overId] = String(over.id).split(":");
 
     if (activeType === "note" && overType === "note") {
-      if (!isPro || activeId === overId) return;
+      if (activeId === overId) return;
       await notes.reorderNote(activeId, overId);
       return;
     }
@@ -106,7 +101,7 @@ export function Sidebar() {
           <IconRailButton label="Toggle theme" onClick={toggleTheme}>
             {theme === "dark" ? <Sun size={16} /> : <Moon size={16} />}
           </IconRailButton>
-          <AccountMenu email={email} isPro={isPro} planLabel={planLabel} navigate={navigate}>
+          <AccountMenu email={email} navigate={navigate}>
             <button
               type="button"
               title={email}
@@ -221,7 +216,7 @@ export function Sidebar() {
                   note={n}
                   active={route.name === "note" && route.id === n.id}
                   indent={0}
-                  reorderable={isPro}
+                  reorderable
                 />
               ))}
             </DropZone>
@@ -229,7 +224,7 @@ export function Sidebar() {
         </nav>
 
         <div className="flex items-center gap-2 border-t border-line px-3 py-2.5">
-          <AccountMenu email={email} isPro={isPro} planLabel={planLabel} navigate={navigate}>
+          <AccountMenu email={email} navigate={navigate}>
             <button
               type="button"
               title="Account"
@@ -240,7 +235,6 @@ export function Sidebar() {
               </span>
               <span className="min-w-0 flex-1">
                 <span className="block truncate text-xs font-medium text-ink">{email || "Account"}</span>
-                <span className="block text-[10px] text-faint">{planLabel}</span>
               </span>
             </button>
           </AccountMenu>
@@ -268,14 +262,10 @@ export function Sidebar() {
 
 function AccountMenu({
   email,
-  isPro,
-  planLabel,
   navigate,
   children,
 }: {
   email: string;
-  isPro: boolean;
-  planLabel: string;
   navigate: (route: Route) => void;
   children: ReactNode;
 }) {
@@ -285,17 +275,11 @@ function AccountMenu({
       <DropdownMenuContent align="start" side="top" sideOffset={8} className="w-60">
         <div className="px-2.5 py-1.5">
           <p className="truncate text-xs font-medium text-ink">{email || "Account"}</p>
-          <p className="text-[10.5px] text-faint">{planLabel} plan</p>
         </div>
         <DropdownMenuSeparator />
         <DropdownMenuItem onSelect={() => navigate({ name: "trash" })}>
           <Trash2 size={14} /> Trash
         </DropdownMenuItem>
-        {!isPro && (
-          <DropdownMenuItem onSelect={() => navigate({ name: "settings", section: "billing" })}>
-            <Sparkles size={14} /> Upgrade plan
-          </DropdownMenuItem>
-        )}
         <DropdownMenuItem onSelect={() => navigate({ name: "settings" })}>
           <Settings size={14} /> Settings
         </DropdownMenuItem>

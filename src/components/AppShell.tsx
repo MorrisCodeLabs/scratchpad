@@ -1,30 +1,22 @@
 import { useEffect } from "react";
-import { X } from "lucide-react";
 import { Sidebar } from "@/components/sidebar/Sidebar";
 import { CommandMenu } from "@/components/CommandMenu";
 import { AllNotesView } from "@/components/views/AllNotesView";
 import { NoteView } from "@/components/views/NoteView";
-import { CalendarView } from "@/components/views/CalendarView";
 import { TrashView } from "@/components/views/TrashView";
 import { SettingsView } from "@/components/views/SettingsView";
 import { ChangelogView } from "@/components/views/ChangelogView";
 import { Toaster } from "@/components/Toaster";
 import { ShortcutsDialog } from "@/components/ShortcutsDialog";
-import { WelcomeDialog } from "@/components/WelcomeDialog";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { useWorkspaceContext } from "@/lib/workspace-context";
 import { useTheme } from "@/lib/use-theme";
 import { useShortcutsDialog } from "@/lib/use-shortcuts-dialog";
-import { applyBrandAccent } from "@/lib/brand-color";
 
 export function AppShell() {
-  const { route, workspace, focusMode, splitNoteId, setSplitNoteId } = useWorkspaceContext();
+  const { route, focusMode } = useWorkspaceContext();
   const { open: openShortcuts } = useShortcutsDialog();
   useTheme(); // applies the persisted theme preference to <html> on mount
-
-  useEffect(() => {
-    applyBrandAccent(workspace.theme?.accent ?? null);
-  }, [workspace.theme?.accent]);
 
   useEffect(() => {
     document.title = route.name === "note" ? "Note · Scratchpad" : "Scratchpad";
@@ -50,30 +42,7 @@ export function AppShell() {
       <main className="min-w-0 flex-1">
         <ErrorBoundary key={route.name === "note" ? `note:${route.id}` : route.name}>
           {route.name === "all-notes" && <AllNotesView />}
-          {route.name === "note" && (
-            <div className="flex h-full">
-              <div className="min-w-0 flex-1">
-                <NoteView noteId={route.id} />
-              </div>
-              {splitNoteId && splitNoteId !== route.id && (
-                <>
-                  <div className="w-px shrink-0 bg-line" />
-                  <div className="relative min-w-0 flex-1">
-                    <button
-                      type="button"
-                      title="Close split"
-                      onClick={() => setSplitNoteId(null)}
-                      className="absolute right-2 top-2.5 z-10 flex h-6 w-6 items-center justify-center rounded-md text-faint transition-colors hover:bg-surface-2 hover:text-ink"
-                    >
-                      <X size={14} />
-                    </button>
-                    <NoteView noteId={splitNoteId} />
-                  </div>
-                </>
-              )}
-            </div>
-          )}
-          {route.name === "calendar" && <CalendarView />}
+          {route.name === "note" && <NoteView noteId={route.id} />}
           {route.name === "trash" && <TrashView />}
           {route.name === "settings" && <SettingsView />}
           {route.name === "changelog" && <ChangelogView />}
@@ -82,7 +51,6 @@ export function AppShell() {
       <CommandMenu />
       <Toaster />
       <ShortcutsDialog />
-      <WelcomeDialog />
     </div>
   );
 }

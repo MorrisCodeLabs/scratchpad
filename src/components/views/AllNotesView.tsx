@@ -1,23 +1,15 @@
 import { useMemo, useState } from "react";
-import { isWithinInterval, parseISO } from "date-fns";
-import { Plus, Search, SlidersHorizontal, CheckSquare, X, Archive, Trash2, Tag as TagIcon } from "lucide-react";
+import { Plus, Search, CheckSquare, X, Archive, Trash2, Tag as TagIcon } from "lucide-react";
 import { useWorkspaceContext } from "@/lib/workspace-context";
 import { docToText } from "@/lib/text-stats";
 import { NewNoteMenu } from "@/components/NewNoteMenu";
 import { NoteCard } from "@/components/views/NoteCard";
-import { AdvancedSearchDialog, EMPTY_FILTERS, type AdvancedFilters } from "@/components/views/AdvancedSearchDialog";
-import { BulkMetadataPopover } from "@/components/views/BulkMetadataPopover";
-import { useIsPro } from "@/lib/use-plan";
-import type { NoteStatus } from "@/lib/types";
 import { cn } from "@/lib/cn";
 
 export function AllNotesView() {
   const { notes, navigate } = useWorkspaceContext();
-  const isPro = useIsPro();
   const [query, setQuery] = useState("");
   const [activeTag, setActiveTag] = useState<string | null>(null);
-  const [advancedOpen, setAdvancedOpen] = useState(false);
-  const [filters, setFilters] = useState<AdvancedFilters>(EMPTY_FILTERS);
   const [selectMode, setSelectMode] = useState(false);
   const [selected, setSelected] = useState<Set<string>>(new Set());
 
@@ -32,20 +24,9 @@ export function AllNotesView() {
     return notes.notes.filter((n) => {
       if (q && !n.title.toLowerCase().includes(q) && !docToText(n.content).toLowerCase().includes(q)) return false;
       if (activeTag && !n.tags?.includes(activeTag)) return false;
-      if (filters.statuses.length > 0 && !filters.statuses.includes(n.status)) return false;
-      if (filters.pinnedOnly && !n.is_pinned) return false;
-      if (filters.favoriteOnly && !n.is_favorite) return false;
-      if (filters.dateFrom || filters.dateTo) {
-        const created = new Date(n.created_at);
-        const from = filters.dateFrom ? parseISO(filters.dateFrom) : new Date(0);
-        const to = filters.dateTo ? parseISO(`${filters.dateTo}T23:59:59`) : new Date(8640000000000000);
-        if (!isWithinInterval(created, { start: from, end: to })) return false;
-      }
       return true;
     });
-  }, [notes.notes, query, activeTag, filters]);
-
-  const filtersActive = filters.statuses.length > 0 || filters.pinnedOnly || filters.favoriteOnly || filters.dateFrom || filters.dateTo;
+  }, [notes.notes, query, activeTag]);
 
   const toggleSelectMode = () => {
     setSelectMode((v) => !v);
@@ -69,24 +50,6 @@ export function AllNotesView() {
   const bulkTrash = async () => {
     await Promise.all([...selected].map((id) => notes.trashNote(id)));
     setSelected(new Set());
-  };
-
-  const bulkSetStatus = async (status: NoteStatus) => {
-    await Promise.all([...selected].map((id) => notes.updateNote(id, { status })));
-  };
-
-  const bulkSetColor = async (color: string | null) => {
-    await Promise.all([...selected].map((id) => notes.updateNote(id, { color })));
-  };
-
-  const bulkAddTag = async (tag: string) => {
-    await Promise.all(
-      [...selected].map((id) => {
-        const note = notes.notes.find((n) => n.id === id);
-        const tags = note ? Array.from(new Set([...(note.tags ?? []), tag])) : [tag];
-        return notes.updateNote(id, { tags });
-      }),
-    );
   };
 
   return (
@@ -118,20 +81,12 @@ export function AllNotesView() {
       {selectMode && selected.size > 0 && (
         <div className="mb-4 flex items-center gap-4 rounded-lg bg-accent-soft px-4 py-2.5 text-[13px] text-accent-ink">
           <span className="font-medium">{selected.size} selected</span>
-          <BulkMetadataPopover
-            count={selected.size}
-            onSetStatus={bulkSetStatus}
-            onSetColor={bulkSetColor}
-            onAddTag={bulkAddTag}
-          />
           <button type="button" onClick={bulkArchive} className="flex items-center gap-1.5 hover:underline">
             <Archive size={13} /> Archive
           </button>
-          {isPro && (
-            <button type="button" onClick={bulkTrash} className="flex items-center gap-1.5 hover:underline">
-              <Trash2 size={13} /> Trash
-            </button>
-          )}
+          <button type="button" onClick={bulkTrash} className="flex items-center gap-1.5 hover:underline">
+            <Trash2 size={13} /> Trash
+          </button>
           <button type="button" onClick={() => setSelected(new Set())} className="ml-auto flex items-center gap-1.5 hover:underline">
             <X size={13} /> Clear
           </button>
@@ -148,16 +103,6 @@ export function AllNotesView() {
             className="w-full bg-transparent text-sm text-ink outline-none placeholder:text-faint"
           />
         </div>
-        <button
-          type="button"
-          onClick={() => setAdvancedOpen(true)}
-          className={cn(
-            "flex items-center gap-1.5 rounded-lg border px-3 py-2.5 text-sm transition-colors",
-            filtersActive ? "border-accent bg-accent-soft text-accent-ink" : "border-line text-muted hover:bg-surface-2",
-          )}
-        >
-          <SlidersHorizontal size={15} />
-        </button>
       </div>
 
       {allTags.length > 0 && (
@@ -181,7 +126,7 @@ export function AllNotesView() {
 
       {filtered.length === 0 ? (
         <p className="py-16 text-center text-sm text-faint">
-          {query || activeTag || filtersActive ? "No notes match your filters." : "No notes yet — create your first one."}
+          {query || activeTag ? "No notes match your filters." : "No notes yet — create your first one."}
         </p>
       ) : (
         <div className="grid grid-cols-[repeat(auto-fill,minmax(230px,1fr))] gap-4">
@@ -197,8 +142,6 @@ export function AllNotesView() {
           ))}
         </div>
       )}
-
-      <AdvancedSearchDialog open={advancedOpen} onOpenChange={setAdvancedOpen} filters={filters} onChange={setFilters} />
     </div>
   );
 }

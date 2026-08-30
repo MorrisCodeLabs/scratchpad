@@ -17,16 +17,9 @@ import {
   Code2,
   Minus,
   Table as TableIcon,
-  MessageSquareQuote,
   Type,
-  ChevronRight,
-  ListTree,
-  BarChart3,
   Image as ImageIcon,
   Paperclip,
-  Sigma,
-  Table2,
-  BookOpen,
 } from "lucide-react";
 import { SlashMenu, type SlashMenuHandle, type SlashMenuItem } from "@/components/editor/SlashMenu";
 import { pickFile } from "@/lib/editor/pick-file";
@@ -120,12 +113,6 @@ const ITEMS: SlashMenuItem[] = [
     command: ({ editor, range }) => editor.chain().focus().deleteRange(range).toggleBlockquote().run(),
   },
   {
-    title: "Callout",
-    description: "Make writing stand out.",
-    icon: MessageSquareQuote,
-    command: ({ editor, range }) => editor.chain().focus().deleteRange(range).setCallout().run(),
-  },
-  {
     title: "Code block",
     description: "Capture a code snippet.",
     icon: Code2,
@@ -143,24 +130,6 @@ const ITEMS: SlashMenuItem[] = [
     description: "Visually divide sections.",
     icon: Minus,
     command: ({ editor, range }) => editor.chain().focus().deleteRange(range).setHorizontalRule().run(),
-  },
-  {
-    title: "Toggle",
-    description: "A collapsible block that hides content.",
-    icon: ChevronRight,
-    command: ({ editor, range }) => editor.chain().focus().deleteRange(range).setToggle().run(),
-  },
-  {
-    title: "Definition list",
-    description: "Pair terms with their descriptions.",
-    icon: ListTree,
-    command: ({ editor, range }) => editor.chain().focus().deleteRange(range).setDefinitionList().run(),
-  },
-  {
-    title: "Progress bar",
-    description: "Track completion with a slider.",
-    icon: BarChart3,
-    command: ({ editor, range }) => editor.chain().focus().deleteRange(range).setProgressBar().run(),
   },
   {
     title: "Image",
@@ -182,41 +151,14 @@ const ITEMS: SlashMenuItem[] = [
       if (uploaded) editor.chain().focus().setFileBlock(uploaded).run();
     },
   },
-  {
-    title: "Math equation",
-    description: "A LaTeX equation, rendered with KaTeX.",
-    icon: Sigma,
-    command: ({ editor, range }) => editor.chain().focus().deleteRange(range).setMathBlock().run(),
-  },
-  {
-    title: "Database",
-    description: "A sortable, filterable table with typed columns.",
-    icon: Table2,
-    proOnly: true,
-    command: ({ editor, range }) => {
-      editor.chain().focus().deleteRange(range).setDatabaseBlock().run();
-    },
-  },
-  {
-    title: "Bibliography",
-    description: "Auto-generated reference list from this note's saved sources.",
-    icon: BookOpen,
-    proOnly: true,
-    command: ({ editor, range }) => {
-      editor.chain().focus().deleteRange(range).setBibliographyBlock().run();
-    },
-  },
 ];
 
 const suggestion: Omit<SuggestionOptions, "editor"> = {
   pluginKey: new PluginKey("slashCommandSuggestion"),
   char: "/",
   startOfLine: false,
-  items: ({ query, editor }) => {
-    const isPro = Boolean(editor.storage.proContext?.isPro);
-    return ITEMS.filter(
-      (item) => (isPro || !item.proOnly) && item.title.toLowerCase().includes(query.toLowerCase()),
-    ).slice(0, 10);
+  items: ({ query }) => {
+    return ITEMS.filter((item) => item.title.toLowerCase().includes(query.toLowerCase())).slice(0, 10);
   },
   command: ({ editor, range, props }: any) => {
     props.command({ editor, range });

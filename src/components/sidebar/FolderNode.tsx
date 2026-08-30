@@ -17,7 +17,6 @@ import {
   DropdownMenuSubContent,
 } from "@/components/ui/dropdown-menu";
 import { NewNoteMenu } from "@/components/NewNoteMenu";
-import { useIsPro } from "@/lib/use-plan";
 
 const FOLDER_COLORS = [
   { name: "None", value: null },
@@ -30,7 +29,6 @@ const FOLDER_COLORS = [
 
 export function FolderNode({ folder, depth }: { folder: FolderType; depth: number }) {
   const { folders, notes, route } = useWorkspaceContext();
-  const isPro = useIsPro();
   const [open, setOpen] = useState(depth === 0);
   const [renaming, setRenaming] = useState(false);
   const [name, setName] = useState(folder.name);
@@ -151,7 +149,7 @@ export function FolderNode({ folder, depth }: { folder: FolderType; depth: numbe
               note={n}
               active={route.name === "note" && route.id === n.id}
               indent={depth + 1}
-              reorderable={isPro}
+              reorderable
             />
           ))}
         </div>
