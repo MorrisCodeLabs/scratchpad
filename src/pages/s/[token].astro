@@ -6,18 +6,25 @@ import { supabase } from "@/lib/supabase";
 
 const { token } = Astro.params;
 
-const { data: note } = await supabase
-  .from("notes")
-  .select("title, content, updated_at")
-  .eq("share_token", token)
-  .is("deleted_at", null)
-  .maybeSingle();
+const { data, error } = await supabase.rpc("consume_share_view", { p_token: token });
+const row = data?.[0];
 
-if (!note) {
+if (error || !row) {
   return new Response(null, { status: 404 });
 }
 ---
 
 <Base>
-  <SharedNoteView client:load title={note.title} content={note.content} updatedAt={note.updated_at} />
+  {
+    row.out_already_viewed ? (
+      <div class="flex h-screen w-screen flex-col items-center justify-center gap-2 bg-bg px-6 text-center text-ink">
+        <p class="text-lg font-semibold">This link has already been viewed</p>
+        <p class="max-w-sm text-sm text-muted">
+          “{row.out_title}” was shared as a one-time link and can no longer be opened.
+        </p>
+      </div>
+    ) : (
+      <SharedNoteView client:load title={row.out_title} content={row.out_content} updatedAt={row.out_updated_at} />
+    )
+  }
 </Base>

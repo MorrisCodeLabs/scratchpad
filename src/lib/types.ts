@@ -46,6 +46,8 @@ export interface Note {
   tags: string[];
   expires_at: string | null;
   share_token: string | null;
+  share_view_once: boolean;
+  share_viewed_at: string | null;
   created_by: string;
   created_at: string;
   updated_at: string;

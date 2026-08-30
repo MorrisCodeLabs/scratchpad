@@ -283,7 +283,7 @@ export function NoteEditor({ note }: { note: Note }) {
   };
 
   const exportPdf = () => {
-    printNoteAsPdf(title || "Untitled", editor?.getHTML() ?? "");
+    printNoteAsPdf(title || "Untitled", editor?.getHTML() ?? "", { workspaceName: workspace.name });
   };
 
   const toggleLock = () => {
@@ -508,7 +508,7 @@ export function NoteEditor({ note }: { note: Note }) {
         open={shareOpen}
         onOpenChange={setShareOpen}
         note={note}
-        onSetShareToken={(token) => notes.updateNote(note.id, { share_token: token })}
+        onUpdateShare={(patch) => notes.updateNote(note.id, patch)}
       />
       <UpgradeDialog
         open={proBlockUpgradeFeature !== null}

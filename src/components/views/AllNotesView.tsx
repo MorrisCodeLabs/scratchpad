@@ -6,9 +6,11 @@ import { docToText } from "@/lib/text-stats";
 import { NewNoteMenu } from "@/components/NewNoteMenu";
 import { NoteCard } from "@/components/views/NoteCard";
 import { AdvancedSearchDialog, EMPTY_FILTERS, type AdvancedFilters } from "@/components/views/AdvancedSearchDialog";
+import { BulkMetadataPopover } from "@/components/views/BulkMetadataPopover";
 import { useIsPro } from "@/lib/use-plan";
 import { UpgradeDialog } from "@/components/pro/UpgradeDialog";
 import { ProBadge } from "@/components/pro/ProBadge";
+import type { NoteStatus } from "@/lib/types";
 import { cn } from "@/lib/cn";
 
 export function AllNotesView() {
@@ -76,6 +78,24 @@ export function AllNotesView() {
     setSelected(new Set());
   };
 
+  const bulkSetStatus = async (status: NoteStatus) => {
+    await Promise.all([...selected].map((id) => notes.updateNote(id, { status })));
+  };
+
+  const bulkSetColor = async (color: string | null) => {
+    await Promise.all([...selected].map((id) => notes.updateNote(id, { color })));
+  };
+
+  const bulkAddTag = async (tag: string) => {
+    await Promise.all(
+      [...selected].map((id) => {
+        const note = notes.notes.find((n) => n.id === id);
+        const tags = note ? Array.from(new Set([...(note.tags ?? []), tag])) : [tag];
+        return notes.updateNote(id, { tags });
+      }),
+    );
+  };
+
   return (
     <div className="mx-auto h-full max-w-6xl overflow-y-auto px-10 py-10">
       <div className="mb-8 flex items-center justify-between">
@@ -105,6 +125,12 @@ export function AllNotesView() {
       {selectMode && selected.size > 0 && (
         <div className="mb-4 flex items-center gap-4 rounded-lg bg-accent-soft px-4 py-2.5 text-[13px] text-accent-ink">
           <span className="font-medium">{selected.size} selected</span>
+          <BulkMetadataPopover
+            count={selected.size}
+            onSetStatus={bulkSetStatus}
+            onSetColor={bulkSetColor}
+            onAddTag={bulkAddTag}
+          />
           <button type="button" onClick={bulkArchive} className="flex items-center gap-1.5 hover:underline">
             <Archive size={13} /> Archive
           </button>
