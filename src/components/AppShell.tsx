@@ -11,10 +11,12 @@ import { Toaster } from "@/components/Toaster";
 import { ShortcutsDialog } from "@/components/ShortcutsDialog";
 import { WebClipDialog } from "@/components/WebClipDialog";
 import { BetaBanner } from "@/components/BetaBanner";
+import { MaintenanceOwnerBanner } from "@/components/MaintenanceOwnerBanner";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { useWorkspaceContext } from "@/lib/workspace-context";
 import { useTheme } from "@/lib/use-theme";
 import { useShortcutsDialog } from "@/lib/use-shortcuts-dialog";
+import { MAINTENANCE_MODE } from "@/lib/maintenance-mode";
 
 export function AppShell() {
   const { route, focusMode } = useWorkspaceContext();
@@ -41,6 +43,11 @@ export function AppShell() {
 
   return (
     <div className="flex h-dvh w-full flex-col overflow-hidden bg-bg text-ink">
+      {/* AppShell only ever renders for the owner when maintenance mode is
+          on (Workspace.tsx already routed everyone else to
+          MaintenanceScreen), so this check alone is enough — no isOwner
+          lookup needed here. */}
+      {!focusMode && MAINTENANCE_MODE && <MaintenanceOwnerBanner />}
       {!focusMode && <BetaBanner />}
       <div className="flex min-h-0 flex-1">
         {!focusMode && <Sidebar />}
