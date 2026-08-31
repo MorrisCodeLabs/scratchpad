@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Check, Sparkles, Users, Clock, Crown } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Check, Sparkles, Users, Clock, Crown, PartyPopper, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
@@ -62,6 +62,18 @@ export function BillingSettings() {
   const isOwner = useIsOwnerAccount();
   const { workspace } = useWorkspaceContext();
   const [loadingPlan, setLoadingPlan] = useState<WorkspacePlan | "portal" | null>(null);
+  const [checkoutResult, setCheckoutResult] = useState<"success" | "canceled" | null>(null);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const checkout = params.get("checkout");
+    if (checkout === "success" || checkout === "canceled") {
+      setCheckoutResult(checkout);
+      params.delete("checkout");
+      const query = params.toString();
+      window.history.replaceState({}, "", window.location.pathname + (query ? `?${query}` : ""));
+    }
+  }, []);
 
   const upgrade = async (target: "pro" | "team") => {
     setLoadingPlan(target);
@@ -92,6 +104,26 @@ export function BillingSettings() {
         <h2 className="text-xl font-bold tracking-tight text-ink">Choose how you use Scratchpad</h2>
         <p className="mx-auto mt-1.5 max-w-md text-[13px] text-faint">Upgrade or manage your workspace's subscription below.</p>
       </div>
+
+      {checkoutResult === "success" && (
+        <div className="mb-5 flex items-center justify-center gap-2 rounded-md bg-good-soft px-3 py-2 text-xs font-medium text-good">
+          <PartyPopper size={14} />
+          You're all set — your plan has been updated.
+        </div>
+      )}
+
+      {checkoutResult === "canceled" && (
+        <div className="mb-5 flex items-center justify-center gap-2 rounded-md bg-surface-2 px-3 py-2 text-xs font-medium text-muted">
+          Checkout was canceled — your plan hasn't changed.
+        </div>
+      )}
+
+      {workspace.subscription_status === "past_due" && (
+        <div className="mb-5 flex items-center justify-center gap-2 rounded-md bg-danger-soft px-3 py-2 text-xs font-medium text-danger">
+          <AlertTriangle size={14} />
+          Your last payment failed. Update your payment method to keep your plan active.
+        </div>
+      )}
 
       {isOwner && (
         <div className="mb-5 flex items-center justify-center gap-2 rounded-md bg-accent-soft px-3 py-2 text-xs font-medium text-accent-ink">
