@@ -1,10 +1,15 @@
+import { useState } from "react";
 import { Check, Sparkles, Users, Clock, Crown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { FREE_PLAN_NOTE_LIMIT } from "@/lib/data/use-notes";
 import { useEffectivePlan, useIsOwnerAccount } from "@/lib/use-plan";
+import { useWorkspaceContext } from "@/lib/workspace-context";
+import { supabase } from "@/lib/supabase";
+import { notifyError } from "@/lib/toast";
 import { cn } from "@/lib/cn";
+import type { WorkspacePlan } from "@/lib/types";
 
 // Only features that actually exist in the app today are listed here — no
 // placeholders for work that hasn't shipped. Pro's card starts with
@@ -37,18 +42,55 @@ const PRO_FEATURES = [
 
 const TEAM_FEATURES: string[] = [];
 
+async function authedFetch(path: string, body: Record<string, unknown>) {
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+  if (!session) throw new Error("You need to be signed in.");
+  const res = await fetch(path, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${session.access_token}` },
+    body: JSON.stringify(body),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || "Something went wrong.");
+  return data as { url: string };
+}
+
 export function BillingSettings() {
   const plan = useEffectivePlan();
   const isOwner = useIsOwnerAccount();
+  const { workspace } = useWorkspaceContext();
+  const [loadingPlan, setLoadingPlan] = useState<WorkspacePlan | "portal" | null>(null);
+
+  const upgrade = async (target: "pro" | "team") => {
+    setLoadingPlan(target);
+    try {
+      const { url } = await authedFetch("/api/create-checkout-session", { workspaceId: workspace.id, plan: target });
+      window.location.href = url;
+    } catch (err) {
+      notifyError(err instanceof Error ? err.message : "Couldn't start checkout.");
+      setLoadingPlan(null);
+    }
+  };
+
+  const manageBilling = async () => {
+    setLoadingPlan("portal");
+    try {
+      const { url } = await authedFetch("/api/create-portal-session", { workspaceId: workspace.id });
+      window.location.href = url;
+    } catch (err) {
+      notifyError(err instanceof Error ? err.message : "Couldn't open billing portal.");
+      setLoadingPlan(null);
+    }
+  };
 
   return (
     <div>
       <div className="mb-6 text-center">
         <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-accent">Plans</p>
         <h2 className="text-xl font-bold tracking-tight text-ink">Choose how you use Scratchpad</h2>
-        <p className="mx-auto mt-1.5 max-w-md text-[13px] text-faint">
-          Billing isn't connected yet — plan selection here will hook up to Stripe soon.
-        </p>
+        <p className="mx-auto mt-1.5 max-w-md text-[13px] text-faint">Upgrade or manage your workspace's subscription below.</p>
       </div>
 
       {isOwner && (
@@ -68,6 +110,9 @@ export function BillingSettings() {
           icon={Sparkles}
           popular
           active={plan === "pro"}
+          disabled={isOwner}
+          loading={loadingPlan === "pro"}
+          onSelect={() => upgrade("pro")}
         />
         <PlanCard
           title="Team"
@@ -76,11 +121,22 @@ export function BillingSettings() {
           precedingLabel="Everything in Pro."
           icon={Users}
           active={plan === "team"}
+          disabled={isOwner}
+          loading={loadingPlan === "team"}
+          onSelect={() => upgrade("team")}
         />
       </div>
 
+      {plan !== "free" && !isOwner && (
+        <div className="mt-5 flex justify-center">
+          <Button variant="outline" size="sm" onClick={manageBilling} disabled={loadingPlan === "portal"}>
+            {loadingPlan === "portal" ? "Opening…" : "Manage billing"}
+          </Button>
+        </div>
+      )}
+
       <p className="mt-5 flex items-center justify-center gap-1.5 text-center text-[11px] text-faint">
-        <Clock size={12} /> Payment isn't wired up yet — check back once Stripe is connected.
+        <Clock size={12} /> Billed monthly via Stripe. Cancel any time from "Manage billing."
       </p>
     </div>
   );
@@ -94,6 +150,9 @@ function PlanCard({
   icon: Icon,
   popular,
   active,
+  disabled,
+  loading,
+  onSelect,
 }: {
   title: string;
   tagline: string;
@@ -102,6 +161,9 @@ function PlanCard({
   icon?: typeof Sparkles;
   popular?: boolean;
   active?: boolean;
+  disabled?: boolean;
+  loading?: boolean;
+  onSelect?: () => void;
 }) {
   return (
     <Card className={cn("relative flex flex-col", active && "border-accent shadow-[0_0_0_1px_var(--sp-accent)]")}>
@@ -143,10 +205,12 @@ function PlanCard({
           <Button variant="secondary" className="w-full" disabled>
             Current plan
           </Button>
-        ) : (
-          <Button variant={popular ? "default" : "outline"} className="w-full" disabled>
-            Coming soon
+        ) : onSelect ? (
+          <Button variant={popular ? "default" : "outline"} className="w-full" onClick={onSelect} disabled={disabled || loading}>
+            {loading ? "Redirecting…" : `Upgrade to ${title}`}
           </Button>
+        ) : (
+          <p className="w-full text-center text-[11px] text-faint">Downgrade any time from "Manage billing" below.</p>
         )}
       </CardFooter>
     </Card>
