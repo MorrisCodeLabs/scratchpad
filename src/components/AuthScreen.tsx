@@ -33,7 +33,7 @@ export function AuthScreen() {
   };
 
   return (
-    <div className="flex h-screen w-screen items-center justify-center bg-bg px-4">
+    <div className="flex h-dvh w-full items-center justify-center bg-bg px-4">
       <div className="w-full max-w-[380px] rounded-2xl border border-line bg-surface p-8 shadow-[0_1px_2px_rgba(0,0,0,0.04),0_16px_40px_rgba(0,0,0,0.06)]">
         <div className="mb-8 flex items-center gap-2.5">
           <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-accent-soft text-lg">📝</span>

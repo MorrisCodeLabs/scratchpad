@@ -117,7 +117,7 @@ export function AllNotesView() {
   };
 
   return (
-    <div className="mx-auto h-full max-w-6xl overflow-y-auto px-10 py-10">
+    <div className="mx-auto h-full max-w-6xl overflow-y-auto px-4 py-6 sm:px-10 sm:py-10">
       <div className="mb-8 flex items-center justify-between">
         <h1 className="text-[1.7rem] font-bold text-ink">All notes</h1>
         <div className="flex items-center gap-2">

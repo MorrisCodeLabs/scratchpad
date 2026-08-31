@@ -277,15 +277,15 @@ export function NoteEditor({ note }: { note: Note }) {
 
   return (
     <div className="flex h-full flex-col">
-      <div className="flex items-center justify-between gap-3 border-b border-line px-8 py-3">
+      <div className="flex items-center justify-between gap-3 border-b border-line px-4 py-3 sm:px-8">
         <input
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           placeholder="Untitled"
           readOnly={isLocked}
-          className="min-w-0 flex-1 truncate border-none bg-transparent text-[17px] font-semibold text-ink outline-none placeholder:text-faint"
+          className="min-w-[64px] flex-1 truncate border-none bg-transparent text-[17px] font-semibold text-ink outline-none placeholder:text-faint"
         />
-        <div className="flex items-center gap-1">
+        <div className="flex shrink-0 items-center gap-1 overflow-x-auto">
           {!focusMode && (
             <>
               <NoteTagsPopover tags={tags} onChange={updateTags} />
@@ -327,7 +327,7 @@ export function NoteEditor({ note }: { note: Note }) {
       )}
 
       {isLocked && (
-        <div className="flex items-center gap-2 bg-warn-soft px-8 py-2 text-[13px] font-medium text-warn">
+        <div className="flex items-center gap-2 bg-warn-soft px-4 py-2 text-[13px] font-medium text-warn sm:px-8">
           <Lock size={12} /> This note is locked — unlock it from the menu to edit.
         </div>
       )}
@@ -336,7 +336,7 @@ export function NoteEditor({ note }: { note: Note }) {
         <button
           type="button"
           onClick={() => navigate({ name: "note", id: duplicateTitleNote.id })}
-          className="flex items-center gap-1.5 bg-warn-soft px-8 py-2 text-left text-[13px] font-medium text-warn hover:underline"
+          className="flex items-center gap-1.5 bg-warn-soft px-4 py-2 text-left text-[13px] font-medium text-warn hover:underline sm:px-8"
         >
           <AlertTriangle size={12} />
           Another note is already titled “{duplicateTitleNote.title}” — open it?
@@ -347,12 +347,12 @@ export function NoteEditor({ note }: { note: Note }) {
         {editor && !isLocked && <SelectionToolbar editor={editor} />}
 
         <div className="min-h-0 flex-1 overflow-y-auto">
-          <div ref={contentRef} className="sp-editor mx-auto max-w-[720px] px-8 py-8">
+          <div ref={contentRef} className="sp-editor mx-auto max-w-[720px] px-4 py-6 sm:px-8 sm:py-8">
             <EditorContent editor={editor} />
           </div>
         </div>
 
-        <div className="flex items-center gap-4 border-t border-line bg-surface px-8 py-2 text-xs text-faint">
+        <div className="flex items-center gap-3 overflow-x-auto whitespace-nowrap border-t border-line bg-surface px-4 py-2 text-xs text-faint pb-[max(0.5rem,env(safe-area-inset-bottom))] sm:gap-4 sm:px-8">
           <span className="tabular-nums">{stats.wordCount} words</span>
           <span className="tabular-nums">{stats.charCount} characters</span>
           <span className="tabular-nums">{stats.readingTimeMinutes} min read</span>

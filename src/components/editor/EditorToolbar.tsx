@@ -102,7 +102,7 @@ function currentHeadingValue(editor: Editor) {
 
 export function EditorToolbar({ editor }: { editor: Editor }) {
   return (
-    <div className="flex items-center gap-0.5 overflow-x-auto border-b border-line bg-surface px-8 py-2">
+    <div className="flex items-center gap-0.5 overflow-x-auto border-b border-line bg-surface px-4 py-2 sm:px-8">
       <ToolbarButton label="Undo" disabled={!editor.can().undo()} onClick={() => editor.chain().focus().undo().run()}>
         <Undo2 size={15} />
       </ToolbarButton>

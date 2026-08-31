@@ -84,7 +84,7 @@ const ENTRIES: ChangelogEntry[] = [
 
 export function ChangelogView() {
   return (
-    <div className="mx-auto h-full max-w-2xl overflow-y-auto px-10 py-10">
+    <div className="mx-auto h-full max-w-2xl overflow-y-auto px-4 py-6 sm:px-10 sm:py-10">
       <h1 className="mb-1 text-[1.7rem] font-bold tracking-tight text-ink">Changelog</h1>
       <p className="mb-10 text-sm text-faint">New features, improvements, and fixes as they ship.</p>
 

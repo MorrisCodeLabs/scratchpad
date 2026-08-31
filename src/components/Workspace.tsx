@@ -6,7 +6,7 @@ import { AuthScreen } from "@/components/AuthScreen";
 import { AppShell } from "@/components/AppShell";
 
 function FullScreenMessage({ children }: { children: React.ReactNode }) {
-  return <div className="flex h-screen w-screen items-center justify-center bg-bg text-sm text-faint">{children}</div>;
+  return <div className="flex h-dvh w-full items-center justify-center bg-bg text-sm text-faint">{children}</div>;
 }
 
 export default function Workspace() {

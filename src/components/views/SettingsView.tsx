@@ -28,7 +28,7 @@ export function SettingsView() {
   const section = route.name === "settings" ? (route.section ?? "account") : "account";
 
   return (
-    <div className={cn("mx-auto h-full overflow-y-auto px-10 py-10", section === "billing" ? "max-w-5xl" : "max-w-3xl")}>
+    <div className={cn("mx-auto h-full overflow-y-auto px-4 py-6 sm:px-10 sm:py-10", section === "billing" ? "max-w-5xl" : "max-w-3xl")}>
       <h1 className="mb-8 text-[1.7rem] font-bold tracking-tight text-ink">Settings</h1>
       <Tabs
         value={section}

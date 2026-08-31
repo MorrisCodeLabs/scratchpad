@@ -5,7 +5,7 @@ export function TrashView() {
   const { trashedNotes: trashed } = useWorkspaceContext();
 
   return (
-    <div className="mx-auto h-full max-w-4xl overflow-y-auto px-10 py-10">
+    <div className="mx-auto h-full max-w-4xl overflow-y-auto px-4 py-6 sm:px-10 sm:py-10">
       <h1 className="mb-1.5 text-[1.7rem] font-bold tracking-tight text-ink">Trash</h1>
       <p className="mb-8 text-[13px] text-muted">Deleted notes stay here until you remove them permanently.</p>
 

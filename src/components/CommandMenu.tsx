@@ -60,7 +60,7 @@ export function CommandMenu() {
       open={commandMenuOpen}
       onOpenChange={setCommandMenuOpen}
       label="Command menu"
-      className="fixed left-1/2 top-[15%] z-50 w-full max-w-xl -translate-x-1/2 overflow-hidden rounded-2xl border border-line bg-surface shadow-[0_1px_2px_rgba(0,0,0,0.04),0_24px_48px_rgba(0,0,0,0.16)]"
+      className="fixed left-1/2 top-[15%] z-50 w-[calc(100%-2rem)] max-w-xl -translate-x-1/2 overflow-hidden rounded-2xl border border-line bg-surface shadow-[0_1px_2px_rgba(0,0,0,0.04),0_24px_48px_rgba(0,0,0,0.16)]"
     >
       <div className="flex items-center border-b border-line px-4">
         <Command.Input

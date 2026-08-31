@@ -21,6 +21,7 @@ import type { Route } from "@/lib/use-router";
 import { useSession } from "@/lib/data/use-session";
 import { useEffectivePlan, useIsOwnerAccount } from "@/lib/use-plan";
 import { useTheme } from "@/lib/use-theme";
+import { useIsMobile } from "@/lib/use-is-mobile";
 import { supabase } from "@/lib/supabase";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { FolderNode } from "@/components/sidebar/FolderNode";
@@ -39,10 +40,21 @@ export function Sidebar() {
   const [favoritesOpen, setFavoritesOpen] = useState(true);
   const [foldersOpen, setFoldersOpen] = useState(true);
   const [collapsed, setCollapsed] = useState(() => typeof window !== "undefined" && localStorage.getItem(COLLAPSED_KEY) === "1");
+  const isMobile = useIsMobile();
+  // On phones the sidebar is never "in flow" — it's either a compact rail
+  // or a full-width overlay drawer, independent of the desktop collapse
+  // preference persisted below (which would otherwise leave a mobile
+  // visitor stuck with a 288px-wide sidebar eating most of the screen).
+  const [mobileExpanded, setMobileExpanded] = useState(false);
+  const expanded = isMobile ? mobileExpanded : !collapsed;
 
   useEffect(() => {
     localStorage.setItem(COLLAPSED_KEY, collapsed ? "1" : "0");
   }, [collapsed]);
+
+  useEffect(() => {
+    if (isMobile) setMobileExpanded(false);
+  }, [route, isMobile]);
 
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 4 } }));
 
@@ -83,10 +95,10 @@ export function Sidebar() {
     }
   };
 
-  if (collapsed) {
+  if (!expanded) {
     return (
-      <aside className="flex h-full w-14 shrink-0 flex-col items-center gap-1 border-r border-line bg-surface py-3">
-        <IconRailButton label="Expand sidebar" onClick={() => setCollapsed(false)}>
+      <aside className="flex h-full w-14 shrink-0 flex-col items-center gap-1 border-r border-line bg-surface py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
+        <IconRailButton label="Expand sidebar" onClick={() => (isMobile ? setMobileExpanded(true) : setCollapsed(false))}>
           <PanelLeftOpen size={16} />
         </IconRailButton>
         <div className="my-1 h-px w-6 bg-line" />
@@ -116,15 +128,29 @@ export function Sidebar() {
     );
   }
 
+  const closeSidebar = () => (isMobile ? setMobileExpanded(false) : setCollapsed(true));
+
   return (
     <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
-      <aside className="flex h-full w-72 shrink-0 flex-col border-r border-line bg-surface">
+      {isMobile && (
+        <div
+          className="fixed inset-0 z-40 bg-black/40"
+          onClick={() => setMobileExpanded(false)}
+          aria-hidden="true"
+        />
+      )}
+      <aside
+        className={cn(
+          "flex h-full w-72 shrink-0 flex-col border-r border-line bg-surface",
+          isMobile && "fixed inset-y-0 left-0 z-50 pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] shadow-2xl",
+        )}
+      >
         <div className="flex items-center justify-between gap-1 px-4 pb-3 pt-4">
           <WorkspaceMenu />
           <button
             type="button"
             title="Collapse sidebar"
-            onClick={() => setCollapsed(true)}
+            onClick={closeSidebar}
             className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-faint transition-colors hover:bg-surface-2 hover:text-ink"
           >
             <PanelLeftClose size={15} />
@@ -250,7 +276,7 @@ export function Sidebar() {
           <button
             type="button"
             title="Collapse sidebar"
-            onClick={() => setCollapsed(true)}
+            onClick={closeSidebar}
             className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-faint transition-colors hover:bg-surface-2 hover:text-ink"
           >
             <PanelLeftClose size={14} />

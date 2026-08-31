@@ -66,15 +66,15 @@ export function SharedNoteView({
   });
 
   return (
-    <div className="min-h-screen bg-bg text-ink">
-      <div className="mx-auto flex max-w-[720px] flex-col gap-1 px-8 pb-4 pt-10">
+    <div className="min-h-dvh bg-bg text-ink">
+      <div className="mx-auto flex max-w-[720px] flex-col gap-1 px-4 pb-4 pt-8 sm:px-8 sm:pt-10">
         <div className="flex items-center gap-1.5 text-xs font-medium text-faint">
           <Globe size={12} /> Shared from Scratchpad
         </div>
         <h1 className="text-[2.25rem] font-bold leading-tight tracking-tight text-ink">{title || "Untitled"}</h1>
         <p className="text-xs text-faint">Last updated {new Date(updatedAt).toLocaleString()}</p>
       </div>
-      <div className="sp-editor mx-auto max-w-[720px] px-8 pb-16">
+      <div className="sp-editor mx-auto max-w-[720px] px-4 pb-16 sm:px-8">
         <EditorContent editor={editor} />
       </div>
     </div>
