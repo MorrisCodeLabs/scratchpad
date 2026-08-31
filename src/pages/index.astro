@@ -7,19 +7,9 @@ export const prerender = true;
 import Base from "@/layouts/Base.astro";
 import { LandingRedirect } from "@/components/LandingRedirect";
 import { DotPattern } from "@/components/magicui/dot-pattern";
+import { TextReveal } from "@/components/magicui/text-reveal";
 import { ResizableNavbar, type NavItem } from "@/components/aceternity/resizable-navbar";
-import {
-  Blocks,
-  FolderTree,
-  Search,
-  Share2,
-  History,
-  ScanSearch,
-  Check,
-  Pin,
-  ListChecks,
-  Quote,
-} from "lucide-react";
+import { Blocks, FolderTree, Search, Share2, History, ScanSearch, Check } from "lucide-react";
 
 const FEATURES = [
   {
@@ -123,14 +113,16 @@ const PLANS = [
     <!-- ---------------------------------------------------------------- -->
     <!-- Hero -->
     <!-- ---------------------------------------------------------------- -->
-    <section class="mx-auto flex max-w-3xl flex-col items-center px-6 pb-20 pt-28 text-center sm:pt-36">
-      <span class="mb-5 inline-flex items-center gap-1.5 rounded-full bg-warn-soft px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-warn">
+    <section class="mx-auto flex max-w-3xl flex-col items-center px-6 pb-4 pt-28 text-center sm:pt-36">
+      <span class="inline-flex items-center gap-1.5 rounded-full bg-warn-soft px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-warn">
         Now in beta
       </span>
-      <h1 class="text-balance text-[2.5rem] font-bold leading-[1.1] tracking-tight text-ink sm:text-[3.25rem]">
-        A fast, block-based<br />workspace for your notes
-      </h1>
-      <p class="mt-5 max-w-xl text-balance text-[15px] leading-relaxed text-muted sm:text-base">
+    </section>
+
+    <TextReveal text="A fast, block-based workspace for your notes" client:load />
+
+    <section class="mx-auto flex max-w-3xl flex-col items-center px-6 pb-20 text-center">
+      <p class="max-w-xl text-balance text-[15px] leading-relaxed text-muted sm:text-base">
         Folders, full-text search, a real editor, and a command menu that gets you anywhere in seconds — Scratchpad
         is the notes app for people who write a lot and don't want to fight their tools.
       </p>
@@ -147,40 +139,6 @@ const PLANS = [
         >
           See what's inside
         </a>
-      </div>
-
-      <!-- Stylized editor mockup -->
-      <div class="mt-16 w-full overflow-hidden rounded-2xl border border-line bg-surface text-left shadow-[0_1px_2px_rgba(0,0,0,0.04),0_32px_64px_-24px_rgba(0,0,0,0.18)]">
-        <div class="flex items-center gap-1.5 border-b border-line px-4 py-3">
-          <span class="h-2.5 w-2.5 rounded-full bg-danger/60"></span>
-          <span class="h-2.5 w-2.5 rounded-full bg-warn/60"></span>
-          <span class="h-2.5 w-2.5 rounded-full bg-good/60"></span>
-        </div>
-        <div class="flex">
-          <div class="hidden w-48 shrink-0 flex-col gap-1 border-r border-line p-4 sm:flex">
-            <div class="mb-2 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-faint">
-              <Pin size={11} /> Pinned
-            </div>
-            <div class="rounded-md bg-accent-soft px-2.5 py-1.5 text-[12.5px] font-medium text-accent-ink">Q3 Roadmap</div>
-            <div class="rounded-md px-2.5 py-1.5 text-[12.5px] text-muted">Reading list</div>
-            <div class="rounded-md px-2.5 py-1.5 text-[12.5px] text-muted">Meeting notes</div>
-          </div>
-          <div class="flex-1 p-6 sm:p-8">
-            <h2 class="mb-3 text-lg font-bold text-ink">Q3 Roadmap</h2>
-            <div class="mb-2 flex items-center gap-2 text-[13px] text-ink">
-              <ListChecks size={14} className="shrink-0 text-good" />
-              <span>Ship the new command menu</span>
-            </div>
-            <div class="mb-4 flex items-center gap-2 text-[13px] text-muted">
-              <ListChecks size={14} className="shrink-0 text-faint" />
-              <span>Write the launch notes</span>
-            </div>
-            <div class="rounded-lg bg-surface-2 p-3 text-[12.5px] italic text-muted">
-              <Quote size={12} className="mb-1 text-faint" />
-              "Ship something small every week." — team motto
-            </div>
-          </div>
-        </div>
       </div>
     </section>
 
