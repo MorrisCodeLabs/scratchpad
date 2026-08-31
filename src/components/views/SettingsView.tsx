@@ -15,13 +15,14 @@ import { supabase } from "@/lib/supabase";
 import { cn } from "@/lib/cn";
 import { useShortcutsDialog } from "@/lib/use-shortcuts-dialog";
 import { FREE_PLAN_NOTE_LIMIT } from "@/lib/data/use-notes";
+import { BillingSettings } from "@/components/views/BillingSettings";
 
 export function SettingsView() {
   const { route, navigate } = useWorkspaceContext();
   const section = route.name === "settings" ? (route.section ?? "account") : "account";
 
   return (
-    <div className="mx-auto h-full max-w-3xl overflow-y-auto px-10 py-10">
+    <div className={cn("mx-auto h-full overflow-y-auto px-10 py-10", section === "billing" ? "max-w-5xl" : "max-w-3xl")}>
       <h1 className="mb-8 text-[1.7rem] font-bold tracking-tight text-ink">Settings</h1>
       <Tabs
         value={section}
@@ -33,6 +34,7 @@ export function SettingsView() {
           <TabsTrigger value="appearance">Appearance</TabsTrigger>
           <TabsTrigger value="editor">Editor</TabsTrigger>
           <TabsTrigger value="workspace">Workspace</TabsTrigger>
+          <TabsTrigger value="billing">Billing</TabsTrigger>
         </TabsList>
 
         <TabsContent value="account">
@@ -47,6 +49,17 @@ export function SettingsView() {
         <TabsContent value="workspace" className="flex flex-col gap-5">
           <WorkspaceSettings />
           <UsageCard />
+        </TabsContent>
+        <TabsContent value="billing">
+          <Card>
+            <CardHeader>
+              <CardTitle>Billing</CardTitle>
+              <CardDescription>Compare plans for this workspace.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <BillingSettings />
+            </CardContent>
+          </Card>
         </TabsContent>
       </Tabs>
     </div>
