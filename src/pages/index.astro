@@ -1,0 +1,268 @@
+---
+// Static — no per-request data needed. The rest of the site runs in
+// Astro's `server` mode (see astro.config.mjs) for the bookmarkable app
+// routes under /app, but this marketing page can be built once and served
+// from the edge/CDN like any static page.
+export const prerender = true;
+import Base from "@/layouts/Base.astro";
+import { LandingRedirect } from "@/components/LandingRedirect";
+import { DotPattern } from "@/components/magicui/dot-pattern";
+import { ResizableNavbar, type NavItem } from "@/components/aceternity/resizable-navbar";
+import {
+  Blocks,
+  FolderTree,
+  Search,
+  Share2,
+  History,
+  ScanSearch,
+  Check,
+  Pin,
+  ListChecks,
+  Quote,
+} from "lucide-react";
+
+const FEATURES = [
+  {
+    icon: Blocks,
+    title: "A real block editor",
+    body: "Headings, lists, tables, callouts, math, footnotes, code — write the way you think, not around a plain textbox.",
+  },
+  {
+    icon: FolderTree,
+    title: "Folders that nest",
+    body: "Organize notes into folders inside folders, drag-and-drop to rearrange, pin and favorite the ones you're using right now.",
+  },
+  {
+    icon: Search,
+    title: "Search that finds it",
+    body: "A command menu (⌘K) for jumping anywhere fast, plus full-text search across every note in your workspace.",
+  },
+  {
+    icon: Share2,
+    title: "Share when you need to",
+    body: "Publish a read-only link to any note, with an optional burn-after-read mode for anything that shouldn't stick around.",
+  },
+  {
+    icon: History,
+    title: "Version history",
+    body: "Every save is recoverable — restore an earlier version of a note in one click if you ever need to undo more than Ctrl+Z.",
+  },
+  {
+    icon: ScanSearch,
+    title: "OCR + semantic search",
+    body: "Search inside PDFs and images, and find notes by what they mean, not just what they literally say.",
+  },
+];
+
+const NAV_ITEMS: NavItem[] = [
+  { label: "Features", href: "#features" },
+  { label: "Pricing", href: "#pricing" },
+];
+
+const PLANS = [
+  {
+    name: "Free",
+    tagline: "For getting your notes organized.",
+    price: "Free",
+    features: ["Full block editor", "Folders, tags, search & sort", "Basic sharing", "Markdown export"],
+  },
+  {
+    name: "Pro",
+    tagline: "For power users who live in their notes.",
+    price: "Upgrade any time",
+    popular: true,
+    features: ["Version history", "Offline → cloud sync", "OCR + semantic search", "Advanced export (PDF, Word, ePub)"],
+  },
+  {
+    name: "Team",
+    tagline: "For groups sharing a workspace.",
+    price: "Upgrade any time",
+    features: ["Everything in Pro", "Seat-based billing", "Shared workspace (coming soon)"],
+  },
+];
+---
+
+<style>
+  /* The marketing page deliberately commits to one dark look (#111111)
+     regardless of visitor OS theme, unlike the app itself which follows
+     --sp-* tokens that flip with light/dark mode. Overriding those same
+     token names here — scoped to this page's own document, so /app is
+     completely unaffected — means every existing bg-bg/text-ink/etc.
+     class in the template below keeps working without being rewritten. */
+  :root {
+    --sp-bg: #111111;
+    --sp-surface: #18181b;
+    --sp-surface-2: #202023;
+    --sp-ink: #f5f5f5;
+    --sp-muted: #a1a1aa;
+    --sp-faint: #71717a;
+    --sp-accent: #7ea6f2;
+    --sp-accent-ink: #a8c4f7;
+    --sp-accent-soft: #233150;
+    --sp-line: rgba(255, 255, 255, 0.1);
+    --sp-danger: #e5847c;
+    --sp-danger-soft: #3a1e1a;
+    --sp-warn: #e0a352;
+    --sp-warn-soft: #382a15;
+    --sp-good: #5cb583;
+    --sp-good-soft: #163224;
+  }
+</style>
+
+<Base>
+  <LandingRedirect client:load />
+
+  <div class="relative min-h-dvh overflow-hidden bg-bg text-ink">
+    <DotPattern className="absolute inset-x-0 top-0 h-[640px] fill-white/[0.14] [mask-image:radial-gradient(640px_circle_at_center,white,transparent)]" />
+
+    <!-- ---------------------------------------------------------------- -->
+    <!-- Header -->
+    <!-- ---------------------------------------------------------------- -->
+    <ResizableNavbar navItems={NAV_ITEMS} client:load />
+
+    <!-- ---------------------------------------------------------------- -->
+    <!-- Hero -->
+    <!-- ---------------------------------------------------------------- -->
+    <section class="mx-auto flex max-w-3xl flex-col items-center px-6 pb-20 pt-28 text-center sm:pt-36">
+      <span class="mb-5 inline-flex items-center gap-1.5 rounded-full bg-warn-soft px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-warn">
+        Now in beta
+      </span>
+      <h1 class="text-balance text-[2.5rem] font-bold leading-[1.1] tracking-tight text-ink sm:text-[3.25rem]">
+        A fast, block-based<br />workspace for your notes
+      </h1>
+      <p class="mt-5 max-w-xl text-balance text-[15px] leading-relaxed text-muted sm:text-base">
+        Folders, full-text search, a real editor, and a command menu that gets you anywhere in seconds — Scratchpad
+        is the notes app for people who write a lot and don't want to fight their tools.
+      </p>
+      <div class="mt-8 flex flex-col gap-3 sm:flex-row">
+        <a
+          href="/app"
+          class="flex h-11 items-center justify-center rounded-lg bg-accent px-6 text-sm font-semibold text-white shadow-sm transition-opacity hover:opacity-90"
+        >
+          Get started — it's free
+        </a>
+        <a
+          href="#features"
+          class="flex h-11 items-center justify-center rounded-lg border border-line px-6 text-sm font-semibold text-ink transition-colors hover:bg-surface-2"
+        >
+          See what's inside
+        </a>
+      </div>
+
+      <!-- Stylized editor mockup -->
+      <div class="mt-16 w-full overflow-hidden rounded-2xl border border-line bg-surface text-left shadow-[0_1px_2px_rgba(0,0,0,0.04),0_32px_64px_-24px_rgba(0,0,0,0.18)]">
+        <div class="flex items-center gap-1.5 border-b border-line px-4 py-3">
+          <span class="h-2.5 w-2.5 rounded-full bg-danger/60"></span>
+          <span class="h-2.5 w-2.5 rounded-full bg-warn/60"></span>
+          <span class="h-2.5 w-2.5 rounded-full bg-good/60"></span>
+        </div>
+        <div class="flex">
+          <div class="hidden w-48 shrink-0 flex-col gap-1 border-r border-line p-4 sm:flex">
+            <div class="mb-2 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-faint">
+              <Pin size={11} /> Pinned
+            </div>
+            <div class="rounded-md bg-accent-soft px-2.5 py-1.5 text-[12.5px] font-medium text-accent-ink">Q3 Roadmap</div>
+            <div class="rounded-md px-2.5 py-1.5 text-[12.5px] text-muted">Reading list</div>
+            <div class="rounded-md px-2.5 py-1.5 text-[12.5px] text-muted">Meeting notes</div>
+          </div>
+          <div class="flex-1 p-6 sm:p-8">
+            <h2 class="mb-3 text-lg font-bold text-ink">Q3 Roadmap</h2>
+            <div class="mb-2 flex items-center gap-2 text-[13px] text-ink">
+              <ListChecks size={14} className="shrink-0 text-good" />
+              <span>Ship the new command menu</span>
+            </div>
+            <div class="mb-4 flex items-center gap-2 text-[13px] text-muted">
+              <ListChecks size={14} className="shrink-0 text-faint" />
+              <span>Write the launch notes</span>
+            </div>
+            <div class="rounded-lg bg-surface-2 p-3 text-[12.5px] italic text-muted">
+              <Quote size={12} className="mb-1 text-faint" />
+              "Ship something small every week." — team motto
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ---------------------------------------------------------------- -->
+    <!-- Features -->
+    <!-- ---------------------------------------------------------------- -->
+    <section id="features" class="mx-auto max-w-6xl px-6 py-20">
+      <div class="mb-12 text-center">
+        <p class="mb-1.5 text-xs font-semibold uppercase tracking-wide text-accent">Features</p>
+        <h2 class="text-2xl font-bold tracking-tight text-ink sm:text-3xl">Everything a notes app should do</h2>
+      </div>
+      <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        {
+          FEATURES.map(({ icon: Icon, title, body }) => (
+            <div class="rounded-xl border border-line bg-surface p-5">
+              <div class="mb-3 flex h-9 w-9 items-center justify-center rounded-lg bg-accent-soft text-accent">
+                <Icon size={17} />
+              </div>
+              <h3 class="mb-1.5 text-[14px] font-semibold text-ink">{title}</h3>
+              <p class="text-[13px] leading-relaxed text-muted">{body}</p>
+            </div>
+          ))
+        }
+      </div>
+    </section>
+
+    <!-- ---------------------------------------------------------------- -->
+    <!-- Pricing -->
+    <!-- ---------------------------------------------------------------- -->
+    <section id="pricing" class="mx-auto max-w-5xl px-6 py-20">
+      <div class="mb-12 text-center">
+        <p class="mb-1.5 text-xs font-semibold uppercase tracking-wide text-accent">Pricing</p>
+        <h2 class="text-2xl font-bold tracking-tight text-ink sm:text-3xl">Start free, upgrade when you need to</h2>
+      </div>
+      <div class="grid gap-5 sm:grid-cols-3">
+        {
+          PLANS.map((plan) => (
+            <div
+              class:list={[
+                "relative flex flex-col rounded-2xl border bg-surface p-6",
+                plan.popular ? "border-accent shadow-[0_0_0_1px_var(--sp-accent)]" : "border-line",
+              ]}
+            >
+              {plan.popular && (
+                <span class="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-accent px-2.5 py-0.5 text-[10.5px] font-semibold uppercase tracking-wide text-white">
+                  Most popular
+                </span>
+              )}
+              <h3 class="text-base font-bold text-ink">{plan.name}</h3>
+              <p class="mb-4 mt-1 text-[12.5px] text-faint">{plan.tagline}</p>
+              <p class="mb-5 text-sm font-semibold text-ink">{plan.price}</p>
+              <ul class="mb-6 flex flex-1 flex-col gap-2">
+                {plan.features.map((f) => (
+                  <li class="flex items-start gap-2 text-[13px] text-muted">
+                    <Check size={14} className="mt-0.5 shrink-0 text-good" />
+                    {f}
+                  </li>
+                ))}
+              </ul>
+              <a
+                href="/app"
+                class:list={[
+                  "flex h-9 items-center justify-center rounded-lg px-4 text-[13px] font-medium transition-colors",
+                  plan.popular ? "bg-accent text-white hover:opacity-90" : "border border-line text-ink hover:bg-surface-2",
+                ]}
+              >
+                Get started
+              </a>
+            </div>
+          ))
+        }
+      </div>
+    </section>
+
+    <!-- ---------------------------------------------------------------- -->
+    <!-- Footer -->
+    <!-- ---------------------------------------------------------------- -->
+    <footer class="border-t border-line px-6 py-8">
+      <div class="mx-auto flex max-w-6xl flex-col items-center justify-between gap-3 text-[12px] text-faint sm:flex-row">
+        <span>© {new Date().getFullYear()} Scratchpad. Built for people who write a lot.</span>
+        <a href="/app" class="transition-colors hover:text-ink">Sign in</a>
+      </div>
+    </footer>
+  </div>
+</Base>

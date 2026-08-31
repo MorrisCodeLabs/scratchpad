@@ -34,11 +34,15 @@ This is the **Phase 1 MVP** build: auth, a single workspace per account, note CR
    npm install
    npm run dev
    ```
-5. Open `http://localhost:4321`, sign up, and you'll land in an auto-created workspace.
+5. Open `http://localhost:4321` for the marketing page, or go straight to `http://localhost:4321/app` to sign up — you'll land in an auto-created workspace.
 
 ## Deploying
 
 This project runs in Astro's `server` output mode with the `@astrojs/vercel` adapter (notes are addressed by real, bookmarkable URLs like `/note/:id`, which a purely static build can't pre-render). Deploying to Vercel: import the repo at [vercel.com/new](https://vercel.com/new), set `PUBLIC_SUPABASE_URL` and `PUBLIC_SUPABASE_ANON_KEY` under Project Settings → Environment Variables, and deploy — Astro's Vercel preset is auto-detected, no build command overrides needed. Every push to the production branch redeploys automatically; other branches and PRs get their own preview URL. Swap the adapter in `astro.config.mjs` for `@astrojs/node`, `@astrojs/cloudflare`, or `@astrojs/netlify` if deploying elsewhere instead.
+
+**Maintenance mode**: set `PUBLIC_MAINTENANCE_MODE=true` in Vercel's Environment Variables and trigger a redeploy (Deployments → ⋯ → Redeploy, no new commit needed) to lock everyone but the app owner out — see `src/lib/maintenance-mode.ts`. It's a `PUBLIC_`-prefixed var, so it's inlined into the client bundle at build time and always needs a redeploy to take effect either way, in either direction.
+
+**Pausing the project** (Settings → General → Pause Project) stops builds and serves Vercel's own static paused-page instead of the app — that's a platform-level action, not something `PUBLIC_MAINTENANCE_MODE` controls, and there's no way to keep our own maintenance screen showing while paused. Resuming from the same spot brings it back, but the deployment that was active when you paused often can't be redeployed as-is afterward ("This deployment can not be redeployed") — push any new commit (or Deployments → ⋯ → Redeploy on the *newest* one, not the paused-era one) to get a fresh build going again.
 
 ## Project structure
 
@@ -58,7 +62,9 @@ src/
     workspace-context.tsx  Shared React context for the active workspace
     use-router.ts   Minimal history-API router (no react-router dependency)
   pages/
-    [...path].astro Single catch-all page — mounts the app shell for any route
+    index.astro     Static marketing/landing page — the "/" a signed-out visitor sees first
+    app/[...path].astro  Catch-all under /app — mounts the app shell for any app route
+    s/[token].astro Public read-only view for a shared note link
 supabase/
   migrations/  Schema, RLS policies, and the attachments storage bucket
 ```
