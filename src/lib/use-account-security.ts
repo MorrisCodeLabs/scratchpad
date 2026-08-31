@@ -30,7 +30,22 @@ export function useAccountSecurity() {
   };
 
   const enrollMfa = async () => {
-    const { data, error } = await supabase.auth.mfa.enroll({ factorType: "totp" });
+    // Supabase requires a unique friendlyName per factor. A previous
+    // enrollment that was never verified (e.g. the dialog was closed before
+    // entering the code) leaves a stale factor behind and collides with the
+    // next attempt, so clear out any unverified factors first. `data.totp`
+    // only contains verified factors, so unverified ones have to come from
+    // `data.all`.
+    const { data: existing } = await supabase.auth.mfa.listFactors();
+    const stale = existing?.all.filter((f) => f.factor_type === "totp" && f.status === "unverified") ?? [];
+    for (const factor of stale) {
+      await supabase.auth.mfa.unenroll({ factorId: factor.id });
+    }
+
+    const { data, error } = await supabase.auth.mfa.enroll({
+      factorType: "totp",
+      friendlyName: `totp-${Date.now()}`,
+    });
     return { data, error };
   };
 
