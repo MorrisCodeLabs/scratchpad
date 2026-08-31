@@ -44,11 +44,31 @@ import { ShareDialog } from "@/components/editor/ShareDialog";
 import { VersionHistoryDialog } from "@/components/editor/VersionHistoryDialog";
 import { createNoteVersion } from "@/lib/data/use-note-versions";
 import { readOfflineSave, clearOfflineSave } from "@/lib/data/offline-queue";
+import { PrintLayoutDialog } from "@/components/editor/PrintLayoutDialog";
 import { tiptapToMarkdown } from "@/lib/markdown-export";
 import { docToText } from "@/lib/text-stats";
 import { downloadTextFile } from "@/lib/download";
+import { printNoteAsPdf, type PrintLayoutOptions } from "@/lib/export/print-export";
+import { tiptapToDocx } from "@/lib/export/docx-export";
+import { buildEpub } from "@/lib/export/epub-export";
+import { exportElementAsJpg } from "@/lib/export/image-export";
 import { Lock, Maximize2, Minimize2, AlertTriangle } from "lucide-react";
 import type { NoteVersion } from "@/lib/types";
+
+function slugify(title: string) {
+  return (title || "untitled").replace(/[^a-z0-9]+/gi, "-").toLowerCase();
+}
+
+function downloadBlob(filename: string, blob: Blob) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
 
 export function NoteEditor({ note }: { note: Note }) {
   const { notes, workspace, focusMode, setFocusMode, navigate } = useWorkspaceContext();
@@ -57,7 +77,9 @@ export function NoteEditor({ note }: { note: Note }) {
   const [tags, setTags] = useState<string[]>(note.tags);
   const [shareOpen, setShareOpen] = useState(false);
   const [versionHistoryOpen, setVersionHistoryOpen] = useState(false);
+  const [printLayoutOpen, setPrintLayoutOpen] = useState(false);
   const lastSnapshotAt = useRef(0);
+  const contentRef = useRef<HTMLDivElement>(null);
 
   const editor = useEditor({
     extensions: [
@@ -224,6 +246,30 @@ export function NoteEditor({ note }: { note: Note }) {
     downloadTextFile(`${(title || "untitled").replace(/[^a-z0-9]+/gi, "-").toLowerCase()}.txt`, `${title || "Untitled"}\n\n${text}`, "text/plain");
   };
 
+  const exportPdf = (layout?: PrintLayoutOptions) => {
+    printNoteAsPdf(title || "Untitled", editor?.getHTML() ?? "", { workspaceName: workspace.name }, layout);
+  };
+
+  const exportDocx = async () => {
+    const blob = await tiptapToDocx(editor?.getJSON() ?? note.content, title || "Untitled");
+    downloadBlob(`${slugify(title)}.docx`, blob);
+  };
+
+  const exportHtml = () => {
+    const html = `<!doctype html><html><head><meta charset="utf-8"><title>${title || "Untitled"}</title></head><body>${editor?.getHTML() ?? ""}</body></html>`;
+    downloadTextFile(`${slugify(title)}.html`, html, "text/html");
+  };
+
+  const exportEpub = async () => {
+    const blob = await buildEpub(title || "Untitled", editor?.getHTML() ?? "");
+    downloadBlob(`${slugify(title)}.epub`, blob);
+  };
+
+  const exportJpg = async () => {
+    if (!contentRef.current) return;
+    await exportElementAsJpg(contentRef.current, `${slugify(title)}.jpg`);
+  };
+
   const restoreVersion = (version: NoteVersion) => {
     setTitle(version.title);
     editor?.commands.setContent(version.content as any, false);
@@ -262,6 +308,12 @@ export function NoteEditor({ note }: { note: Note }) {
             onToggleLock={toggleLock}
             onExportMarkdown={exportMarkdown}
             onExportText={exportText}
+            onExportPdf={() => exportPdf()}
+            onExportDocx={exportDocx}
+            onExportHtml={exportHtml}
+            onExportEpub={exportEpub}
+            onExportJpg={exportJpg}
+            onOpenPrintLayout={() => setPrintLayoutOpen(true)}
             onOpenShare={() => setShareOpen(true)}
             onOpenVersionHistory={() => setVersionHistoryOpen(true)}
           />
@@ -295,7 +347,7 @@ export function NoteEditor({ note }: { note: Note }) {
         {editor && !isLocked && <SelectionToolbar editor={editor} />}
 
         <div className="min-h-0 flex-1 overflow-y-auto">
-          <div className="sp-editor mx-auto max-w-[720px] px-8 py-8">
+          <div ref={contentRef} className="sp-editor mx-auto max-w-[720px] px-8 py-8">
             <EditorContent editor={editor} />
           </div>
         </div>
@@ -323,6 +375,7 @@ export function NoteEditor({ note }: { note: Note }) {
         currentWordCount={stats.wordCount}
         onRestore={restoreVersion}
       />
+      <PrintLayoutDialog open={printLayoutOpen} onOpenChange={setPrintLayoutOpen} onPrint={exportPdf} />
     </div>
   );
 }

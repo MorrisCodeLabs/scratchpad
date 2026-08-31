@@ -29,6 +29,8 @@ const PRO_FEATURES = [
   "OCR search inside PDFs and images",
   "Semantic search",
   "Advanced filters — status, pinned/favorite, date range",
+  "Advanced export — PDF, Word (.docx), HTML, ePub, and JPG",
+  "Advanced print layouts",
 ];
 
 const TEAM_FEATURES: string[] = [];

@@ -1,4 +1,23 @@
-import { MoreHorizontal, Pin, Star, Copy, Archive, Trash2, Lock, Unlock, Download, FileText, FileType, Globe, History } from "lucide-react";
+import {
+  MoreHorizontal,
+  Pin,
+  Star,
+  Copy,
+  Archive,
+  Trash2,
+  Lock,
+  Unlock,
+  Download,
+  FileText,
+  FileType,
+  Globe,
+  History,
+  FileDown,
+  FileCode,
+  BookOpen,
+  Image as ImageIcon,
+  Printer,
+} from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -18,6 +37,12 @@ export function NoteMenu({
   onToggleLock,
   onExportMarkdown,
   onExportText,
+  onExportPdf,
+  onExportDocx,
+  onExportHtml,
+  onExportEpub,
+  onExportJpg,
+  onOpenPrintLayout,
   onOpenShare,
   onOpenVersionHistory,
 }: {
@@ -25,6 +50,12 @@ export function NoteMenu({
   onToggleLock: () => void;
   onExportMarkdown: () => void;
   onExportText: () => void;
+  onExportPdf: () => void;
+  onExportDocx: () => void;
+  onExportHtml: () => void;
+  onExportEpub: () => void;
+  onExportJpg: () => void;
+  onOpenPrintLayout: () => void;
   onOpenShare: () => void;
   onOpenVersionHistory: () => void;
 }) {
@@ -70,6 +101,26 @@ export function NoteMenu({
             </DropdownMenuItem>
             <DropdownMenuItem onSelect={onExportText}>
               <FileType size={14} /> Plain text (.txt)
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onSelect={onExportPdf}>
+              <FileDown size={14} /> PDF
+            </DropdownMenuItem>
+            <DropdownMenuItem onSelect={onExportDocx}>
+              <FileText size={14} /> Word (.docx)
+            </DropdownMenuItem>
+            <DropdownMenuItem onSelect={onExportHtml}>
+              <FileCode size={14} /> HTML
+            </DropdownMenuItem>
+            <DropdownMenuItem onSelect={onExportEpub}>
+              <BookOpen size={14} /> ePub
+            </DropdownMenuItem>
+            <DropdownMenuItem onSelect={onExportJpg}>
+              <ImageIcon size={14} /> JPG image
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onSelect={onOpenPrintLayout}>
+              <Printer size={14} /> Advanced print layout…
             </DropdownMenuItem>
           </DropdownMenuSubContent>
         </DropdownMenuSub>
