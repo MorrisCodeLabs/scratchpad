@@ -16,6 +16,7 @@ export function MfaEnrollDialog({
   const { enrollMfa, verifyMfa } = useAccountSecurity();
   const [factorId, setFactorId] = useState<string | null>(null);
   const [secret, setSecret] = useState<string | null>(null);
+  const [qrCode, setQrCode] = useState<string | null>(null);
   const [code, setCode] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -24,6 +25,7 @@ export function MfaEnrollDialog({
     if (!open) {
       setFactorId(null);
       setSecret(null);
+      setQrCode(null);
       setCode("");
       setError(null);
       return;
@@ -35,6 +37,7 @@ export function MfaEnrollDialog({
       }
       setFactorId(data.id);
       setSecret(data.totp.secret);
+      setQrCode(data.totp.qr_code);
     });
   }, [open]);
 
@@ -57,14 +60,22 @@ export function MfaEnrollDialog({
       <DialogContent className="max-w-sm">
         <DialogTitle>Set up two-factor authentication</DialogTitle>
         <DialogDescription>
-          Add this code to your authenticator app (Google Authenticator, 1Password, etc.), then enter the 6-digit code it
-          shows.
+          Scan this QR code with your authenticator app (Google Authenticator, 1Password, etc.), then enter the 6-digit
+          code it shows.
         </DialogDescription>
         <div className="mt-4 flex flex-col gap-3">
-          {secret && (
-            <div className="rounded-lg border border-line bg-surface-2 px-3 py-2 font-mono text-xs text-ink break-all">
-              {secret}
+          {qrCode && (
+            <div className="flex justify-center rounded-lg border border-line bg-white p-3">
+              <img src={qrCode} alt="Scan with your authenticator app" className="h-40 w-40" />
             </div>
+          )}
+          {secret && (
+            <details className="text-xs text-ink-muted">
+              <summary className="cursor-pointer select-none">Can't scan? Enter code manually</summary>
+              <div className="mt-2 rounded-lg border border-line bg-surface-2 px-3 py-2 font-mono text-xs text-ink break-all">
+                {secret}
+              </div>
+            </details>
           )}
           <Input
             autoFocus
