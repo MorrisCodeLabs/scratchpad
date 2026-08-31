@@ -336,7 +336,10 @@ function AccountMenu({
           </DropdownMenuItem>
         )}
         <DropdownMenuSeparator />
-        <DropdownMenuItem className="text-danger" onSelect={() => supabase.auth.signOut()}>
+        <DropdownMenuItem
+          className="text-danger"
+          onSelect={() => supabase.auth.signOut().then(() => window.location.assign("/"))}
+        >
           <LogOut size={14} /> Log out
         </DropdownMenuItem>
       </DropdownMenuContent>

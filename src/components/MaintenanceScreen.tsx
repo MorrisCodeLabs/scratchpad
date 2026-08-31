@@ -17,7 +17,11 @@ export function MaintenanceScreen() {
         <p className="mb-6 text-[13px] leading-relaxed text-muted">
           Scratchpad is offline for a bit while we make some changes. We'll be back shortly — thanks for your patience.
         </p>
-        <Button variant="outline" className="w-full" onClick={() => supabase.auth.signOut()}>
+        <Button
+          variant="outline"
+          className="w-full"
+          onClick={() => supabase.auth.signOut().then(() => window.location.assign("/"))}
+        >
           Sign out
         </Button>
       </div>

@@ -34,7 +34,7 @@ This is the **Phase 1 MVP** build: auth, a single workspace per account, note CR
    npm install
    npm run dev
    ```
-5. Open `http://localhost:4321`, sign up, and you'll land in an auto-created workspace.
+5. Open `http://localhost:4321` for the marketing page, or go straight to `http://localhost:4321/app` to sign up — you'll land in an auto-created workspace.
 
 ## Deploying
 
@@ -60,7 +60,9 @@ src/
     workspace-context.tsx  Shared React context for the active workspace
     use-router.ts   Minimal history-API router (no react-router dependency)
   pages/
-    [...path].astro Single catch-all page — mounts the app shell for any route
+    index.astro     Static marketing/landing page — the "/" a signed-out visitor sees first
+    app/[...path].astro  Catch-all under /app — mounts the app shell for any app route
+    s/[token].astro Public read-only view for a shared note link
 supabase/
   migrations/  Schema, RLS policies, and the attachments storage bucket
 ```

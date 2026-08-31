@@ -2,7 +2,13 @@ import { useCallback, useEffect, useState } from "react";
 
 // A minimal client-side router. Scratchpad is a single React island, so full
 // react-router weight isn't needed — a handful of routes over history.pushState
-// covers it, and every Astro page mounts the same island regardless of path.
+// covers it, and every page under /app mounts the same island regardless of
+// path. The app lives under an /app prefix (see src/pages/app/[...path].astro)
+// so it doesn't collide with the marketing site at "/" (src/pages/index.astro)
+// — without that prefix, pushState-ing the notes list to "/" would make a
+// hard refresh land back on the marketing page instead of the app.
+export const APP_PREFIX = "/app";
+
 export type Route =
   | { name: "all-notes" }
   | { name: "note"; id: string }
@@ -13,6 +19,7 @@ export type Route =
 
 function parse(pathname: string): Route {
   const parts = pathname.split("/").filter(Boolean);
+  if (parts[0] === "app") parts.shift();
   if (parts[0] === "note" && parts[1]) return { name: "note", id: parts[1] };
   if (parts[0] === "trash") return { name: "trash" };
   if (parts[0] === "settings") return { name: "settings", section: parts[1] };
@@ -24,17 +31,17 @@ function parse(pathname: string): Route {
 function toPath(route: Route): string {
   switch (route.name) {
     case "note":
-      return `/note/${route.id}`;
+      return `${APP_PREFIX}/note/${route.id}`;
     case "trash":
-      return "/trash";
+      return `${APP_PREFIX}/trash`;
     case "settings":
-      return route.section ? `/settings/${route.section}` : "/settings";
+      return route.section ? `${APP_PREFIX}/settings/${route.section}` : `${APP_PREFIX}/settings`;
     case "changelog":
-      return "/changelog";
+      return `${APP_PREFIX}/changelog`;
     case "bug-reports":
-      return "/bug-reports";
+      return `${APP_PREFIX}/bug-reports`;
     default:
-      return "/";
+      return APP_PREFIX;
   }
 }
 
