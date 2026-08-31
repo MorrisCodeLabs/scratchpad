@@ -6,6 +6,7 @@
 export const prerender = true;
 import Base from "@/layouts/Base.astro";
 import { LandingRedirect } from "@/components/LandingRedirect";
+import { DotPattern } from "@/components/magicui/dot-pattern";
 import {
   Blocks,
   FolderTree,
@@ -75,10 +76,39 @@ const PLANS = [
 ];
 ---
 
+<style>
+  /* The marketing page deliberately commits to one dark look (#111111)
+     regardless of visitor OS theme, unlike the app itself which follows
+     --sp-* tokens that flip with light/dark mode. Overriding those same
+     token names here — scoped to this page's own document, so /app is
+     completely unaffected — means every existing bg-bg/text-ink/etc.
+     class in the template below keeps working without being rewritten. */
+  :root {
+    --sp-bg: #111111;
+    --sp-surface: #18181b;
+    --sp-surface-2: #202023;
+    --sp-ink: #f5f5f5;
+    --sp-muted: #a1a1aa;
+    --sp-faint: #71717a;
+    --sp-accent: #7ea6f2;
+    --sp-accent-ink: #a8c4f7;
+    --sp-accent-soft: #233150;
+    --sp-line: rgba(255, 255, 255, 0.1);
+    --sp-danger: #e5847c;
+    --sp-danger-soft: #3a1e1a;
+    --sp-warn: #e0a352;
+    --sp-warn-soft: #382a15;
+    --sp-good: #5cb583;
+    --sp-good-soft: #163224;
+  }
+</style>
+
 <Base>
   <LandingRedirect client:load />
 
-  <div class="min-h-dvh bg-bg text-ink">
+  <div class="relative min-h-dvh overflow-hidden bg-bg text-ink">
+    <DotPattern className="absolute inset-x-0 top-0 h-[640px] fill-white/[0.14] [mask-image:radial-gradient(640px_circle_at_center,white,transparent)]" />
+
     <!-- ---------------------------------------------------------------- -->
     <!-- Header -->
     <!-- ---------------------------------------------------------------- -->
