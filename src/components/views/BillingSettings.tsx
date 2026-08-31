@@ -127,13 +127,11 @@ export function BillingSettings() {
         />
       </div>
 
-      {plan !== "free" && !isOwner && (
-        <div className="mt-5 flex justify-center">
-          <Button variant="outline" size="sm" onClick={manageBilling} disabled={loadingPlan === "portal"}>
-            {loadingPlan === "portal" ? "Opening…" : "Manage billing"}
-          </Button>
-        </div>
-      )}
+      <div className="mt-5 flex justify-center">
+        <Button variant="outline" size="sm" onClick={manageBilling} disabled={loadingPlan === "portal"}>
+          {loadingPlan === "portal" ? "Opening…" : "Manage billing"}
+        </Button>
+      </div>
 
       <p className="mt-5 flex items-center justify-center gap-1.5 text-center text-[11px] text-faint">
         <Clock size={12} /> Billed monthly via Stripe. Cancel any time from "Manage billing."
