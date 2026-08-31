@@ -18,6 +18,18 @@ export interface Workspace {
   updated_at: string;
 }
 
+export interface UserPreferences {
+  user_id: string;
+  display_name: string | null;
+  avatar_url: string | null;
+  notify_email_digest: boolean;
+  notify_comments: boolean;
+  notify_mentions: boolean;
+  deletion_requested_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface Folder {
   id: string;
   workspace_id: string;
