@@ -15,6 +15,7 @@ import {
   Moon,
   LogOut,
   History,
+  Bug,
 } from "lucide-react";
 import { useWorkspaceContext } from "@/lib/workspace-context";
 import type { Route } from "@/lib/use-router";
@@ -29,12 +30,13 @@ import { NoteRow } from "@/components/sidebar/NoteRow";
 import { DropZone } from "@/components/sidebar/DropZone";
 import { WorkspaceMenu } from "@/components/sidebar/WorkspaceMenu";
 import { NewNoteMenu } from "@/components/NewNoteMenu";
+import { NewFolderDialog } from "@/components/sidebar/NewFolderDialog";
 import { cn } from "@/lib/cn";
 
 const COLLAPSED_KEY = "scratchpad:sidebar-collapsed";
 
 export function Sidebar() {
-  const { folders, notes, route, navigate, setCommandMenuOpen } = useWorkspaceContext();
+  const { workspace, folders, notes, route, navigate, setCommandMenuOpen } = useWorkspaceContext();
   const { session } = useSession();
   const { theme, toggleTheme } = useTheme();
   const [favoritesOpen, setFavoritesOpen] = useState(true);
@@ -47,6 +49,7 @@ export function Sidebar() {
   // visitor stuck with a 288px-wide sidebar eating most of the screen).
   const [mobileExpanded, setMobileExpanded] = useState(false);
   const expanded = isMobile ? mobileExpanded : !collapsed;
+  const [newFolderOpen, setNewFolderOpen] = useState(false);
 
   useEffect(() => {
     localStorage.setItem(COLLAPSED_KEY, collapsed ? "1" : "0");
@@ -105,11 +108,15 @@ export function Sidebar() {
         <IconRailButton label="Search (⌘K)" onClick={() => setCommandMenuOpen(true)}>
           <Search size={16} />
         </IconRailButton>
-        <NewNoteMenu>
-          <IconRailButton label="New note" onClick={() => {}}>
-            <Plus size={16} />
-          </IconRailButton>
-        </NewNoteMenu>
+        <IconRailButton
+          label="New note"
+          onClick={async () => {
+            const note = await notes.createNote(workspace.id, null);
+            if (note) navigate({ name: "note", id: note.id });
+          }}
+        >
+          <Plus size={16} />
+        </IconRailButton>
         <div className="mt-auto flex flex-col items-center gap-1">
           <IconRailButton label="Toggle theme" onClick={toggleTheme}>
             {theme === "dark" ? <Sun size={16} /> : <Moon size={16} />}
@@ -225,7 +232,7 @@ export function Sidebar() {
             <button
               type="button"
               title="New folder"
-              onClick={() => folders.createFolder("New Folder", null)}
+              onClick={() => setNewFolderOpen(true)}
               className="text-faint transition-colors hover:text-ink"
             >
               <FolderPlus size={13} />
@@ -283,6 +290,11 @@ export function Sidebar() {
           </button>
         </div>
       </aside>
+      <NewFolderDialog
+        open={newFolderOpen}
+        onOpenChange={setNewFolderOpen}
+        onCreate={(name) => folders.createFolder(name, null)}
+      />
     </DndContext>
   );
 }
@@ -318,6 +330,11 @@ function AccountMenu({
         <DropdownMenuItem onSelect={() => navigate({ name: "changelog" })}>
           <History size={14} /> Changelog
         </DropdownMenuItem>
+        {isOwner && (
+          <DropdownMenuItem onSelect={() => navigate({ name: "bug-reports" })}>
+            <Bug size={14} /> Bugs reported
+          </DropdownMenuItem>
+        )}
         <DropdownMenuSeparator />
         <DropdownMenuItem className="text-danger" onSelect={() => supabase.auth.signOut()}>
           <LogOut size={14} /> Log out

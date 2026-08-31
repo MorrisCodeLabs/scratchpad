@@ -74,6 +74,18 @@ export interface Note {
 
 export type SaveState = "idle" | "saving" | "saved" | "error" | "offline";
 
+export interface BugReport {
+  id: string;
+  workspace_id: string | null;
+  reported_by: string | null;
+  reported_by_email: string | null;
+  title: string;
+  description: string;
+  page_path: string | null;
+  status: "open" | "resolved";
+  created_at: string;
+}
+
 export interface NoteVersion {
   id: string;
   note_id: string;

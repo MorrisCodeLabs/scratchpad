@@ -6,9 +6,11 @@ import { NoteView } from "@/components/views/NoteView";
 import { TrashView } from "@/components/views/TrashView";
 import { SettingsView } from "@/components/views/SettingsView";
 import { ChangelogView } from "@/components/views/ChangelogView";
+import { BugReportsView } from "@/components/views/BugReportsView";
 import { Toaster } from "@/components/Toaster";
 import { ShortcutsDialog } from "@/components/ShortcutsDialog";
 import { WebClipDialog } from "@/components/WebClipDialog";
+import { BetaBanner } from "@/components/BetaBanner";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { useWorkspaceContext } from "@/lib/workspace-context";
 import { useTheme } from "@/lib/use-theme";
@@ -38,17 +40,21 @@ export function AppShell() {
   }, [openShortcuts]);
 
   return (
-    <div className="flex h-dvh w-full overflow-hidden bg-bg text-ink">
-      {!focusMode && <Sidebar />}
-      <main className="min-w-0 flex-1">
-        <ErrorBoundary key={route.name === "note" ? `note:${route.id}` : route.name}>
-          {route.name === "all-notes" && <AllNotesView />}
-          {route.name === "note" && <NoteView noteId={route.id} />}
-          {route.name === "trash" && <TrashView />}
-          {route.name === "settings" && <SettingsView />}
-          {route.name === "changelog" && <ChangelogView />}
-        </ErrorBoundary>
-      </main>
+    <div className="flex h-dvh w-full flex-col overflow-hidden bg-bg text-ink">
+      {!focusMode && <BetaBanner />}
+      <div className="flex min-h-0 flex-1">
+        {!focusMode && <Sidebar />}
+        <main className="min-w-0 flex-1">
+          <ErrorBoundary key={route.name === "note" ? `note:${route.id}` : route.name}>
+            {route.name === "all-notes" && <AllNotesView />}
+            {route.name === "note" && <NoteView noteId={route.id} />}
+            {route.name === "trash" && <TrashView />}
+            {route.name === "settings" && <SettingsView />}
+            {route.name === "changelog" && <ChangelogView />}
+            {route.name === "bug-reports" && <BugReportsView />}
+          </ErrorBoundary>
+        </main>
+      </div>
       <CommandMenu />
       <Toaster />
       <ShortcutsDialog />

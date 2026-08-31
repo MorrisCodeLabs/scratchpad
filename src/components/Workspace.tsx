@@ -4,6 +4,7 @@ import { useWorkspace } from "@/lib/data/use-workspace";
 import { WorkspaceProvider } from "@/lib/workspace-context";
 import { AuthScreen } from "@/components/AuthScreen";
 import { AppShell } from "@/components/AppShell";
+import { WorkspaceOnboarding } from "@/components/WorkspaceOnboarding";
 
 function FullScreenMessage({ children }: { children: React.ReactNode }) {
   return <div className="flex h-dvh w-full items-center justify-center bg-bg text-sm text-faint">{children}</div>;
@@ -22,6 +23,10 @@ export default function Workspace() {
         We couldn't find a workspace for your account. Try refreshing, or contact support if this keeps happening.
       </FullScreenMessage>
     );
+  }
+
+  if (!workspace.onboarded_at) {
+    return <WorkspaceOnboarding workspace={workspace} onComplete={refreshWorkspace} />;
   }
 
   return (
