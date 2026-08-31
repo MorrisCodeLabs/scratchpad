@@ -100,6 +100,37 @@
   box-sizing: border-box;
 }
 
+/* ---------------------------------------------------------------------
+   Touch target expansion. Icon-only buttons across the app (sidebar rail,
+   editor toolbar, note header) are sized 24-36px for a dense desktop UI,
+   below Apple's 44x44pt minimum recommended touch target. Rather than
+   growing them visually (and re-breaking the layouts they were sized
+   for), expand their invisible tappable area on actual touchscreens only
+   — `pointer: coarse` doesn't match a mouse/trackpad, so desktop density
+   is untouched.
+   --------------------------------------------------------------------- */
+@media (pointer: coarse) {
+  button.h-6.w-6,
+  button.h-7.w-7,
+  button.h-8.w-8,
+  button.h-9.w-9 {
+    position: relative;
+  }
+  button.h-6.w-6::after,
+  button.h-7.w-7::after,
+  button.h-8.w-8::after,
+  button.h-9.w-9::after {
+    content: "";
+    position: absolute;
+    /* Kept modest (not a full 44px expansion) because several of these
+       buttons sit only 2-4px apart (e.g. the editor toolbar's gap-0.5) —
+       a larger inset would make adjacent buttons' hit areas overlap and
+       cause mis-taps, which is worse than the small-target problem it's
+       meant to fix. */
+    inset: -3px;
+  }
+}
+
 html,
 body {
   height: 100%;
