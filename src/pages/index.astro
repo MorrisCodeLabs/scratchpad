@@ -6,7 +6,7 @@
 export const prerender = true;
 import Base from "@/layouts/Base.astro";
 import { LandingRedirect } from "@/components/LandingRedirect";
-import { DotPattern } from "@/components/ui/dot-pattern";
+import { DotPattern } from "@/components/magicui/dot-pattern";
 import { ResizableNavbar, type NavItem } from "@/components/aceternity/resizable-navbar";
 import {
   Blocks,
@@ -113,10 +113,7 @@ const PLANS = [
   <LandingRedirect client:load />
 
   <div class="relative min-h-dvh overflow-hidden bg-bg text-ink">
-    <DotPattern
-      client:load
-      className="absolute inset-x-0 top-0 h-[640px] text-white/20 [mask-image:linear-gradient(to_bottom_right,white,transparent,transparent)]"
-    />
+    <DotPattern className="absolute inset-x-0 top-0 h-[640px] fill-white/[0.14] [mask-image:radial-gradient(640px_circle_at_center,white,transparent)]" />
 
     <!-- ---------------------------------------------------------------- -->
     <!-- Header -->
