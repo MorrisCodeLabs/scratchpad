@@ -62,6 +62,18 @@ export interface Note {
 
 export type SaveState = "idle" | "saving" | "saved" | "error" | "offline";
 
+export interface CodeFile {
+  id: string;
+  workspace_id: string;
+  name: string;
+  language: string;
+  content: string;
+  sort_order: number;
+  created_by: string;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface NoteVersion {
   id: string;
   note_id: string;

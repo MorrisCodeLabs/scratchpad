@@ -16,6 +16,8 @@ import {
   Moon,
   LogOut,
   History,
+  Code2,
+  Sparkles,
 } from "lucide-react";
 import { useWorkspaceContext } from "@/lib/workspace-context";
 import type { Route } from "@/lib/use-router";
@@ -37,6 +39,7 @@ export function Sidebar() {
   const { folders, notes, route, navigate, setCommandMenuOpen } = useWorkspaceContext();
   const { session } = useSession();
   const { theme, toggleTheme } = useTheme();
+  const plan = useEffectivePlan();
   const [favoritesOpen, setFavoritesOpen] = useState(true);
   const [foldersOpen, setFoldersOpen] = useState(true);
   const [collapsed, setCollapsed] = useState(() => typeof window !== "undefined" && localStorage.getItem(COLLAPSED_KEY) === "1");
@@ -107,6 +110,9 @@ export function Sidebar() {
             <Plus size={16} />
           </IconRailButton>
         </NewNoteMenu>
+        <IconRailButton label="Code Editor" active={route.name === "code"} onClick={() => navigate({ name: "code" })}>
+          <Code2 size={16} />
+        </IconRailButton>
         <div className="mt-auto flex flex-col items-center gap-1">
           <IconRailButton label="Toggle theme" onClick={toggleTheme}>
             {theme === "dark" ? <Sun size={16} /> : <Moon size={16} />}
@@ -161,6 +167,22 @@ export function Sidebar() {
               New note
             </button>
           </NewNoteMenu>
+          <button
+            type="button"
+            onClick={() => navigate({ name: "code" })}
+            className={cn(
+              "flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-[13px] transition-colors",
+              route.name === "code" ? "bg-accent-soft text-accent-ink" : "text-muted hover:bg-surface-2 hover:text-ink",
+            )}
+          >
+            <Code2 size={15} className="shrink-0 text-faint" />
+            Code Editor
+            {plan === "free" && (
+              <span className="ml-auto flex items-center gap-1 rounded-md bg-accent-soft px-1.5 py-0.5 text-[10px] font-semibold text-accent-ink">
+                <Sparkles size={10} /> Pro
+              </span>
+            )}
+          </button>
         </div>
 
         <nav className="mt-3 flex-1 overflow-y-auto px-3 pb-3">
