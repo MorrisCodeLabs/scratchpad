@@ -14,7 +14,7 @@ export const POST: APIRoute = async ({ request }) => {
     return new Response(JSON.stringify({ error: "Not signed in." }), { status: 401 });
   }
 
-  let body: { workspaceId?: string; plan?: "pro" | "team" };
+  let body: { workspaceId?: string; plan?: "pro" | "team"; seats?: number };
   try {
     body = await request.json();
   } catch {
@@ -23,6 +23,13 @@ export const POST: APIRoute = async ({ request }) => {
   const { workspaceId, plan } = body;
   if (!workspaceId || (plan !== "pro" && plan !== "team")) {
     return new Response(JSON.stringify({ error: "Missing workspaceId or plan." }), { status: 400 });
+  }
+
+  // Only Team is seat-based — Pro is always a single seat regardless of
+  // what the caller sends.
+  const seats = plan === "team" ? Math.trunc(body.seats ?? 1) : 1;
+  if (!Number.isFinite(seats) || seats < 1 || seats > 100) {
+    return new Response(JSON.stringify({ error: "Seat count must be between 1 and 100." }), { status: 400 });
   }
 
   const priceId = STRIPE_PRICE_IDS[plan];
@@ -67,11 +74,11 @@ export const POST: APIRoute = async ({ request }) => {
   const session = await stripe.checkout.sessions.create({
     mode: "subscription",
     customer: customerId,
-    line_items: [{ price: priceId, quantity: 1 }],
+    line_items: [{ price: priceId, quantity: seats }],
     success_url: `${origin}/settings/billing?checkout=success`,
     cancel_url: `${origin}/settings/billing?checkout=canceled`,
-    metadata: { workspace_id: workspaceId, plan },
-    subscription_data: { metadata: { workspace_id: workspaceId, plan } },
+    metadata: { workspace_id: workspaceId, plan, seats: String(seats) },
+    subscription_data: { metadata: { workspace_id: workspaceId, plan, seats: String(seats) } },
   });
 
   return new Response(JSON.stringify({ url: session.url }), {

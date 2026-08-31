@@ -39,12 +39,14 @@ export const POST: APIRoute = async ({ request }) => {
       const session = event.data.object as Stripe.Checkout.Session;
       const workspaceId = session.metadata?.workspace_id;
       const plan = session.metadata?.plan;
+      const seats = plan === "team" ? Number(session.metadata?.seats ?? 1) : 1;
       const customerId = typeof session.customer === "string" ? session.customer : session.customer?.id;
       if (workspaceId && plan && customerId) {
         await supabaseAdmin
           .from("workspaces")
           .update({
             plan,
+            seats: Number.isFinite(seats) && seats >= 1 ? seats : 1,
             stripe_customer_id: customerId,
             stripe_subscription_id: typeof session.subscription === "string" ? session.subscription : null,
             subscription_status: "active",
@@ -57,11 +59,14 @@ export const POST: APIRoute = async ({ request }) => {
     case "customer.subscription.updated": {
       const subscription = event.data.object as Stripe.Subscription;
       const customerId = typeof subscription.customer === "string" ? subscription.customer : subscription.customer.id;
-      const priceId = subscription.items.data[0]?.price.id;
+      const item = subscription.items.data[0];
+      const priceId = item?.price.id;
       const plan = planForPriceId(priceId);
       const active = subscription.status === "active" || subscription.status === "trialing";
+      const seats = item?.quantity ?? 1;
       await setWorkspacePlanByCustomer(customerId, {
         ...(active && plan ? { plan } : {}),
+        ...(active && plan === "team" ? { seats } : {}),
         stripe_subscription_id: subscription.id,
         subscription_status: subscription.status,
         ...(!active ? { plan: "free" } : {}),
@@ -74,6 +79,7 @@ export const POST: APIRoute = async ({ request }) => {
       const customerId = typeof subscription.customer === "string" ? subscription.customer : subscription.customer.id;
       await setWorkspacePlanByCustomer(customerId, {
         plan: "free",
+        seats: 1,
         stripe_subscription_id: null,
         subscription_status: "canceled",
       });

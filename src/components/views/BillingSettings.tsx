@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { Check, Sparkles, Users, Clock, Crown, PartyPopper, AlertTriangle } from "lucide-react";
+import { useEffect, useState, type ReactNode } from "react";
+import { Check, Sparkles, Users, Clock, Crown, PartyPopper, AlertTriangle, Minus, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
@@ -14,9 +14,9 @@ import type { WorkspacePlan } from "@/lib/types";
 // Only features that actually exist in the app today are listed here — no
 // placeholders for work that hasn't shipped. Pro's card starts with
 // "Everything in Free" and Team's with "Everything in Pro" rather than
-// re-listing the tier below it. Team has no team-only features built yet
-// (no shared workspace membership, no seat billing), so its own list is
-// intentionally empty until that work lands.
+// re-listing the tier below it. Team is billed per seat (below) but has no
+// team-only *features* built yet (no shared workspace membership), so its
+// own list is intentionally empty until that work lands.
 const FREE_FEATURES = [
   `Up to ${FREE_PLAN_NOTE_LIMIT} notes`,
   "Full block editor — headings, lists, tables, callouts, math, footnotes",
@@ -42,7 +42,10 @@ const PRO_FEATURES = [
 
 const TEAM_FEATURES: string[] = [];
 
-async function authedFetch(path: string, body: Record<string, unknown>) {
+const MIN_SEATS = 1;
+const MAX_SEATS = 100;
+
+async function authedFetch<T>(path: string, body: Record<string, unknown>) {
   const {
     data: { session },
   } = await supabase.auth.getSession();
@@ -54,15 +57,17 @@ async function authedFetch(path: string, body: Record<string, unknown>) {
   });
   const data = await res.json();
   if (!res.ok) throw new Error(data.error || "Something went wrong.");
-  return data as { url: string };
+  return data as T;
 }
 
 export function BillingSettings() {
   const plan = useEffectivePlan();
   const isOwner = useIsOwnerAccount();
-  const { workspace } = useWorkspaceContext();
-  const [loadingPlan, setLoadingPlan] = useState<WorkspacePlan | "portal" | null>(null);
+  const { workspace, refreshWorkspace } = useWorkspaceContext();
+  const [loadingPlan, setLoadingPlan] = useState<WorkspacePlan | "portal" | "seats" | null>(null);
   const [checkoutResult, setCheckoutResult] = useState<"success" | "canceled" | null>(null);
+  const isRealTeamPlan = workspace.plan === "team" && !isOwner;
+  const [teamSeats, setTeamSeats] = useState(isRealTeamPlan ? workspace.seats : 1);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -75,10 +80,18 @@ export function BillingSettings() {
     }
   }, []);
 
+  useEffect(() => {
+    if (isRealTeamPlan) setTeamSeats(workspace.seats);
+  }, [isRealTeamPlan, workspace.seats]);
+
   const upgrade = async (target: "pro" | "team") => {
     setLoadingPlan(target);
     try {
-      const { url } = await authedFetch("/api/create-checkout-session", { workspaceId: workspace.id, plan: target });
+      const { url } = await authedFetch<{ url: string }>("/api/create-checkout-session", {
+        workspaceId: workspace.id,
+        plan: target,
+        seats: target === "team" ? teamSeats : undefined,
+      });
       window.location.href = url;
     } catch (err) {
       notifyError(err instanceof Error ? err.message : "Couldn't start checkout.");
@@ -89,10 +102,23 @@ export function BillingSettings() {
   const manageBilling = async () => {
     setLoadingPlan("portal");
     try {
-      const { url } = await authedFetch("/api/create-portal-session", { workspaceId: workspace.id });
+      const { url } = await authedFetch<{ url: string }>("/api/create-portal-session", { workspaceId: workspace.id });
       window.location.href = url;
     } catch (err) {
       notifyError(err instanceof Error ? err.message : "Couldn't open billing portal.");
+      setLoadingPlan(null);
+    }
+  };
+
+  const updateSeats = async () => {
+    setLoadingPlan("seats");
+    try {
+      await authedFetch<{ seats: number }>("/api/update-seats", { workspaceId: workspace.id, seats: teamSeats });
+      await refreshWorkspace();
+    } catch (err) {
+      notifyError(err instanceof Error ? err.message : "Couldn't update seats.");
+      setTeamSeats(workspace.seats);
+    } finally {
       setLoadingPlan(null);
     }
   };
@@ -156,6 +182,18 @@ export function BillingSettings() {
           disabled={isOwner}
           loading={loadingPlan === "team"}
           onSelect={() => upgrade("team")}
+          seatsControl={
+            !isOwner ? (
+              <SeatStepper
+                seats={teamSeats}
+                onChange={setTeamSeats}
+                disabled={loadingPlan === "team" || loadingPlan === "seats"}
+              />
+            ) : undefined
+          }
+          seatsChanged={isRealTeamPlan && teamSeats !== workspace.seats}
+          onSaveSeats={updateSeats}
+          savingSeats={loadingPlan === "seats"}
         />
       </div>
 
@@ -183,6 +221,10 @@ function PlanCard({
   disabled,
   loading,
   onSelect,
+  seatsControl,
+  seatsChanged,
+  onSaveSeats,
+  savingSeats,
 }: {
   title: string;
   tagline: string;
@@ -194,6 +236,10 @@ function PlanCard({
   disabled?: boolean;
   loading?: boolean;
   onSelect?: () => void;
+  seatsControl?: ReactNode;
+  seatsChanged?: boolean;
+  onSaveSeats?: () => void;
+  savingSeats?: boolean;
 }) {
   return (
     <Card className={cn("relative flex flex-col", active && "border-accent shadow-[0_0_0_1px_var(--sp-accent)]")}>
@@ -229,12 +275,25 @@ function PlanCard({
         ) : (
           !precedingLabel && <p className="text-[13px] text-faint">No features yet — check back soon.</p>
         )}
+        {seatsControl && (
+          <div className="mt-3 border-t border-line pt-3">
+            <p className="mb-1.5 text-[12px] font-medium text-muted">Seats</p>
+            {seatsControl}
+          </div>
+        )}
       </CardContent>
-      <CardFooter>
+      <CardFooter className="flex-col gap-2">
         {active ? (
-          <Button variant="secondary" className="w-full" disabled>
-            Current plan
-          </Button>
+          <>
+            <Button variant="secondary" className="w-full" disabled>
+              Current plan
+            </Button>
+            {seatsChanged && (
+              <Button variant="outline" className="w-full" onClick={onSaveSeats} disabled={savingSeats}>
+                {savingSeats ? "Saving…" : "Save seat count"}
+              </Button>
+            )}
+          </>
         ) : onSelect ? (
           <Button variant={popular ? "default" : "outline"} className="w-full" onClick={onSelect} disabled={disabled || loading}>
             {loading ? "Redirecting…" : `Upgrade to ${title}`}
@@ -244,5 +303,43 @@ function PlanCard({
         )}
       </CardFooter>
     </Card>
+  );
+}
+
+function SeatStepper({
+  seats,
+  onChange,
+  disabled,
+}: {
+  seats: number;
+  onChange: (seats: number) => void;
+  disabled?: boolean;
+}) {
+  return (
+    <div className="flex items-center justify-center gap-3">
+      <Button
+        variant="outline"
+        size="icon"
+        className="h-7 w-7"
+        onClick={() => onChange(Math.max(MIN_SEATS, seats - 1))}
+        disabled={disabled || seats <= MIN_SEATS}
+        aria-label="Fewer seats"
+      >
+        <Minus size={13} />
+      </Button>
+      <span className="w-16 text-center text-sm font-medium text-ink">
+        {seats} {seats === 1 ? "seat" : "seats"}
+      </span>
+      <Button
+        variant="outline"
+        size="icon"
+        className="h-7 w-7"
+        onClick={() => onChange(Math.min(MAX_SEATS, seats + 1))}
+        disabled={disabled || seats >= MAX_SEATS}
+        aria-label="More seats"
+      >
+        <Plus size={13} />
+      </Button>
+    </div>
   );
 }

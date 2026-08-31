@@ -10,6 +10,7 @@ export interface Workspace {
   stripe_customer_id: string | null;
   stripe_subscription_id: string | null;
   subscription_status: string | null;
+  seats: number;
   trash_retention_days: number;
   onboarded_at: string | null;
   created_by: string;
