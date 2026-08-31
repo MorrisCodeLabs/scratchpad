@@ -1,8 +1,10 @@
-import { Check, Sparkles, Users, Clock } from "lucide-react";
+import { Check, Sparkles, Users, Clock, Crown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { FREE_PLAN_NOTE_LIMIT } from "@/lib/data/use-notes";
+import { useEffectivePlan, useIsOwnerAccount } from "@/lib/use-plan";
+import { cn } from "@/lib/cn";
 
 // Only features that actually exist in the app today are listed here — no
 // placeholders for work that hasn't shipped. Pro's card starts with
@@ -36,6 +38,9 @@ const PRO_FEATURES = [
 const TEAM_FEATURES: string[] = [];
 
 export function BillingSettings() {
+  const plan = useEffectivePlan();
+  const isOwner = useIsOwnerAccount();
+
   return (
     <div>
       <div className="mb-6 text-center">
@@ -46,8 +51,15 @@ export function BillingSettings() {
         </p>
       </div>
 
+      {isOwner && (
+        <div className="mb-5 flex items-center justify-center gap-2 rounded-md bg-accent-soft px-3 py-2 text-xs font-medium text-accent-ink">
+          <Crown size={14} />
+          You have permanent Team access as the app owner — for life, not tied to billing.
+        </div>
+      )}
+
       <div className="grid gap-5 sm:grid-cols-3">
-        <PlanCard title="Free" tagline="For getting your notes organized." features={FREE_FEATURES} />
+        <PlanCard title="Free" tagline="For getting your notes organized." features={FREE_FEATURES} active={plan === "free"} />
         <PlanCard
           title="Pro"
           tagline="For power users who live in their notes."
@@ -55,6 +67,7 @@ export function BillingSettings() {
           precedingLabel="Everything in Free, plus:"
           icon={Sparkles}
           popular
+          active={plan === "pro"}
         />
         <PlanCard
           title="Team"
@@ -62,6 +75,7 @@ export function BillingSettings() {
           features={TEAM_FEATURES}
           precedingLabel="Everything in Pro."
           icon={Users}
+          active={plan === "team"}
         />
       </div>
 
@@ -79,6 +93,7 @@ function PlanCard({
   precedingLabel,
   icon: Icon,
   popular,
+  active,
 }: {
   title: string;
   tagline: string;
@@ -86,13 +101,20 @@ function PlanCard({
   precedingLabel?: string;
   icon?: typeof Sparkles;
   popular?: boolean;
+  active?: boolean;
 }) {
   return (
-    <Card className="relative flex flex-col">
-      {popular && (
+    <Card className={cn("relative flex flex-col", active && "border-accent shadow-[0_0_0_1px_var(--sp-accent)]")}>
+      {active ? (
         <Badge className="absolute -top-2.5 left-1/2 -translate-x-1/2">
-          <Sparkles size={11} /> Most popular
+          <Check size={11} /> Current plan
         </Badge>
+      ) : (
+        popular && (
+          <Badge className="absolute -top-2.5 left-1/2 -translate-x-1/2">
+            <Sparkles size={11} /> Most popular
+          </Badge>
+        )
       )}
       <CardHeader className="items-center pb-2 text-center">
         <CardTitle className="flex items-center gap-1.5 text-lg">
@@ -117,9 +139,15 @@ function PlanCard({
         )}
       </CardContent>
       <CardFooter>
-        <Button variant={popular ? "default" : "outline"} className="w-full" disabled>
-          Coming soon
-        </Button>
+        {active ? (
+          <Button variant="secondary" className="w-full" disabled>
+            Current plan
+          </Button>
+        ) : (
+          <Button variant={popular ? "default" : "outline"} className="w-full" disabled>
+            Coming soon
+          </Button>
+        )}
       </CardFooter>
     </Card>
   );

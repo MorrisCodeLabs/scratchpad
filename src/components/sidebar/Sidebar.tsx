@@ -20,6 +20,7 @@ import {
 import { useWorkspaceContext } from "@/lib/workspace-context";
 import type { Route } from "@/lib/use-router";
 import { useSession } from "@/lib/data/use-session";
+import { useEffectivePlan, useIsOwnerAccount } from "@/lib/use-plan";
 import { useTheme } from "@/lib/use-theme";
 import { supabase } from "@/lib/supabase";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -289,12 +290,17 @@ function AccountMenu({
   navigate: (route: Route) => void;
   children: ReactNode;
 }) {
+  const plan = useEffectivePlan();
+  const isOwner = useIsOwnerAccount();
+  const planLabel = plan === "team" ? "Team" : plan === "pro" ? "Pro" : "Free";
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>{children}</DropdownMenuTrigger>
       <DropdownMenuContent align="start" side="top" sideOffset={8} className="w-60">
         <div className="px-2.5 py-1.5">
           <p className="truncate text-xs font-medium text-ink">{email || "Account"}</p>
+          <p className="text-[10.5px] text-faint">{planLabel} plan{isOwner ? " · Owner" : ""}</p>
         </div>
         <DropdownMenuSeparator />
         <DropdownMenuItem onSelect={() => navigate({ name: "trash" })}>
