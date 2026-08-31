@@ -12,9 +12,10 @@ export function useIsOwnerAccount() {
   return (session?.user.email ?? "").toLowerCase() === OWNER_EMAIL.toLowerCase();
 }
 
-// The real plan now comes from the workspace's own `plan` column, kept in
-// sync by the Stripe webhook (src/pages/api/stripe-webhook.ts) as
-// subscriptions are created, changed, or canceled.
+// The real plan comes from the workspace's own `plan` column. It used to be
+// kept in sync by a Stripe webhook, which has since been disconnected — see
+// the "Reconnecting Stripe" artifact for what to restore. Until then, `plan`
+// only changes if set directly (e.g. in Supabase).
 export function useEffectivePlan(): PlanTier {
   const isOwner = useIsOwnerAccount();
   const { workspace } = useWorkspaceContext();

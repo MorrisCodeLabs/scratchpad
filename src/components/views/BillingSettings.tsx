@@ -1,22 +1,17 @@
-import { useEffect, useState, type ReactNode } from "react";
-import { Check, Sparkles, Users, Clock, Crown, PartyPopper, AlertTriangle, Minus, Plus } from "lucide-react";
+import { Check, Sparkles, Users, Info, Crown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { FREE_PLAN_NOTE_LIMIT } from "@/lib/data/use-notes";
 import { useEffectivePlan, useIsOwnerAccount } from "@/lib/use-plan";
-import { useWorkspaceContext } from "@/lib/workspace-context";
-import { supabase } from "@/lib/supabase";
-import { notifyError } from "@/lib/toast";
 import { cn } from "@/lib/cn";
-import type { WorkspacePlan } from "@/lib/types";
 
 // Only features that actually exist in the app today are listed here — no
 // placeholders for work that hasn't shipped. Pro's card starts with
 // "Everything in Free" and Team's with "Everything in Pro" rather than
-// re-listing the tier below it. Team is billed per seat (below) but has no
-// team-only *features* built yet (no shared workspace membership), so its
-// own list is intentionally empty until that work lands.
+// re-listing the tier below it. Team has no team-only features built yet
+// (no shared workspace membership), so its own list is intentionally
+// empty until that work lands.
 const FREE_FEATURES = [
   `Up to ${FREE_PLAN_NOTE_LIMIT} notes`,
   "Full block editor — headings, lists, tables, callouts, math, footnotes",
@@ -42,86 +37,13 @@ const PRO_FEATURES = [
 
 const TEAM_FEATURES: string[] = [];
 
-const MIN_SEATS = 1;
-const MAX_SEATS = 100;
-
-async function authedFetch<T>(path: string, body: Record<string, unknown>) {
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
-  if (!session) throw new Error("You need to be signed in.");
-  const res = await fetch(path, {
-    method: "POST",
-    headers: { "Content-Type": "application/json", Authorization: `Bearer ${session.access_token}` },
-    body: JSON.stringify(body),
-  });
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.error || "Something went wrong.");
-  return data as T;
-}
-
+// No payment processor is currently wired up — Stripe was disconnected.
+// Plan cards are shown read-only below; see the "Reconnecting Stripe"
+// artifact for the env vars and setup steps to restore checkout/portal/
+// webhook, or src/lib/plan-actions.ts (if reintroduced) for a manual toggle.
 export function BillingSettings() {
   const plan = useEffectivePlan();
   const isOwner = useIsOwnerAccount();
-  const { workspace, refreshWorkspace } = useWorkspaceContext();
-  const [loadingPlan, setLoadingPlan] = useState<WorkspacePlan | "portal" | "seats" | null>(null);
-  const [checkoutResult, setCheckoutResult] = useState<"success" | "canceled" | null>(null);
-  const isRealTeamPlan = workspace.plan === "team" && !isOwner;
-  const [teamSeats, setTeamSeats] = useState(isRealTeamPlan ? workspace.seats : 1);
-
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const checkout = params.get("checkout");
-    if (checkout === "success" || checkout === "canceled") {
-      setCheckoutResult(checkout);
-      params.delete("checkout");
-      const query = params.toString();
-      window.history.replaceState({}, "", window.location.pathname + (query ? `?${query}` : ""));
-    }
-  }, []);
-
-  useEffect(() => {
-    if (isRealTeamPlan) setTeamSeats(workspace.seats);
-  }, [isRealTeamPlan, workspace.seats]);
-
-  const upgrade = async (target: "pro" | "team") => {
-    setLoadingPlan(target);
-    try {
-      const { url } = await authedFetch<{ url: string }>("/api/create-checkout-session", {
-        workspaceId: workspace.id,
-        plan: target,
-        seats: target === "team" ? teamSeats : undefined,
-      });
-      window.location.href = url;
-    } catch (err) {
-      notifyError(err instanceof Error ? err.message : "Couldn't start checkout.");
-      setLoadingPlan(null);
-    }
-  };
-
-  const manageBilling = async () => {
-    setLoadingPlan("portal");
-    try {
-      const { url } = await authedFetch<{ url: string }>("/api/create-portal-session", { workspaceId: workspace.id });
-      window.location.href = url;
-    } catch (err) {
-      notifyError(err instanceof Error ? err.message : "Couldn't open billing portal.");
-      setLoadingPlan(null);
-    }
-  };
-
-  const updateSeats = async () => {
-    setLoadingPlan("seats");
-    try {
-      await authedFetch<{ seats: number }>("/api/update-seats", { workspaceId: workspace.id, seats: teamSeats });
-      await refreshWorkspace();
-    } catch (err) {
-      notifyError(err instanceof Error ? err.message : "Couldn't update seats.");
-      setTeamSeats(workspace.seats);
-    } finally {
-      setLoadingPlan(null);
-    }
-  };
 
   return (
     <div>
@@ -131,25 +53,10 @@ export function BillingSettings() {
         <p className="mx-auto mt-1.5 max-w-md text-[13px] text-faint">Upgrade or manage your workspace's subscription below.</p>
       </div>
 
-      {checkoutResult === "success" && (
-        <div className="mb-5 flex items-center justify-center gap-2 rounded-md bg-good-soft px-3 py-2 text-xs font-medium text-good">
-          <PartyPopper size={14} />
-          You're all set — your plan has been updated.
-        </div>
-      )}
-
-      {checkoutResult === "canceled" && (
-        <div className="mb-5 flex items-center justify-center gap-2 rounded-md bg-surface-2 px-3 py-2 text-xs font-medium text-muted">
-          Checkout was canceled — your plan hasn't changed.
-        </div>
-      )}
-
-      {workspace.subscription_status === "past_due" && (
-        <div className="mb-5 flex items-center justify-center gap-2 rounded-md bg-danger-soft px-3 py-2 text-xs font-medium text-danger">
-          <AlertTriangle size={14} />
-          Your last payment failed. Update your payment method to keep your plan active.
-        </div>
-      )}
+      <div className="mb-5 flex items-center justify-center gap-2 rounded-md bg-surface-2 px-3 py-2 text-xs font-medium text-muted">
+        <Info size={14} />
+        Billing is temporarily unavailable. Your current plan isn't affected.
+      </div>
 
       {isOwner && (
         <div className="mb-5 flex items-center justify-center gap-2 rounded-md bg-accent-soft px-3 py-2 text-xs font-medium text-accent-ink">
@@ -168,9 +75,6 @@ export function BillingSettings() {
           icon={Sparkles}
           popular
           active={plan === "pro"}
-          disabled={isOwner}
-          loading={loadingPlan === "pro"}
-          onSelect={() => upgrade("pro")}
         />
         <PlanCard
           title="Team"
@@ -179,33 +83,8 @@ export function BillingSettings() {
           precedingLabel="Everything in Pro."
           icon={Users}
           active={plan === "team"}
-          disabled={isOwner}
-          loading={loadingPlan === "team"}
-          onSelect={() => upgrade("team")}
-          seatsControl={
-            !isOwner ? (
-              <SeatStepper
-                seats={teamSeats}
-                onChange={setTeamSeats}
-                disabled={loadingPlan === "team" || loadingPlan === "seats"}
-              />
-            ) : undefined
-          }
-          seatsChanged={isRealTeamPlan && teamSeats !== workspace.seats}
-          onSaveSeats={updateSeats}
-          savingSeats={loadingPlan === "seats"}
         />
       </div>
-
-      <div className="mt-5 flex justify-center">
-        <Button variant="outline" size="sm" onClick={manageBilling} disabled={loadingPlan === "portal"}>
-          {loadingPlan === "portal" ? "Opening…" : "Manage billing"}
-        </Button>
-      </div>
-
-      <p className="mt-5 flex items-center justify-center gap-1.5 text-center text-[11px] text-faint">
-        <Clock size={12} /> Billed monthly via Stripe. Cancel any time from "Manage billing."
-      </p>
     </div>
   );
 }
@@ -218,13 +97,6 @@ function PlanCard({
   icon: Icon,
   popular,
   active,
-  disabled,
-  loading,
-  onSelect,
-  seatsControl,
-  seatsChanged,
-  onSaveSeats,
-  savingSeats,
 }: {
   title: string;
   tagline: string;
@@ -233,13 +105,6 @@ function PlanCard({
   icon?: typeof Sparkles;
   popular?: boolean;
   active?: boolean;
-  disabled?: boolean;
-  loading?: boolean;
-  onSelect?: () => void;
-  seatsControl?: ReactNode;
-  seatsChanged?: boolean;
-  onSaveSeats?: () => void;
-  savingSeats?: boolean;
 }) {
   return (
     <Card className={cn("relative flex flex-col", active && "border-accent shadow-[0_0_0_1px_var(--sp-accent)]")}>
@@ -275,71 +140,12 @@ function PlanCard({
         ) : (
           !precedingLabel && <p className="text-[13px] text-faint">No features yet — check back soon.</p>
         )}
-        {seatsControl && (
-          <div className="mt-3 border-t border-line pt-3">
-            <p className="mb-1.5 text-[12px] font-medium text-muted">Seats</p>
-            {seatsControl}
-          </div>
-        )}
       </CardContent>
-      <CardFooter className="flex-col gap-2">
-        {active ? (
-          <>
-            <Button variant="secondary" className="w-full" disabled>
-              Current plan
-            </Button>
-            {seatsChanged && (
-              <Button variant="outline" className="w-full" onClick={onSaveSeats} disabled={savingSeats}>
-                {savingSeats ? "Saving…" : "Save seat count"}
-              </Button>
-            )}
-          </>
-        ) : onSelect ? (
-          <Button variant={popular ? "default" : "outline"} className="w-full" onClick={onSelect} disabled={disabled || loading}>
-            {loading ? "Redirecting…" : `Upgrade to ${title}`}
-          </Button>
-        ) : (
-          <p className="w-full text-center text-[11px] text-faint">Downgrade any time from "Manage billing" below.</p>
-        )}
+      <CardFooter>
+        <Button variant="secondary" className="w-full" disabled>
+          {active ? "Current plan" : "Billing unavailable"}
+        </Button>
       </CardFooter>
     </Card>
-  );
-}
-
-function SeatStepper({
-  seats,
-  onChange,
-  disabled,
-}: {
-  seats: number;
-  onChange: (seats: number) => void;
-  disabled?: boolean;
-}) {
-  return (
-    <div className="flex items-center justify-center gap-3">
-      <Button
-        variant="outline"
-        size="icon"
-        className="h-7 w-7"
-        onClick={() => onChange(Math.max(MIN_SEATS, seats - 1))}
-        disabled={disabled || seats <= MIN_SEATS}
-        aria-label="Fewer seats"
-      >
-        <Minus size={13} />
-      </Button>
-      <span className="w-16 text-center text-sm font-medium text-ink">
-        {seats} {seats === 1 ? "seat" : "seats"}
-      </span>
-      <Button
-        variant="outline"
-        size="icon"
-        className="h-7 w-7"
-        onClick={() => onChange(Math.min(MAX_SEATS, seats + 1))}
-        disabled={disabled || seats >= MAX_SEATS}
-        aria-label="More seats"
-      >
-        <Plus size={13} />
-      </Button>
-    </div>
   );
 }

@@ -16,14 +16,4 @@ export default defineConfig({
   vite: {
     plugins: [tailwindcss()],
   },
-  // Astro's default CSRF protection rejects any non-GET request whose
-  // Origin header doesn't match the site's own host — which is exactly how
-  // Stripe's webhook arrives (a server-to-server POST with no Origin header
-  // at all). Every API route here already authenticates itself properly
-  // (Bearer token for checkout/portal, Stripe's own signature for the
-  // webhook), so this extra layer is redundant and, for the webhook,
-  // actively breaks things.
-  security: {
-    checkOrigin: false,
-  },
 });
